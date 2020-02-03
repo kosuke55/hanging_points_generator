@@ -65,19 +65,20 @@ def change_view_with_key():
 # or p.DIRECT for non-graphical version
 physicsClient = pybullet.connect(pybullet.GUI)
 pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
-pybullet.setGravity(0, 0, -10)
+gravity = -10
+pybullet.setGravity(0, 0, gravity)
 planeId = pybullet.loadURDF("plane.urdf")
 
 StartPos = [0, 0, 0]
 StartOrientation = pybullet.getQuaternionFromEuler([0, 0, 0])
-objectId = pybullet.loadURDF("scissors/base.urdf", StartPos, StartOrientation)
+objectId = pybullet.loadURDF("mug/base.urdf", StartPos, StartOrientation)
 
 bar = pybullet.createCollisionShape(
     pybullet.GEOM_CYLINDER,
     radius=0.005,
     height=1)
 
-pybullet.createMultiBody(
+barid = pybullet.createMultiBody(
     baseMass=0.,
     baseCollisionShapeIndex=bar,
     basePosition=[0, 0, 1],
@@ -88,14 +89,39 @@ start = time.time()
 reset_pose_time = 3
 loop_num = int(1e10)
 find_count = 0
-
+collision_check = True
 
 for i in range(loop_num):
+
+    if collision_check:
+        pybullet.setGravity(0, 0, 0)
+        pybullet.stepSimulation()
+        contact_point = pybullet.getContactPoints(objectId, barid)
     elapsed = time.time() - start
+
+    if contact_point:
+        x = (np.random.rand() - 0.5) * 0.1
+        y = (np.random.rand() - 0.5) * 0.1
+        z = 1 + (np.random.rand() - 0.5) * 0.1
+        roll = np.random.rand() * pi
+        pitch = np.random.rand() * pi
+        yaw = np.random.rand() * pi
+        pybullet.setGravity(0, 0, 0)
+        pybullet.resetBasePositionAndOrientation(
+            objectId,
+            [x, y, z],
+            rpy2quaternion([roll, pitch, yaw]))
+        start = time.time()
+        collision_check = True
+    else:
+        contact_point = False
+        pybullet.setGravity(0, 0, gravity)
+        collision_check = False
     pybullet.stepSimulation()
     # time.sleep(1. / 240.)
-    time.sleep(1. / 1e10000)
+    time.sleep(1. / 1e10)
     pos, orn = pybullet.getBasePositionAndOrientation(objectId)
+
     if enable_changeview_with_key:
         change_view_with_key()
 
@@ -106,11 +132,13 @@ for i in range(loop_num):
         roll = np.random.rand() * pi
         pitch = np.random.rand() * pi
         yaw = np.random.rand() * pi
+        pybullet.setGravity(0, 0, 0)
         pybullet.resetBasePositionAndOrientation(
             objectId,
             [x, y, z],
             rpy2quaternion([roll, pitch, yaw]))
         start = time.time()
+        collision_check = True
     elif (elapsed > reset_pose_time - 0.1 and pos[2] > 0.1):
         print("Find the hanging part ({})".format(find_count))
         find_count += 1
@@ -120,10 +148,12 @@ for i in range(loop_num):
         roll = np.random.rand() * pi
         pitch = np.random.rand() * pi
         yaw = np.random.rand() * pi
+        pybullet.setGravity(0, 0, 0)
         pybullet.resetBasePositionAndOrientation(
             objectId,
             [x, y, z],
             rpy2quaternion([roll, pitch, yaw]))
         start = time.time()
+        collision_check = True
 
 pybullet.disconnect()
