@@ -16,6 +16,23 @@ def rpy2quaternion(rpy):
         cr * cp * cy + sr * sp * sy])
 
 
+def reset_pose():
+    global start, collision_check
+    x = (np.random.rand() - 0.5) * 0.1
+    y = (np.random.rand() - 0.5) * 0.1
+    z = 1 + (np.random.rand() - 0.5) * 0.1
+    roll = np.random.rand() * pi
+    pitch = np.random.rand() * pi
+    yaw = np.random.rand() * pi
+    pybullet.setGravity(0, 0, 0)
+    pybullet.resetBasePositionAndOrientation(
+        objectId,
+        [x, y, z],
+        rpy2quaternion([roll, pitch, yaw]))
+    start = time.time()
+    collision_check = True
+
+
 enable_changeview_with_key = False
 cyaw = 0
 cpitch = 0
@@ -100,19 +117,7 @@ for i in range(loop_num):
     elapsed = time.time() - start
 
     if contact_point:
-        x = (np.random.rand() - 0.5) * 0.1
-        y = (np.random.rand() - 0.5) * 0.1
-        z = 1 + (np.random.rand() - 0.5) * 0.1
-        roll = np.random.rand() * pi
-        pitch = np.random.rand() * pi
-        yaw = np.random.rand() * pi
-        pybullet.setGravity(0, 0, 0)
-        pybullet.resetBasePositionAndOrientation(
-            objectId,
-            [x, y, z],
-            rpy2quaternion([roll, pitch, yaw]))
-        start = time.time()
-        collision_check = True
+        reset_pose()
     else:
         contact_point = False
         pybullet.setGravity(0, 0, gravity)
@@ -126,34 +131,10 @@ for i in range(loop_num):
         change_view_with_key()
 
     if (elapsed > reset_pose_time or pos[2] < 0.1):
-        x = (np.random.rand() - 0.5) * 0.1
-        y = (np.random.rand() - 0.5) * 0.1
-        z = 1 + (np.random.rand() - 0.5) * 0.1
-        roll = np.random.rand() * pi
-        pitch = np.random.rand() * pi
-        yaw = np.random.rand() * pi
-        pybullet.setGravity(0, 0, 0)
-        pybullet.resetBasePositionAndOrientation(
-            objectId,
-            [x, y, z],
-            rpy2quaternion([roll, pitch, yaw]))
-        start = time.time()
-        collision_check = True
+        reset_pose()
     elif (elapsed > reset_pose_time - 0.1 and pos[2] > 0.1):
         print("Find the hanging part ({})".format(find_count))
         find_count += 1
-        x = (np.random.rand() - 0.5) * 0.1
-        y = (np.random.rand() - 0.5) * 0.1
-        z = 1 + (np.random.rand() - 0.5) * 0.1
-        roll = np.random.rand() * pi
-        pitch = np.random.rand() * pi
-        yaw = np.random.rand() * pi
-        pybullet.setGravity(0, 0, 0)
-        pybullet.resetBasePositionAndOrientation(
-            objectId,
-            [x, y, z],
-            rpy2quaternion([roll, pitch, yaw]))
-        start = time.time()
-        collision_check = True
+        reset_pose()
 
 pybullet.disconnect()
