@@ -5,7 +5,7 @@ import skrobot
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-f = open('mug_contact_points.pickle', 'rb')
+f = open('pickle/mug_contact_points.pickle', 'rb')
 contact_points_list = pickle.load(f)
 
 print(os.path.join(current_dir, "./urdf/mug/base.urdf"))
