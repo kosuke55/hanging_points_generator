@@ -1,19 +1,8 @@
 import numpy as np
-from math import cos, pi, sin
+from math import pi
 import pybullet
 import pybullet_data
 import time
-
-
-def rpy2quaternion(rpy):
-    yaw, pitch, roll = rpy
-    cr, cp, cy = cos(roll / 2.), cos(pitch / 2.), cos(yaw / 2.)
-    sr, sp, sy = sin(roll / 2.), sin(pitch / 2.), sin(yaw / 2.)
-    return np.array([
-        -cr * sp * sy + cp * cy * sr,
-        cr * cy * sp + sr * cp * sy,
-        cr * cp * sy - sr * cy * sp,
-        cr * cp * cy + sr * sp * sy])
 
 
 def reset_pose():
@@ -28,7 +17,7 @@ def reset_pose():
     pybullet.resetBasePositionAndOrientation(
         objectId,
         [x, y, z],
-        rpy2quaternion([roll, pitch, yaw]))
+        pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
     start = time.time()
     collision_check = True
 
@@ -125,7 +114,7 @@ for i in range(loop_num):
     pybullet.stepSimulation()
     # time.sleep(1. / 240.)
     time.sleep(1. / 1e10)
-    pos, orn = pybullet.getBasePositionAndOrientation(objectId)
+    pos, rot = pybullet.getBasePositionAndOrientation(objectId)
 
     if enable_changeview_with_key:
         change_view_with_key()
@@ -134,6 +123,9 @@ for i in range(loop_num):
         reset_pose()
     elif (elapsed > reset_pose_time - 0.1 and pos[2] > 0.1):
         print("Find the hanging part ({})".format(find_count))
+        contact_point = pybullet.getContactPoints(objectId, barid)
+        pos, rot = pybullet.getBasePositionAndOrientation(objectId)
+        print(pos,  pybullet.getEulerFromQuaternion(rot))
         find_count += 1
         reset_pose()
 
