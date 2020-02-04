@@ -2,11 +2,10 @@ import numpy as np
 from math import pi
 import pybullet
 import pybullet_data
-import time
+import skrobot
 
 
 def reset_pose():
-    global start, collision_check
     x = (np.random.rand() - 0.5) * 0.1
     y = (np.random.rand() - 0.5) * 0.1
     z = 1 + (np.random.rand() - 0.5) * 0.1
@@ -15,11 +14,9 @@ def reset_pose():
     yaw = np.random.rand() * pi
     pybullet.setGravity(0, 0, 0)
     pybullet.resetBasePositionAndOrientation(
-        objectId,
+        object_id,
         [x, y, z],
         pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
-    start = time.time()
-    collision_check = True
 
 
 enable_changeview_with_key = False
@@ -68,65 +65,93 @@ def change_view_with_key():
             cz])
 
 
+obj_model = skrobot.models.urdf.RobotModelFromURDF(
+    urdf_file="/home/takeuchi/pybullet/urdf/mug/base.urdf")
+viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+viewer.add(obj_model)
+viewer.show()
+
 # or p.DIRECT for non-graphical version
 physicsClient = pybullet.connect(pybullet.GUI)
 pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
 gravity = -10
 pybullet.setGravity(0, 0, gravity)
-planeId = pybullet.loadURDF("plane.urdf")
+pybullet.setTimeStep(1 / 240.0)
+pybullet.loadURDF("plane.urdf")
 
 StartPos = [0, 0, 0]
 StartOrientation = pybullet.getQuaternionFromEuler([0, 0, 0])
-objectId = pybullet.loadURDF("mug/base.urdf", StartPos, StartOrientation)
+object_id = pybullet.loadURDF("/home/takeuchi/pybullet/urdf/mug/base.urdf",
+                              StartPos, StartOrientation)
 
 bar = pybullet.createCollisionShape(
     pybullet.GEOM_CYLINDER,
     radius=0.005,
     height=1)
 
-barid = pybullet.createMultiBody(
+bar_id = pybullet.createMultiBody(
     baseMass=0.,
     baseCollisionShapeIndex=bar,
     basePosition=[0, 0, 1],
     baseOrientation=pybullet.getQuaternionFromEuler(
         [0, 1.5707963267948966, 0]))
 
-start = time.time()
-reset_pose_time = 3
 loop_num = int(1e10)
 find_count = 0
-collision_check = True
+
+height_thresh = 0.5
+contact_points_list = []
 
 for i in range(loop_num):
-
-    if collision_check:
-        pybullet.setGravity(0, 0, 0)
-        pybullet.stepSimulation()
-        contact_point = pybullet.getContactPoints(objectId, barid)
-    elapsed = time.time() - start
-
-    if contact_point:
-        reset_pose()
-    else:
-        contact_point = False
-        pybullet.setGravity(0, 0, gravity)
-        collision_check = False
-    pybullet.stepSimulation()
-    # time.sleep(1. / 240.)
-    time.sleep(1. / 1e10)
-    pos, rot = pybullet.getBasePositionAndOrientation(objectId)
-
     if enable_changeview_with_key:
         change_view_with_key()
 
-    if (elapsed > reset_pose_time or pos[2] < 0.1):
-        reset_pose()
-    elif (elapsed > reset_pose_time - 0.1 and pos[2] > 0.1):
-        print("Find the hanging part ({})".format(find_count))
-        contact_point = pybullet.getContactPoints(objectId, barid)
-        pos, rot = pybullet.getBasePositionAndOrientation(objectId)
-        print(pos,  pybullet.getEulerFromQuaternion(rot))
+    # emerge object
+    pybullet.setGravity(0, 0, 0)
+    reset_pose()
+    pybullet.stepSimulation()
+    contact_points = pybullet.getContactPoints(object_id, bar_id)
+    if contact_points:
+        continue
+    pybullet.setGravity(0, 0, gravity)
+
+    for _ in range(100):
+        pybullet.stepSimulation()
+    pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+    if pos[2] < height_thresh:
+        continue
+    elif pos[2] > height_thresh:
+        failed = False
+        for _ in range(240 * 2 - 100):
+            pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+            if pos[2] < height_thresh:
+                failed = True
+                break
+            pybullet.stepSimulation()
+        if failed:
+            continue
+
+        contact_points = pybullet.getContactPoints(object_id, bar_id)
+        pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+        if len(contact_points) == 0:
+            continue
+
+        contact_point = sorted(
+            contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
+
+        print("Find the hanging part {}".format(find_count))
+        print(contact_point)
+        print(pos,  rot)
+        contact_point_axis = skrobot.models.Sphere(0.001, color=[255, 0, 0])
+        obj_coords = skrobot.coordinates.Coordinates(
+            pos=pos,
+            rot=skrobot.coordinates.math.xyzw2wxyz(rot))
+        contact_point_axis.newcoords(
+            skrobot.coordinates.Coordinates(
+                pos=obj_coords.inverse_transform_vector(contact_point)))
+        contact_points_list.append(
+            obj_coords.inverse_transform_vector(contact_point))
+        viewer.add(contact_point_axis)
         find_count += 1
-        reset_pose()
 
 pybullet.disconnect()
