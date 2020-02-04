@@ -1,5 +1,7 @@
+import json
 import numpy as np
 from math import pi
+import os
 import pybullet
 import pybullet_data
 import skrobot
@@ -19,8 +21,12 @@ def reset_pose():
         pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
 
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+urdf_file = os.path.join(current_dir, "./urdf/mug/base.urdf")
+contact_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
+
 obj_model = skrobot.models.urdf.RobotModelFromURDF(
-    urdf_file="/home/takeuchi/pybullet/urdf/mug/base.urdf")
+    urdf_file=urdf_file)
 viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
 viewer.add(obj_model)
 viewer.show()
@@ -35,7 +41,7 @@ pybullet.loadURDF("plane.urdf")
 
 StartPos = [0, 0, 0]
 StartOrientation = pybullet.getQuaternionFromEuler([0, 0, 0])
-object_id = pybullet.loadURDF("/home/takeuchi/pybullet/urdf/mug/base.urdf",
+object_id = pybullet.loadURDF(urdf_file,
                               StartPos, StartOrientation)
 
 bar = pybullet.createCollisionShape(
@@ -54,7 +60,7 @@ loop_num = int(1e10)
 find_count = 0
 
 height_thresh = 0.5
-contact_points_list = []
+
 
 for i in range(loop_num):
     # emerge object
@@ -94,9 +100,13 @@ for i in range(loop_num):
     contact_point_axis.newcoords(
         skrobot.coordinates.Coordinates(
             pos=obj_coords.inverse_transform_vector(contact_point)))
-    contact_points_list.append(
-        obj_coords.inverse_transform_vector(contact_point))
     viewer.add(contact_point_axis)
     find_count += 1
+
+    contact_point = obj_coords.inverse_transform_vector(contact_point)
+    contact_points_dict['contact_points'].append(contact_point.tolist())
+    f = open("contact_points.json", "w")
+    json.dump(contact_points_dict, f, separators=(',', ': '))
+    f.close()
 
 pybullet.disconnect()
