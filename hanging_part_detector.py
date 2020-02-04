@@ -66,43 +66,37 @@ for i in range(loop_num):
         continue
     pybullet.setGravity(0, 0, gravity)
 
-    for _ in range(100):
-        pybullet.stepSimulation()
-    pos, rot = pybullet.getBasePositionAndOrientation(object_id)
-    if pos[2] < height_thresh:
-        continue
-    elif pos[2] > height_thresh:
-        failed = False
-        for _ in range(240 * 2 - 100):
-            pos, rot = pybullet.getBasePositionAndOrientation(object_id)
-            if pos[2] < height_thresh:
-                failed = True
-                break
-            pybullet.stepSimulation()
-        if failed:
-            continue
-
-        contact_points = pybullet.getContactPoints(object_id, bar_id)
+    failed = False
+    for _ in range(240 * 2):
         pos, rot = pybullet.getBasePositionAndOrientation(object_id)
-        if len(contact_points) == 0:
-            continue
+        if pos[2] < height_thresh:
+            failed = True
+            break
+        pybullet.stepSimulation()
+    if failed:
+        continue
 
-        contact_point = sorted(
-            contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
+    contact_points = pybullet.getContactPoints(object_id, bar_id)
+    pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+    if len(contact_points) == 0:
+        continue
 
-        print("Find the hanging part {}".format(find_count))
-        print(contact_point)
-        print(pos,  rot)
-        contact_point_axis = skrobot.models.Sphere(0.001, color=[255, 0, 0])
-        obj_coords = skrobot.coordinates.Coordinates(
-            pos=pos,
-            rot=skrobot.coordinates.math.xyzw2wxyz(rot))
-        contact_point_axis.newcoords(
-            skrobot.coordinates.Coordinates(
-                pos=obj_coords.inverse_transform_vector(contact_point)))
-        contact_points_list.append(
-            obj_coords.inverse_transform_vector(contact_point))
-        viewer.add(contact_point_axis)
-        find_count += 1
+    contact_point = sorted(
+        contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
+
+    print("Find the hanging part {}".format(find_count))
+    print(contact_point)
+    print(pos,  rot)
+    contact_point_axis = skrobot.models.Sphere(0.001, color=[255, 0, 0])
+    obj_coords = skrobot.coordinates.Coordinates(
+        pos=pos,
+        rot=skrobot.coordinates.math.xyzw2wxyz(rot))
+    contact_point_axis.newcoords(
+        skrobot.coordinates.Coordinates(
+            pos=obj_coords.inverse_transform_vector(contact_point)))
+    contact_points_list.append(
+        obj_coords.inverse_transform_vector(contact_point))
+    viewer.add(contact_point_axis)
+    find_count += 1
 
 pybullet.disconnect()
