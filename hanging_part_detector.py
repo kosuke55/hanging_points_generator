@@ -19,52 +19,6 @@ def reset_pose():
         pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
 
 
-enable_changeview_with_key = False
-cyaw = 0
-cpitch = 0
-cdist = 0.5
-cx = 0
-cz = 0
-cy = 0
-
-
-def change_view_with_key():
-    global cyaw, cpitch, cdist, cx, cy, cz
-    keys = pybullet.getKeyboardEvents()
-    if keys.get(100):  # d
-        cyaw += 1
-    if keys.get(97):  # a
-        cyaw -= 1
-    if keys.get(99):  # c
-        cpitch += 1
-    if keys.get(102):  # f
-        cpitch -= 1
-    if keys.get(122):  # z
-        cdist += .01
-    if keys.get(120):  # x
-        cdist -= .01
-    if keys.get(106):  # j
-        cx -= .01
-    if keys.get(107):  # k
-        cx += .01
-    if keys.get(104):  # h
-        cy -= .01
-    if keys.get(108):  # l
-        cy += .01
-    if keys.get(105):  # i
-        cz += .01
-    if keys.get(109):  # m
-        cz -= .01
-    pybullet.resetDebugVisualizerCamera(
-        cameraDistance=cdist,
-        cameraYaw=cyaw,
-        cameraPitch=cpitch,
-        cameraTargetPosition=[
-            cx,
-            cy,
-            cz])
-
-
 obj_model = skrobot.models.urdf.RobotModelFromURDF(
     urdf_file="/home/takeuchi/pybullet/urdf/mug/base.urdf")
 viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
@@ -103,9 +57,6 @@ height_thresh = 0.5
 contact_points_list = []
 
 for i in range(loop_num):
-    if enable_changeview_with_key:
-        change_view_with_key()
-
     # emerge object
     pybullet.setGravity(0, 0, 0)
     reset_pose()
