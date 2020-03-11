@@ -5,7 +5,7 @@ import open3d as o3d
 import numpy as np
 
 if __name__ == "__main__":
-    intrinsic_np = np.load("savedir/intrinsic.npy")
+    intrinsic_np = np.load("create_mesh_sample_data/intrinsic.npy")
     intrinsic = o3d.camera.PinholeCameraIntrinsic()
     intrinsic.set_intrinsics(
         960,
@@ -16,7 +16,7 @@ if __name__ == "__main__":
         intrinsic_np[1, 2])
 
     volume = o3d.integration.ScalableTSDFVolume(
-        voxel_length=2.0 / 960.0,
+        voxel_length=0.001,
         sdf_trunc=0.01,
         color_type=o3d.integration.TSDFVolumeColorType.RGB8)
 

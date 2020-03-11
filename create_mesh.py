@@ -50,7 +50,7 @@ class Create_mesh():
         self.lis = tf.TransformListener()
         self.integrate_count = 0
         self.volume = o3d.integration.ScalableTSDFVolume(
-            voxel_length=2.0 / 960.0,
+            voxel_length=0.005,
             sdf_trunc=0.01,
             color_type=o3d.integration.TSDFVolumeColorType.RGB8)
         self.service()
@@ -59,7 +59,6 @@ class Create_mesh():
         self.camera_info = rospy.wait_for_message(
             self.camera_info_msg, CameraInfo)
         self.camera_model.fromCameraInfo(self.camera_info)
-        print(self.camera_model.intrinsicMatrix())
         self.intrinsic = o3d.camera.PinholeCameraIntrinsic()
         self.intrinsic.set_intrinsics(
             self.camera_model.width,
@@ -68,9 +67,6 @@ class Create_mesh():
             self.camera_model.fy(),
             self.camera_model.cx(),
             self.camera_model.cy())
-        print(self.intrinsic.intrinsic_matrix)
-        np.save("savedir/intrinsic", self.intrinsic.intrinsic_matrix)
-        print("load camera info")
 
     def subscribe(self):
         sub_color = message_filters.Subscriber(
