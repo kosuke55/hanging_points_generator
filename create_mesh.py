@@ -68,7 +68,8 @@ class Create_mesh():
             self.camera_model.fy(),
             self.camera_model.cx(),
             self.camera_model.cy())
-        print(self.intrinsic)
+        print(self.intrinsic.intrinsic_matrix)
+        np.save("savedir/intrinsic", self.intrinsic.intrinsic_matrix)
         print("load camera info")
 
     def subscribe(self):
