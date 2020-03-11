@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import cv2
 import image_geometry
 import message_filters
 import numpy as np
@@ -49,8 +50,8 @@ class Create_mesh():
         self.lis = tf.TransformListener()
         self.integrate_count = 0
         self.volume = o3d.integration.ScalableTSDFVolume(
-            voxel_length=4.0 / 512.0,
-            sdf_trunc=0.04,
+            voxel_length=2.0 / 960.0,
+            sdf_trunc=0.01,
             color_type=o3d.integration.TSDFVolumeColorType.RGB8)
         self.service()
 
@@ -86,10 +87,8 @@ class Create_mesh():
         if self.callback_lock:
             return
         self.mask = self.bridge.imgmsg_to_cv2(mask_msg, "mono8")
-        self.color = self.bridge.imgmsg_to_cv2(rgb_msg, "bgr8")
-        self.depth = self.bridge.imgmsg_to_cv2(depth_msg, "passthrough").copy()
-        self.color[self.mask == 0] = [0, 0, 0]
-        self.depth[self.mask == 0] = 0
+        self.color = self.bridge.imgmsg_to_cv2(rgb_msg, "rgb8")
+        self.depth = self.bridge.imgmsg_to_cv2(depth_msg, "passthrough")
         self.header = rgb_msg.header
 
     def service(self):
@@ -101,10 +100,15 @@ class Create_mesh():
                                                  self.create_mesh)
 
     def integrate_point_cloud(self, req):
-        self.callback_lock = True
         if self.header is None:
             rospy.logwarn("No callback")
-            return SetBoolResponse(False, "false integrate point cloud")
+            return
+        self.callback_lock = True
+
+        self.color_clip = self.color.copy()
+        self.depth_clip = self.depth.copy()
+        self.color_clip[self.mask == 0] = [0, 0, 0]
+        self.depth_clip[self.mask == 0] = 0
 
         rospy.loginfo("integrate count: %d", self.integrate_count)
 
@@ -119,11 +123,21 @@ class Create_mesh():
             pos=trans,
             rot=skrobot.coordinates.math.xyzw2wxyz(rot))
 
-        color = o3d.geometry.Image(self.color.astype(np.uint8))
-        depth = o3d.geometry.Image(self.depth.astype(np.uint16))
+        np.save("savedir/camera_pose{}".format(self.integrate_count),
+                camera_pose.T())
+        cv2.imwrite("savedir/color{}.png".format(self.integrate_count),
+                    cv2.cvtColor(self.color_clip.astype(np.uint8),
+                                 cv2.COLOR_BGR2RGB))
+        cv2.imwrite("savedir/depth{}.png".format(self.integrate_count),
+                    self.depth_clip.astype(np.uint16))
+        color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
+        depth = o3d.geometry.Image(self.depth_clip.astype(np.uint16))
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
             color, depth, depth_trunc=4.0,
             convert_rgb_to_intensity=False)
+        # pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
+        #     rgbd, self.intrinsic)
+        # o3d.visualization.draw_geometries([pcd])
 
         self.volume.integrate(
             rgbd,
@@ -138,6 +152,7 @@ class Create_mesh():
         mesh = self.volume.extract_triangle_mesh()
         mesh.compute_vertex_normals()
         o3d.visualization.draw_geometries([mesh])
+        o3d.io.write_triangle_mesh("savedir/obj.ply", mesh)
         return SetBoolResponse(True, "success create mesh")
 
     def run(self):
