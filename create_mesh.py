@@ -20,10 +20,10 @@ class Create_mesh():
     def __init__(self):
         self.input_color = rospy.get_param(
             '~input_color',
-            "/head_mount_kinect/qhd/image_color_rect_repub_desktop")
+            "/head_mount_kinect/hd/image_color_rect_repub_desktop")
         self.input_depth = rospy.get_param(
             '~input_depth',
-            "/head_mount_kinect/qhd/image_depth_rect_repub_desktop")
+            "/head_mount_kinect/hd/image_depth_rect_repub_desktop")
         self.input_mask = rospy.get_param(
             '~input_mask',
             "/point_indices_to_mask_image_gripper/output")
@@ -34,7 +34,7 @@ class Create_mesh():
             '~gripper_frame', "/l_gripper_tool_frame")
 
         self.camera_info_msg = rospy.get_param(
-            '~camera_info', "/head_mount_kinect/qhd/camera_info")
+            '~camera_info', "/head_mount_kinect/hd/camera_info")
 
         self.camera_info = None
         self.camera_model = image_geometry.cameramodels.PinholeCameraModel()
@@ -51,7 +51,7 @@ class Create_mesh():
         self.integrate_count = 0
         self.volume = o3d.integration.ScalableTSDFVolume(
             voxel_length=0.005,
-            sdf_trunc=0.01,
+            sdf_trunc=0.05,
             color_type=o3d.integration.TSDFVolumeColorType.RGB8)
         self.service()
 
@@ -67,6 +67,8 @@ class Create_mesh():
             self.camera_model.fy(),
             self.camera_model.cx(),
             self.camera_model.cy())
+        print("load camera model")
+        np.save("savedir/intrinsic", self.intrinsic.intrinsic_matrix)
 
     def subscribe(self):
         sub_color = message_filters.Subscriber(
