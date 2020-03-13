@@ -49,6 +49,7 @@ class Create_mesh():
 
         self.lis = tf.TransformListener()
         self.integrate_count = 0
+        self.voxel_length = 0.002
         self.volume = o3d.integration.ScalableTSDFVolume(
             voxel_length=0.005,
             sdf_trunc=0.05,
@@ -124,24 +125,57 @@ class Create_mesh():
 
         np.save("savedir/camera_pose{}".format(self.integrate_count),
                 camera_pose.T())
+
         cv2.imwrite("savedir/color{}.png".format(self.integrate_count),
                     cv2.cvtColor(self.color_clip.astype(np.uint8),
                                  cv2.COLOR_BGR2RGB))
         cv2.imwrite("savedir/depth{}.png".format(self.integrate_count),
                     self.depth_clip.astype(np.uint16))
+
+        cv2.imwrite("savedir/color_raw{}.png".format(self.integrate_count),
+                    cv2.cvtColor(self.color.astype(np.uint8),
+                                 cv2.COLOR_BGR2RGB))
+        cv2.imwrite("savedir/depth_raw{}.png".format(self.integrate_count),
+                    self.depth.astype(np.uint16))
+        cv2.imwrite("savedir/mask{}.png".format(self.integrate_count),
+                    self.mask.astype(np.uint8))
+
         color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
         depth = o3d.geometry.Image(self.depth_clip.astype(np.uint16))
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
             color, depth, depth_trunc=4.0,
             convert_rgb_to_intensity=False)
-        # pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-        #     rgbd, self.intrinsic)
+        pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
+            rgbd, self.intrinsic)
+        pcd = pcd.voxel_down_sample(self.voxel_length)
+        pcd.estimate_normals(
+            search_param=o3d.geometry.KDTreeSearchParamHybrid(
+                radius=0.1, max_nn=30))
         # o3d.visualization.draw_geometries([pcd])
+
+        if self.integrate_count == 0:
+            self.target_pcd = pcd
+            self.taregt_camera_pose = camera_pose
+            np.save("savedir/camera_pose_icp{}".format(
+                self.integrate_count), camera_pose.T())
+        else:
+            trans_init = self.camera_pose.copy_worldcoords(
+            ).inverse_transformation().transform(camera_pose)
+            result_icp = o3d.registration.registration_icp(
+                pcd, self.target_pcd, 0.02, trans_init.T(),
+                o3d.registration.TransformationEstimationPointToPlane())
+            icp_coords = skrobot.coordinates.Coordinates(
+                pos=result_icp.transformation[:3, 3],
+                rot=result_icp.transformation[:3, :3])
+            camera_pose_icp = self.target_camera_pose.copy_worldcoords(
+            ).transform(icp_coords)
+            np.save("savedir/camera_pose_icp{}.npy".format(
+                self.integrate_count), camera_pose_icp.T())
 
         self.volume.integrate(
             rgbd,
             self.intrinsic,
-            np.linalg.inv(camera_pose.T()))
+            np.linalg.inv(camera_pose_icp.T()))
 
         self.integrate_count += 1
         self.callback_lock = False
