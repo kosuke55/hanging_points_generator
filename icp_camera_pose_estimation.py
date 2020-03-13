@@ -33,8 +33,9 @@ if __name__ == "__main__":
     camera_poses = []
     pcds = []
     voxel_length = 0.002
+    image_num = 24
 
-    for i in range(8):
+    for i in range(image_num):
         print("Integrate {:d}-th image into the volume.".format(i))
         camera_pose = np.load("savedir/camera_pose{}.npy".format(i))
 
@@ -74,7 +75,7 @@ if __name__ == "__main__":
 
     np.save("savedir/camera_pose_icp0.npy", camera_poses[0].T())
     target = pcds[0]
-    for i in range(7):
+    for i in range(image_num-1):
         trans_init = camera_poses[0].copy_worldcoords().inverse_transformation(
         ).transform(camera_poses[i+1])
 

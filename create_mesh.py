@@ -41,6 +41,7 @@ class Create_mesh():
         self.color = None
         self.depth = None
         self.header = None
+        self.stanby = False
         self.callback_lock = False
 
         self.load_camera_info()
@@ -51,8 +52,8 @@ class Create_mesh():
         self.integrate_count = 0
         self.voxel_length = 0.002
         self.volume = o3d.integration.ScalableTSDFVolume(
-            voxel_length=0.005,
-            sdf_trunc=0.05,
+            voxel_length=0.0025,
+            sdf_trunc=0.01,
             color_type=o3d.integration.TSDFVolumeColorType.RGB8)
         self.service()
 
@@ -90,6 +91,10 @@ class Create_mesh():
         self.color = self.bridge.imgmsg_to_cv2(rgb_msg, "rgb8")
         self.depth = self.bridge.imgmsg_to_cv2(depth_msg, "passthrough")
         self.header = rgb_msg.header
+
+        if not self.stanby:
+            rospy.loginfo("Stanby!")
+            self.stanby = True
 
     def service(self):
         self.integrate_service = rospy.Service("integrate_point_cloud",
@@ -155,11 +160,11 @@ class Create_mesh():
 
         if self.integrate_count == 0:
             self.target_pcd = pcd
-            self.taregt_camera_pose = camera_pose
-            np.save("savedir/camera_pose_icp{}".format(
-                self.integrate_count), camera_pose.T())
+            self.target_camera_pose = camera_pose
+            camera_pose_icp = camera_pose
+
         else:
-            trans_init = self.camera_pose.copy_worldcoords(
+            trans_init = self.target_camera_pose.copy_worldcoords(
             ).inverse_transformation().transform(camera_pose)
             result_icp = o3d.registration.registration_icp(
                 pcd, self.target_pcd, 0.02, trans_init.T(),
@@ -169,8 +174,11 @@ class Create_mesh():
                 rot=result_icp.transformation[:3, :3])
             camera_pose_icp = self.target_camera_pose.copy_worldcoords(
             ).transform(icp_coords)
-            np.save("savedir/camera_pose_icp{}.npy".format(
-                self.integrate_count), camera_pose_icp.T())
+            pcd.transform(result_icp.transformation)
+            self.target_pcd += pcd
+
+        np.save("savedir/camera_pose_icp{}.npy".format(
+            self.integrate_count), camera_pose_icp.T())
 
         self.volume.integrate(
             rgbd,
