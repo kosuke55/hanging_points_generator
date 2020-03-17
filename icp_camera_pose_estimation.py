@@ -15,34 +15,32 @@ def draw_registration_result_original_color(source, target, transformation):
 
 
 if __name__ == "__main__":
-    intrinsic_np = np.load("savedir/intrinsic.npy")
+    width = 1920
+    height = 1080
+    intrinsic_np = np.loadtxt("savedir/intrinsic.txt")
     intrinsic = o3d.camera.PinholeCameraIntrinsic()
-    intrinsic.set_intrinsics(
-        1920,
-        1080,
-        intrinsic_np[0, 0],
-        intrinsic_np[1, 1],
-        intrinsic_np[0, 2],
-        intrinsic_np[1, 2])
+    fx = intrinsic_np[0, 0]
+    fy = intrinsic_np[1, 1]
+    cx = intrinsic_np[0, 2]
+    cy = intrinsic_np[1, 2]
 
-    volume = o3d.integration.ScalableTSDFVolume(
-        voxel_length=0.005,
-        sdf_trunc=0.01,
-        color_type=o3d.integration.TSDFVolumeColorType.RGB8)
+    intrinsic.set_intrinsics(
+        width, height, fx, fy, cx, cy)
 
     camera_poses = []
     pcds = []
     voxel_length = 0.002
     image_num = 24
 
+    print("Create point cloud from rgb and depth.")
     for i in range(image_num):
-        print("Integrate {:d}-th image into the volume.".format(i))
-        camera_pose = np.load("savedir/camera_pose{}.npy".format(i))
+        print("Create {:d}-th point cloud.".format(i))
+        camera_pose = np.loadtxt("savedir/camera_pose{:03}.txt".format(i))
 
         color = o3d.io.read_image(
-            "savedir/color{}.png".format(i))
+            "savedir/color{:03}.png".format(i))
         depth = o3d.io.read_image(
-            "savedir/depth{}.png".format(i))
+            "savedir/depth{:03}.png".format(i))
 
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
             color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
@@ -68,26 +66,24 @@ if __name__ == "__main__":
         # mesh.create_from_point_cloud_poisson(pcd)
         # o3d.visualization.draw_geometries([mesh])
 
-        # volume.integrate(
-        #     rgbd,
-        #     intrinsic,
-        #     np.linalg.inv(camera_pose))
+    np.savetxt("savedir/camera_pose_icp000.txt", camera_poses[0].T())
 
-    np.save("savedir/camera_pose_icp0.npy", camera_poses[0].T())
+    print("ICP registration start.")
     target = pcds[0]
     for i in range(image_num-1):
+        print("ICP registration {:d}-th point cloud.".format(i))
         trans_init = camera_poses[0].copy_worldcoords().inverse_transformation(
         ).transform(camera_poses[i+1])
 
         source = pcds[i+1]
 
         # draw_registration_result_original_color(source, target,
-        #                                         trans_init.T())w
+        #                                         trans_init.T())
 
         result_icp = o3d.registration.registration_icp(
             source, target, 0.02, trans_init.T(),
             o3d.registration.TransformationEstimationPointToPlane())
-        print(result_icp.transformation)
+        # print(result_icp.transformation)
 
         icp_coords = skrobot.coordinates.Coordinates(
             pos=result_icp.transformation[:3, 3],
@@ -95,8 +91,21 @@ if __name__ == "__main__":
         camera_pose_icp = camera_poses[0].copy_worldcoords(
         ).transform(icp_coords)
 
-        np.save("savedir/camera_pose_icp{}.npy".format(i+1),
-                camera_pose_icp.T())
+        np.savetxt("savedir/camera_pose_icp{:03}.txt".format(i+1),
+                   camera_pose_icp.T())
+
+        # Save camera pose and intrinsic for texture-mapping
+        with open('savedir/color{:03}.txt'.format(i), 'w') as f:
+            np.savetxt(f, np.concatenate(
+                [camera_pose_icp.T()[:3, 3][None, :],
+                 camera_pose_icp.T()[:3, :3]],
+                axis=0))
+            np.savetxt(f, [fx])
+            np.savetxt(f, [fy])
+            np.savetxt(f, [cx])
+            np.savetxt(f, [cy])
+            np.savetxt(f, [height])
+            np.savetxt(f, [width])
 
         # draw_registration_result_original_color(source, target,
         #                                         result_icp.transformation)
@@ -110,15 +119,3 @@ if __name__ == "__main__":
     target = target.select_down_sample(ind)
     o3d.visualization.draw_geometries([target])
     o3d.io.write_point_cloud("icp_result.ply", target)
-
-    # distances = target.compute_nearest_neighbor_distance()
-    # avg_dist = np.mean(distances)
-    # radius = 1.5 * avg_dist
-    # mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
-    #     target,
-    #     o3d.utility.DoubleVector([radius, radius * 2]))
-    # o3d.visualization.draw_geometries([mesh])
-
-    # mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-    #     pcd=target, depth=10, width=0, scale=1.1, linear_fit=True)
-    # o3d.visualization.draw_geometries([mesh[0]])
