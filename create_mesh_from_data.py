@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import open3d as o3d
 import numpy as np
+import open3d as o3d
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -20,7 +21,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     intrinsic_np = np.loadtxt(args.input + "camera_pose/intrinsic.txt")
-    print(intrinsic_np)
     intrinsic = o3d.camera.PinholeCameraIntrinsic()
     intrinsic.set_intrinsics(
         1920,
@@ -42,7 +42,6 @@ if __name__ == "__main__":
         camera_pose = np.loadtxt(
             args.input +
             "camera_pose/camera_pose_icp{:03}.txt".format(i))
-        # camera_pose = np.load("savedir/camera_pose{:03}.npy".format(i))
         color = o3d.io.read_image(
             args.input + "/color{:03}.png".format(i))
         depth = o3d.io.read_image(
