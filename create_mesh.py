@@ -21,27 +21,27 @@ class Create_mesh():
     def __init__(self):
         self.input_color = rospy.get_param(
             '~input_color',
-            "/head_mount_kinect/hd/image_color_rect_repub_desktop")
+            '/head_mount_kinect/hd/image_color_rect_repub_desktop')
         self.input_depth = rospy.get_param(
             '~input_depth',
-            "/head_mount_kinect/hd/image_depth_rect_repub_desktop")
+            '/head_mount_kinect/hd/image_depth_rect_repub_desktop')
         self.input_mask = rospy.get_param(
             '~input_mask',
-            "/point_indices_to_mask_image_gripper/output")
+            '/point_indices_to_mask_image_gripper/output')
 
         self.camera_frame = rospy.get_param(
-            '~camera_frame', "/head_mount_kinect_rgb_link")
+            '~camera_frame', '/head_mount_kinect_rgb_link')
         self.gripper_frame = rospy.get_param(
-            '~gripper_frame', "/l_gripper_tool_frame")
+            '~gripper_frame', '/l_gripper_tool_frame')
 
         self.camera_info_msg = rospy.get_param(
-            '~camera_info', "/head_mount_kinect/hd/camera_info")
+            '~camera_info', '/head_mount_kinect/hd/camera_info')
 
         self.save_raw_img = rospy.get_param(
             '~save_raw_img', True)
 
         self.save_dir = rospy.get_param(
-            '~save_dir', "save_dir/")
+            '~save_dir', 'save_dir/')
         pathlib2.Path(self.save_dir + 'raw').mkdir(
             parents=True, exist_ok=True)
         pathlib2.Path(self.save_dir + 'camera_pose').mkdir(
@@ -80,8 +80,8 @@ class Create_mesh():
             self.camera_model.fy(),
             self.camera_model.cx(),
             self.camera_model.cy())
-        print("load camera model")
-        np.savetxt(self.save_dir + "camera_pose/intrinsic.txt",
+        print('load camera model')
+        np.savetxt(self.save_dir + 'camera_pose/intrinsic.txt',
                    self.intrinsic.intrinsic_matrix)
 
     def subscribe(self):
@@ -99,26 +99,26 @@ class Create_mesh():
     def callback(self, rgb_msg, depth_msg, mask_msg):
         if self.callback_lock:
             return
-        self.mask = self.bridge.imgmsg_to_cv2(mask_msg, "mono8")
-        self.color = self.bridge.imgmsg_to_cv2(rgb_msg, "rgb8")
-        self.depth = self.bridge.imgmsg_to_cv2(depth_msg, "passthrough")
+        self.mask = self.bridge.imgmsg_to_cv2(mask_msg, 'mono8')
+        self.color = self.bridge.imgmsg_to_cv2(rgb_msg, 'rgb8')
+        self.depth = self.bridge.imgmsg_to_cv2(depth_msg, 'passthrough')
         self.header = rgb_msg.header
 
         if not self.stanby:
-            rospy.loginfo("Stanby!")
+            rospy.loginfo('Stanby!')
             self.stanby = True
 
     def service(self):
-        self.integrate_service = rospy.Service("integrate_point_cloud",
+        self.integrate_service = rospy.Service('integrate_point_cloud',
                                                SetBool,
                                                self.integrate_point_cloud)
-        self.create_mesh_service = rospy.Service("create_mesh",
+        self.create_mesh_service = rospy.Service('create_mesh',
                                                  SetBool,
                                                  self.create_mesh)
 
     def integrate_point_cloud(self, req):
         if self.header is None:
-            rospy.logwarn("No callback")
+            rospy.logwarn('No callback')
             return
         self.callback_lock = True
 
@@ -133,7 +133,7 @@ class Create_mesh():
         self.color_clip[mask_morph_close == 0] = [0, 0, 0]
         self.depth_clip[mask_morph_open == 0] = 0
 
-        rospy.loginfo("integrate count: %d", self.integrate_count)
+        rospy.loginfo('integrate count: %d', self.integrate_count)
 
         try:
             self.lis.waitForTransform(
@@ -147,24 +147,27 @@ class Create_mesh():
                 pos=trans,
                 rot=skrobot.coordinates.math.xyzw2wxyz(rot))
 
-            np.savetxt(self.save_dir + "camera_pose/camera_pose{:03}.txt".format(
-                self.integrate_count), camera_pose.T())
+            np.savetxt(
+                self.save_dir +
+                'camera_pose/camera_pose{:03}.txt'.format(
+                    self.integrate_count),
+                camera_pose.T())
 
-            cv2.imwrite(self.save_dir + "color{:03}.png".format(
+            cv2.imwrite(self.save_dir + 'color{:03}.png'.format(
                 self.integrate_count), cv2.cvtColor(
                     self.color_clip.astype(np.uint8), cv2.COLOR_BGR2RGB))
 
-            cv2.imwrite(self.save_dir + "depth{:03}.png".format(
+            cv2.imwrite(self.save_dir + 'depth{:03}.png'.format(
                 self.integrate_count), self.depth_clip.astype(np.uint16))
 
             if self.save_raw_img:
-                cv2.imwrite(self.save_dir + "raw/color_raw{:03}.png".format(
+                cv2.imwrite(self.save_dir + 'raw/color_raw{:03}.png'.format(
                     self.integrate_count), cv2.cvtColor(
                         self.color.astype(np.uint8), cv2.COLOR_BGR2RGB))
-                cv2.imwrite(self.save_dir + "raw/depth_raw{:03}.png".format(
+                cv2.imwrite(self.save_dir + 'raw/depth_raw{:03}.png'.format(
                     self.integrate_count), self.depth.astype(np.uint16))
 
-            cv2.imwrite(self.save_dir + "mask{:03}.png".format(
+            cv2.imwrite(self.save_dir + 'mask{:03}.png'.format(
                 self.integrate_count), mask_morph_close.astype(np.uint8))
 
             color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
@@ -200,7 +203,7 @@ class Create_mesh():
                 self.target_pcd += pcd
 
             np.savetxt(
-                self.save_dir + "camera_pose/camera_pose_icp{:03}.txt".format(
+                self.save_dir + 'camera_pose/camera_pose_icp{:03}.txt'.format(
                     self.integrate_count), camera_pose_icp.T())
 
             # Save camera pose and intrinsic for texture-mapping
@@ -224,21 +227,20 @@ class Create_mesh():
 
             self.integrate_count += 1
             self.callback_lock = False
-            return SetBoolResponse(True, "success integrate point cloud")
+            return SetBoolResponse(True, 'success integrate point cloud')
 
         except Exception:
             self.callback_lock = False
             rospy.logwarn(
-                "failed listen transform")
-            return SetBoolResponse(False, "failed listen transform")
-
+                'failed listen transform')
+            return SetBoolResponse(False, 'failed listen transform')
 
     def create_mesh(self, req):
         mesh = self.volume.extract_triangle_mesh()
         mesh.compute_vertex_normals()
         o3d.visualization.draw_geometries([mesh])
-        o3d.io.write_triangle_mesh(self.save_dir + "obj.ply", mesh)
-        return SetBoolResponse(True, "success create mesh")
+        o3d.io.write_triangle_mesh(self.save_dir + 'obj.ply', mesh)
+        return SetBoolResponse(True, 'success create mesh')
 
     def run(self):
         try:
@@ -250,6 +252,6 @@ class Create_mesh():
 
 
 if __name__ == '__main__':
-    rospy.init_node("create_mesh", anonymous=False)
+    rospy.init_node('create_mesh', anonymous=False)
     create_mesh = Create_mesh()
     create_mesh.run()

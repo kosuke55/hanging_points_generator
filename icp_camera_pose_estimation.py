@@ -81,12 +81,12 @@ if __name__ == '__main__':
 
     print('ICP registration start.')
     target = pcds[0]
-    for i in range(image_num-1):
+    for i in range(image_num - 1):
         print('ICP registration {:d}-th point cloud.'.format(i))
         trans_init = camera_poses[0].copy_worldcoords().inverse_transformation(
-        ).transform(camera_poses[i+1])
+        ).transform(camera_poses[i + 1])
 
-        source = pcds[i+1]
+        source = pcds[i + 1]
 
         # draw_registration_result_original_color(source, target,
         #                                         trans_init.T())

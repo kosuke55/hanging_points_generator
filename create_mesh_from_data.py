@@ -22,7 +22,8 @@ if __name__ == "__main__":
 
     for i in range(8):
         print("Integrate {:d}-th image into the volume.".format(i))
-        camera_pose = np.load("create_mesh_sample_data/camera_pose{}.npy".format(i))
+        camera_pose = np.load(
+            "create_mesh_sample_data/camera_pose{}.npy".format(i))
         color = o3d.io.read_image(
             "create_mesh_sample_data/color{}.png".format(i))
         depth = o3d.io.read_image(

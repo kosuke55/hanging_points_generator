@@ -92,7 +92,7 @@ for i in range(loop_num):
 
     print("Find the hanging part {}".format(find_count))
     print(contact_point)
-    print(pos,  rot)
+    print(pos, rot)
     contact_point_axis = skrobot.models.Sphere(0.001, color=[255, 0, 0])
     obj_coords = skrobot.coordinates.Coordinates(
         pos=pos,
