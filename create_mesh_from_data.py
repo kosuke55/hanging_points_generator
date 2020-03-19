@@ -4,7 +4,6 @@
 import argparse
 import open3d as o3d
 import numpy as np
-import trimesh
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
