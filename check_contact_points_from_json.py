@@ -23,7 +23,6 @@ for i, cp in enumerate(contact_points_list):
     print(cp + center)
     contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
     contact_point_sphere.newcoords(
-        skrobot.coordinates.Coordinates(pos=(cp + center)))
+        skrobot.coordinates.Coordinates(pos=(cp)))
 
     viewer.add(contact_point_sphere)
-    time.sleep(0.5)

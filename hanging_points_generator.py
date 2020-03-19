@@ -87,26 +87,26 @@ for i in six.moves.range(loop_num):
     if len(contact_points) == 0:
         continue
 
-    contact_point = sorted(
-        contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
-
     print("Find the hanging part {}".format(find_count))
-    print(contact_point)
-    print(pos, rot)
-    contact_point_axis = skrobot.models.Sphere(0.001, color=[255, 0, 0])
+
     obj_coords = skrobot.coordinates.Coordinates(
         pos=pos,
         rot=skrobot.coordinates.math.xyzw2wxyz(rot))
-    contact_point_axis.newcoords(
+    contact_point = np.array(obj_coords.inverse_transform_vector(sorted(
+        contact_points, key=lambda x: x[5][2], reverse=True)[0][5]))
+    contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
+    contact_point_sphere.newcoords(
         skrobot.coordinates.Coordinates(
-            pos=obj_coords.inverse_transform_vector(contact_point)))
-    viewer.add(contact_point_axis)
-    find_count += 1
+            pos=obj_coords.inverse_transform_vector(contact_point + center)))
+    viewer.add(contact_point_sphere)
 
-    contact_point = obj_coords.inverse_transform_vector(contact_point)
-    contact_points_dict['contact_points'].append(contact_point.tolist())
-    f = open("contact_points.json", "w")
-    json.dump(contact_points_dict, f, separators=(',', ': '))
-    f.close()
+    contact_points_dict['contact_points'].append(
+        (contact_point + center).tolist())
+
+    with open("contact_points.json", "w") as f:
+        json.dump(contact_points_dict, f, ensure_ascii=False,
+                  indent=4, sort_keys=True, separators=(',', ': '))
+
+    find_count += 1
 
 pybullet.disconnect()
