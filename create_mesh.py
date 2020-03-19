@@ -6,6 +6,7 @@ import image_geometry
 import message_filters
 import numpy as np
 import open3d as o3d
+import pathlib2
 import rospy
 import sys
 import skrobot
@@ -38,6 +39,13 @@ class Create_mesh():
 
         self.save_raw_img = rospy.get_param(
             '~save_raw_img', True)
+
+        self.save_dir = rospy.get_param(
+            '~save_dir', "save_dir/")
+        pathlib2.Path(self.save_dir + 'raw').mkdir(
+            parents=True, exist_ok=True)
+        pathlib2.Path(self.save_dir + 'camera_pose').mkdir(
+            parents=True, exist_ok=True)
 
         self.camera_info = None
         self.camera_model = image_geometry.cameramodels.PinholeCameraModel()
@@ -73,7 +81,8 @@ class Create_mesh():
             self.camera_model.cx(),
             self.camera_model.cy())
         print("load camera model")
-        np.savetxt("savedir/intrinsic.txt", self.intrinsic.intrinsic_matrix)
+        np.savetxt(self.save_dir + "camera_pose/intrinsic.txt",
+                   self.intrinsic.intrinsic_matrix)
 
     def subscribe(self):
         sub_color = message_filters.Subscriber(
@@ -115,104 +124,120 @@ class Create_mesh():
 
         self.color_clip = self.color.copy()
         self.depth_clip = self.depth.copy()
-        self.color_clip[self.mask == 0] = [0, 0, 0]
-        self.depth_clip[self.mask == 0] = 0
+
+        mask_morph_open = cv2.morphologyEx(
+            self.mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+        mask_morph_close = cv2.morphologyEx(
+            mask_morph_open, cv2.MORPH_CLOSE, np.ones((50, 50), np.uint8))
+
+        self.color_clip[mask_morph_close == 0] = [0, 0, 0]
+        self.depth_clip[mask_morph_open == 0] = 0
 
         rospy.loginfo("integrate count: %d", self.integrate_count)
 
-        self.lis.waitForTransform(
-            self.gripper_frame, self.header.frame_id,
-            self.header.stamp, rospy.Duration(5))
-        trans, rot = self.lis.lookupTransform(
-            self.gripper_frame, self.header.frame_id,
-            self.header.stamp)
+        try:
+            self.lis.waitForTransform(
+                self.gripper_frame, self.header.frame_id,
+                self.header.stamp, rospy.Duration(5))
+            trans, rot = self.lis.lookupTransform(
+                self.gripper_frame, self.header.frame_id,
+                self.header.stamp)
 
-        camera_pose = skrobot.coordinates.Coordinates(
-            pos=trans,
-            rot=skrobot.coordinates.math.xyzw2wxyz(rot))
+            camera_pose = skrobot.coordinates.Coordinates(
+                pos=trans,
+                rot=skrobot.coordinates.math.xyzw2wxyz(rot))
 
-        np.savetxt("savedir/camera_pose{:03}.txt".format(self.integrate_count),
-                   camera_pose.T())
+            np.savetxt(self.save_dir + "camera_pose/camera_pose{:03}.txt".format(
+                self.integrate_count), camera_pose.T())
 
-        cv2.imwrite("savedir/color{:03}.png".format(self.integrate_count),
-                    cv2.cvtColor(self.color_clip.astype(np.uint8),
-                                 cv2.COLOR_BGR2RGB))
-        cv2.imwrite("savedir/depth{:03}.png".format(self.integrate_count),
-                    self.depth_clip.astype(np.uint16))
-
-        if self.save_raw_img:
-            cv2.imwrite("savedir/color_raw{:03}.png".format(
+            cv2.imwrite(self.save_dir + "color{:03}.png".format(
                 self.integrate_count), cv2.cvtColor(
-                    self.color.astype(np.uint8), cv2.COLOR_BGR2RGB))
-            cv2.imwrite("savedir/depth_raw{:03}.png".format(
-                self.integrate_count), self.depth.astype(np.uint16))
+                    self.color_clip.astype(np.uint8), cv2.COLOR_BGR2RGB))
 
-        cv2.imwrite("savedir/mask{:03}.png".format(self.integrate_count),
-                    self.mask.astype(np.uint8))
+            cv2.imwrite(self.save_dir + "depth{:03}.png".format(
+                self.integrate_count), self.depth_clip.astype(np.uint16))
 
-        color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
-        depth = o3d.geometry.Image(self.depth_clip.astype(np.uint16))
-        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
-            color, depth, depth_trunc=4.0,
-            convert_rgb_to_intensity=False)
-        pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-            rgbd, self.intrinsic)
-        pcd = pcd.voxel_down_sample(self.voxel_length)
-        pcd.estimate_normals(
-            search_param=o3d.geometry.KDTreeSearchParamHybrid(
-                radius=0.1, max_nn=30))
-        # o3d.visualization.draw_geometries([pcd])
+            if self.save_raw_img:
+                cv2.imwrite(self.save_dir + "raw/color_raw{:03}.png".format(
+                    self.integrate_count), cv2.cvtColor(
+                        self.color.astype(np.uint8), cv2.COLOR_BGR2RGB))
+                cv2.imwrite(self.save_dir + "raw/depth_raw{:03}.png".format(
+                    self.integrate_count), self.depth.astype(np.uint16))
 
-        if self.integrate_count == 0:
-            self.target_pcd = pcd
-            self.target_camera_pose = camera_pose
-            camera_pose_icp = camera_pose
+            cv2.imwrite(self.save_dir + "mask{:03}.png".format(
+                self.integrate_count), mask_morph_close.astype(np.uint8))
 
-        else:
-            trans_init = self.target_camera_pose.copy_worldcoords(
-            ).inverse_transformation().transform(camera_pose)
-            result_icp = o3d.registration.registration_icp(
-                pcd, self.target_pcd, 0.02, trans_init.T(),
-                o3d.registration.TransformationEstimationPointToPlane())
-            icp_coords = skrobot.coordinates.Coordinates(
-                pos=result_icp.transformation[:3, 3],
-                rot=result_icp.transformation[:3, :3])
-            camera_pose_icp = self.target_camera_pose.copy_worldcoords(
-            ).transform(icp_coords)
-            pcd.transform(result_icp.transformation)
-            self.target_pcd += pcd
+            color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
+            depth = o3d.geometry.Image(self.depth_clip.astype(np.uint16))
+            rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
+                color, depth, depth_trunc=4.0,
+                convert_rgb_to_intensity=False)
+            pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
+                rgbd, self.intrinsic)
+            pcd = pcd.voxel_down_sample(self.voxel_length)
+            pcd.estimate_normals(
+                search_param=o3d.geometry.KDTreeSearchParamHybrid(
+                    radius=0.1, max_nn=30))
+            # o3d.visualization.draw_geometries([pcd])
 
-        np.savetxt("savedir/camera_pose_icp{:03}.txt".format(
-            self.integrate_count), camera_pose_icp.T())
+            if self.integrate_count == 0:
+                self.target_pcd = pcd
+                self.target_camera_pose = camera_pose
+                camera_pose_icp = camera_pose
 
-        # Save camera pose and intrinsic for texture-mapping
-        with open('savedir/color{:03}.txt'.format(
-                self.integrate_count), 'w') as f:
-            np.savetxt(f, np.concatenate(
-                [camera_pose_icp.T()[:3, 3][None, :],
-                 camera_pose_icp.T()[:3, :3]],
-                axis=0))
-            np.savetxt(f, [self.camera_model.fx()])
-            np.savetxt(f, [self.camera_model.fy()])
-            np.savetxt(f, [self.camera_model.cx()])
-            np.savetxt(f, [self.camera_model.cy()])
-            np.savetxt(f, [self.camera_model.height])
-            np.savetxt(f, [self.camera_model.width])
+            else:
+                trans_init = self.target_camera_pose.copy_worldcoords(
+                ).inverse_transformation().transform(camera_pose)
+                result_icp = o3d.registration.registration_icp(
+                    pcd, self.target_pcd, 0.01, trans_init.T(),
+                    o3d.registration.TransformationEstimationPointToPlane())
+                icp_coords = skrobot.coordinates.Coordinates(
+                    pos=result_icp.transformation[:3, 3],
+                    rot=result_icp.transformation[:3, :3])
+                camera_pose_icp = self.target_camera_pose.copy_worldcoords(
+                ).transform(icp_coords)
+                pcd.transform(result_icp.transformation)
+                self.target_pcd += pcd
 
-        self.volume.integrate(
-            rgbd,
-            self.intrinsic,
-            np.linalg.inv(camera_pose_icp.T()))
+            np.savetxt(
+                self.save_dir + "camera_pose/camera_pose_icp{:03}.txt".format(
+                    self.integrate_count), camera_pose_icp.T())
 
-        self.integrate_count += 1
-        self.callback_lock = False
-        return SetBoolResponse(True, "success integrate point cloud")
+            # Save camera pose and intrinsic for texture-mapping
+            with open(self.save_dir + 'color{:03}.txt'.format(
+                    self.integrate_count), 'w') as f:
+                np.savetxt(f, np.concatenate(
+                    [camera_pose_icp.T()[:3, 3][None, :],
+                     camera_pose_icp.T()[:3, :3]],
+                    axis=0))
+                np.savetxt(f, [self.camera_model.fx()])
+                np.savetxt(f, [self.camera_model.fy()])
+                np.savetxt(f, [self.camera_model.cx()])
+                np.savetxt(f, [self.camera_model.cy()])
+                np.savetxt(f, [self.camera_model.height])
+                np.savetxt(f, [self.camera_model.width])
+
+            self.volume.integrate(
+                rgbd,
+                self.intrinsic,
+                np.linalg.inv(camera_pose_icp.T()))
+
+            self.integrate_count += 1
+            self.callback_lock = False
+            return SetBoolResponse(True, "success integrate point cloud")
+
+        except Exception:
+            self.callback_lock = False
+            rospy.logwarn(
+                "failed listen transform")
+            return SetBoolResponse(False, "failed listen transform")
+
 
     def create_mesh(self, req):
         mesh = self.volume.extract_triangle_mesh()
         mesh.compute_vertex_normals()
         o3d.visualization.draw_geometries([mesh])
-        o3d.io.write_triangle_mesh("savedir/obj.ply", mesh)
+        o3d.io.write_triangle_mesh(self.save_dir + "obj.ply", mesh)
         return SetBoolResponse(True, "success create mesh")
 
     def run(self):
