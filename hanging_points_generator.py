@@ -5,6 +5,7 @@ import os
 import pybullet
 import pybullet_data
 import skrobot
+import six
 
 
 def reset_pose():
@@ -61,8 +62,7 @@ find_count = 0
 
 height_thresh = 0.5
 
-
-for i in range(loop_num):
+for i in six.moves.range(loop_num):
     # emerge object
     pybullet.setGravity(0, 0, 0)
     reset_pose()
