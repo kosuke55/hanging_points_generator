@@ -51,8 +51,6 @@ center = np.array([float(i) for i in root[0].find(
 obj_model = skrobot.models.urdf.RobotModelFromURDF(
     urdf_file=urdf_file)
 
-
-# or p.DIRECT for non-graphical version
 if strtobool(args.gui):
     physicsClient = pybullet.connect(pybullet.GUI)
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
