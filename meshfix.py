@@ -29,3 +29,6 @@ if __name__ == '__main__':
     tin.fill_small_boundaries()
     tin.clean(max_iters=10, inner_loops=3)
     tin.save_file(args.output)
+
+    mesh = trimesh.load(args.output)
+    mesh.export("base.stl", "stl")
