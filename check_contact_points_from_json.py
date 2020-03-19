@@ -1,26 +1,37 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
 import json
 import numpy as np
 import os
 import skrobot
-import time
 
-contact_points_dict = json.load(open('contact_points.json', 'r'))
+
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--input', '-i', type=str,
+                    help='input contact points',
+                    default='contact_points.json')
+parser.add_argument('--urdf', '-u', type=str,
+                    help='input urdf',
+                    default='./urdf/610/scissors/base.urdf')
+args = parser.parse_args()
+
+contact_points_dict = json.load(open(args.input, 'r'))
 contact_points_list = contact_points_dict['contact_points']
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-print(os.path.join(current_dir, './urdf/mug/base.urdf'))
-obj_model = skrobot.models.urdf.RobotModelFromURDF(
-    urdf_file=os.path.join(current_dir, './urdf/mug/base.urdf'))
 
+obj_model = skrobot.models.urdf.RobotModelFromURDF(
+    urdf_file=os.path.join(current_dir, args.urdf))
 
 viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
 viewer.add(obj_model)
 viewer.show()
 
-center = np.array([-0.023543, -0.007383, 0.041545])
 for i, cp in enumerate(contact_points_list):
     cp = np.array(cp)
-    print(cp + center)
     contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
     contact_point_sphere.newcoords(
         skrobot.coordinates.Coordinates(pos=(cp)))
