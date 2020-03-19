@@ -1,11 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
 import json
 import numpy as np
-from math import pi
 import os
 import pybullet
 import pybullet_data
 import skrobot
 import six
+
+from distutils.util import strtobool
+from math import pi
 
 
 def reset_pose():
@@ -22,18 +28,33 @@ def reset_pose():
         pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
 
 
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--urdf', '-u', type=str,
+                    help='input urdf',
+                    default='./urdf/610/scissors/base.urdf')
+parser.add_argument('--gui', '-g', type=str,
+                    help='gui',
+                    default="True")
+args = parser.parse_args()
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
-urdf_file = os.path.join(current_dir, "./urdf/mug/base.urdf")
+urdf_file = os.path.join(current_dir, args.urdf)
 contact_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
+center = np.array([0.138065, 0.010320, 0.000935])
 
 obj_model = skrobot.models.urdf.RobotModelFromURDF(
     urdf_file=urdf_file)
-viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
-viewer.add(obj_model)
-viewer.show()
+
 
 # or p.DIRECT for non-graphical version
-physicsClient = pybullet.connect(pybullet.GUI)
+if strtobool(args.gui):
+    physicsClient = pybullet.connect(pybullet.GUI)
+    viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+    viewer.add(obj_model)
+    viewer.show()
+else:
+    physicsClient = pybullet.connect(pybullet.DIRECT)
 pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
 gravity = -10
 pybullet.setGravity(0, 0, gravity)
@@ -98,7 +119,9 @@ for i in six.moves.range(loop_num):
     contact_point_sphere.newcoords(
         skrobot.coordinates.Coordinates(
             pos=obj_coords.inverse_transform_vector(contact_point + center)))
-    viewer.add(contact_point_sphere)
+
+    if strtobool(args.gui):
+        viewer.add(contact_point_sphere)
 
     contact_points_dict['contact_points'].append(
         (contact_point + center).tolist())
