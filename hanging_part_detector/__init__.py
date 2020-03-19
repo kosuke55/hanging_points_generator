@@ -3,4 +3,4 @@
 import pkg_resources
 
 
-__version__ = pkg_resources.get_distribution('hanging_part_detector').version
+__version__ = pkg_resources.get_distribution('hanging_points_generator').version

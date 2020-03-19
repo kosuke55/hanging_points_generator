@@ -1,1 +1,1 @@
-# hanging_part_detector
+# hanging_points_generator

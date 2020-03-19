@@ -23,7 +23,7 @@ if sys.argv[-1] == "release":
         "git tag v{:s}".format(version),
         "git push origin master --tag",
         "python setup.py sdist",
-        "twine upload dist/hanging_part_detector-{:s}.tar.gz".format(version),
+        "twine upload dist/hanging_points_generator-{:s}.tar.gz".format(version),
     ]
     for cmd in commands:
         print("+ {}".format(cmd))
@@ -41,12 +41,12 @@ install_requires = [
 
 
 setup(
-    name="hanging_part_detector",
+    name="hanging_points_generator",
     version=version,
     description="A hanging part detector",
     author="kosuke55",
     author_email="kosuke.tnp@gmail.com",
-    url="https://github.com/kosuke55/hanging_part_detector",
+    url="https://github.com/kosuke55/hanging_points_generator",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     license="MIT",
