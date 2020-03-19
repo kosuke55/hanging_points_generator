@@ -70,7 +70,7 @@ class Create_mesh():
             self.camera_model.cx(),
             self.camera_model.cy())
         print("load camera model")
-        np.save("savedir/intrinsic", self.intrinsic.intrinsic_matrix)
+        np.savetxt("savedir/intrinsic.txt", self.intrinsic.intrinsic_matrix)
 
     def subscribe(self):
         sub_color = message_filters.Subscriber(
@@ -128,21 +128,21 @@ class Create_mesh():
             pos=trans,
             rot=skrobot.coordinates.math.xyzw2wxyz(rot))
 
-        np.save("savedir/camera_pose{}".format(self.integrate_count),
-                camera_pose.T())
+        np.savetxt("savedir/camera_pose{:03}.txt".format(self.integrate_count),
+                   camera_pose.T())
 
-        cv2.imwrite("savedir/color{}.png".format(self.integrate_count),
+        cv2.imwrite("savedir/color{:03}.png".format(self.integrate_count),
                     cv2.cvtColor(self.color_clip.astype(np.uint8),
                                  cv2.COLOR_BGR2RGB))
-        cv2.imwrite("savedir/depth{}.png".format(self.integrate_count),
+        cv2.imwrite("savedir/depth{:03}.png".format(self.integrate_count),
                     self.depth_clip.astype(np.uint16))
 
-        cv2.imwrite("savedir/color_raw{}.png".format(self.integrate_count),
+        cv2.imwrite("savedir/color_raw{:03}.png".format(self.integrate_count),
                     cv2.cvtColor(self.color.astype(np.uint8),
                                  cv2.COLOR_BGR2RGB))
-        cv2.imwrite("savedir/depth_raw{}.png".format(self.integrate_count),
+        cv2.imwrite("savedir/depth_raw{:03}.png".format(self.integrate_count),
                     self.depth.astype(np.uint16))
-        cv2.imwrite("savedir/mask{}.png".format(self.integrate_count),
+        cv2.imwrite("savedir/mask{:03}.png".format(self.integrate_count),
                     self.mask.astype(np.uint8))
 
         color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
@@ -177,8 +177,22 @@ class Create_mesh():
             pcd.transform(result_icp.transformation)
             self.target_pcd += pcd
 
-        np.save("savedir/camera_pose_icp{}.npy".format(
+        np.savetxt("savedir/camera_pose_icp{:03}.txt".format(
             self.integrate_count), camera_pose_icp.T())
+
+        # Save camera pose and intrinsic for texture-mapping
+        with open('savedir/color{:03}.txt'.format(
+                self.integrate_count), 'w') as f:
+            np.savetxt(f, np.concatenate(
+                [camera_pose_icp.T()[:3, 3][None, :],
+                 camera_pose_icp.T()[:3, :3]],
+                axis=0))
+            np.savetxt(f, [self.camera_model.fx()])
+            np.savetxt(f, [self.camera_model.fy()])
+            np.savetxt(f, [self.camera_model.cx()])
+            np.savetxt(f, [self.camera_model.cy()])
+            np.savetxt(f, [self.camera_model.height])
+            np.savetxt(f, [self.camera_model.width])
 
         self.volume.integrate(
             rgbd,
