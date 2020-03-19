@@ -9,6 +9,7 @@ import pybullet
 import pybullet_data
 import skrobot
 import six
+import xml.etree.ElementTree as ET
 
 from distutils.util import strtobool
 from math import pi
@@ -41,7 +42,11 @@ args = parser.parse_args()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 urdf_file = os.path.join(current_dir, args.urdf)
 contact_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
-center = np.array([0.138065, 0.010320, 0.000935])
+
+tree = ET.parse(os.path.join(current_dir, args.urdf))
+root = tree.getroot()
+center = np.array([float(i) for i in root[0].find(
+    "inertial").find("origin").attrib['xyz'].split(' ')])
 
 obj_model = skrobot.models.urdf.RobotModelFromURDF(
     urdf_file=urdf_file)
