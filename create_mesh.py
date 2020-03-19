@@ -36,6 +36,9 @@ class Create_mesh():
         self.camera_info_msg = rospy.get_param(
             '~camera_info', "/head_mount_kinect/hd/camera_info")
 
+        self.save_raw_img = rospy.get_param(
+            '~save_raw_img', True)
+
         self.camera_info = None
         self.camera_model = image_geometry.cameramodels.PinholeCameraModel()
         self.color = None
@@ -137,11 +140,13 @@ class Create_mesh():
         cv2.imwrite("savedir/depth{:03}.png".format(self.integrate_count),
                     self.depth_clip.astype(np.uint16))
 
-        cv2.imwrite("savedir/color_raw{:03}.png".format(self.integrate_count),
-                    cv2.cvtColor(self.color.astype(np.uint8),
-                                 cv2.COLOR_BGR2RGB))
-        cv2.imwrite("savedir/depth_raw{:03}.png".format(self.integrate_count),
-                    self.depth.astype(np.uint16))
+        if self.save_raw_img:
+            cv2.imwrite("savedir/color_raw{:03}.png".format(
+                self.integrate_count), cv2.cvtColor(
+                    self.color.astype(np.uint8), cv2.COLOR_BGR2RGB))
+            cv2.imwrite("savedir/depth_raw{:03}.png".format(
+                self.integrate_count), self.depth.astype(np.uint16))
+
         cv2.imwrite("savedir/mask{:03}.png".format(self.integrate_count),
                     self.mask.astype(np.uint8))
 
