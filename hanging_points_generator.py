@@ -116,6 +116,8 @@ for i in six.moves.range(loop_num):
     obj_coords = skrobot.coordinates.Coordinates(
         pos=pos,
         rot=skrobot.coordinates.math.xyzw2wxyz(rot))
+
+    # Use max height contact_point
     contact_point = np.array(obj_coords.inverse_transform_vector(sorted(
         contact_points, key=lambda x: x[5][2], reverse=True)[0][5]))
     contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
