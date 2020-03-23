@@ -122,8 +122,7 @@ for i in six.moves.range(loop_num):
         contact_points, key=lambda x: x[5][2], reverse=True)[0][5]))
     contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
     contact_point_sphere.newcoords(
-        skrobot.coordinates.Coordinates(
-            pos=obj_coords.inverse_transform_vector(contact_point + center)))
+        skrobot.coordinates.Coordinates(pos=contact_point + center))
 
     if strtobool(args.gui):
         viewer.add(contact_point_sphere)
