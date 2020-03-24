@@ -41,6 +41,7 @@ args = parser.parse_args()
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 urdf_file = os.path.join(current_dir, args.urdf)
+
 contact_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
 
 tree = ET.parse(os.path.join(current_dir, args.urdf))
@@ -73,13 +74,16 @@ bar = pybullet.createCollisionShape(
     pybullet.GEOM_CYLINDER,
     radius=0.005,
     height=1)
-
+bar_pos = [0, 0, 1]
+bar_rot = [-0.0, 0.7071067811865475, -0.0, 0.7071067811865476]
 bar_id = pybullet.createMultiBody(
     baseMass=0.,
     baseCollisionShapeIndex=bar,
-    basePosition=[0, 0, 1],
-    baseOrientation=pybullet.getQuaternionFromEuler(
-        [0, 1.5707963267948966, 0]))
+    basePosition=bar_pos,
+    baseOrientation=bar_rot)
+bar_coords = skrobot.coordinates.Coordinates(
+    pos=bar_pos,
+    rot=skrobot.coordinates.math.xyzw2wxyz(bar_rot))
 
 loop_num = int(1e10)
 find_count = 0
@@ -108,6 +112,7 @@ for i in six.moves.range(loop_num):
 
     contact_points = pybullet.getContactPoints(object_id, bar_id)
     pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+
     if len(contact_points) == 0:
         continue
 
@@ -117,18 +122,32 @@ for i in six.moves.range(loop_num):
         pos=pos,
         rot=skrobot.coordinates.math.xyzw2wxyz(rot))
 
-    # Use max height contact_point
-    contact_point = np.array(obj_coords.inverse_transform_vector(sorted(
-        contact_points, key=lambda x: x[5][2], reverse=True)[0][5]))
+    max_height_contact_point = sorted(contact_points, key=lambda x: x[5][2],
+                                      reverse=True)[0][5]
+    contact_point_to_hole_vector = np.array(
+        [max_height_contact_point[0], 0, 1]) - np.array(
+            max_height_contact_point)
+    contact_point = skrobot.coordinates.Coordinates(
+        pos=max_height_contact_point,
+        rot=skrobot.coordinates.math.rotation_matrix_from_axis(
+            x_axis=[1, 0, 0],
+            y_axis=contact_point_to_hole_vector))
+    contact_point_obj = obj_coords.inverse_transformation().transform(
+        contact_point).translate(center, 'world')
+
     contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
     contact_point_sphere.newcoords(
-        skrobot.coordinates.Coordinates(pos=contact_point + center))
+        skrobot.coordinates.Coordinates(
+            pos=contact_point_obj.worldpos(),
+            rot=contact_point_obj.worldrot()))
 
     if strtobool(args.gui):
         viewer.add(contact_point_sphere)
 
     contact_points_dict['contact_points'].append(
-        (contact_point + center).tolist())
+        (np.concatenate(
+            [contact_point_obj.T()[:3, 3][None, :],
+             contact_point_obj.T()[:3, :3]]).tolist()))
 
     with open("contact_points.json", "w") as f:
         json.dump(contact_points_dict, f, ensure_ascii=False,
