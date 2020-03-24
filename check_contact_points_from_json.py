@@ -3,7 +3,6 @@
 
 import argparse
 import json
-import numpy as np
 import os
 import skrobot
 
@@ -19,7 +18,7 @@ parser.add_argument('--urdf', '-u', type=str,
 args = parser.parse_args()
 
 contact_points_dict = json.load(open(args.input, 'r'))
-contact_points_list = contact_points_dict['contact_points']
+contact_points = contact_points_dict['contact_points']
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -30,10 +29,9 @@ viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
 viewer.add(obj_model)
 viewer.show()
 
-for i, cp in enumerate(contact_points_list):
-    cp = np.array(cp)
+for i, cp in enumerate(contact_points):
     contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
     contact_point_sphere.newcoords(
-        skrobot.coordinates.Coordinates(pos=(cp)))
-
+        skrobot.coordinates.Coordinates(pos=cp[0],
+                                        rot=cp[1:]))
     viewer.add(contact_point_sphere)
