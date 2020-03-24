@@ -29,10 +29,11 @@ def reset_pose(object_id):
         pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
 
 
-def generate(urdf_file, enable_gui):
+def generate(urdf_file, required_points_num, enable_gui):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     urdf_file = os.path.join(current_dir, urdf_file)
 
+    contact_points_list = []
     contact_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
 
     tree = ET.parse(os.path.join(current_dir, args.urdf))
@@ -133,22 +134,25 @@ def generate(urdf_file, enable_gui):
             if strtobool(enable_gui):
                 viewer.add(contact_point_sphere)
 
-            contact_points_dict['contact_points'].append(
-                (np.concatenate(
+            contact_points_list.append(np.concatenate(
                     [contact_point_obj.T()[:3, 3][None, :],
-                     contact_point_obj.T()[:3, :3]]).tolist()))
+                     contact_point_obj.T()[:3, :3]]).tolist())
+
+            contact_points_dict['contact_points'] = contact_points_list
 
             with open("contact_points.json", "w") as f:
                 json.dump(contact_points_dict, f, ensure_ascii=False,
                           indent=4, sort_keys=True, separators=(',', ': '))
 
             find_count += 1
+            if find_count == required_points_num:
+                break
 
     except KeyboardInterrupt:
         pass
 
     pybullet.disconnect()
-    return contact_points_dict
+    return contact_points_list
 
 
 if __name__ == '__main__':
@@ -157,9 +161,14 @@ if __name__ == '__main__':
     parser.add_argument('--urdf', '-u', type=str,
                         help='input urdf',
                         default='./urdf/610/scissors/base.urdf')
+    parser.add_argument('--required_points_num', '-n', type=int,
+                        help='required points number',
+                        default=1)
     parser.add_argument('--gui', '-g', type=str,
                         help='gui',
                         default="True")
     args = parser.parse_args()
 
-    contact_points_dict = generate(args.urdf, args.gui)
+    contact_points_list = generate(args.urdf,
+                                   args.required_points_num,
+                                   args.gui)
