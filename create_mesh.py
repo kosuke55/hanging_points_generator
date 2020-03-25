@@ -115,6 +115,9 @@ class Create_mesh():
         self.create_mesh_service = rospy.Service('create_mesh',
                                                  SetBool,
                                                  self.create_mesh)
+        self.reset_volume_service = rospy.Service('reset_volume',
+                                                  SetBool,
+                                                  self.create_mesh)
 
     def integrate_point_cloud(self, req):
         if self.header is None:
@@ -241,6 +244,10 @@ class Create_mesh():
         o3d.visualization.draw_geometries([mesh])
         o3d.io.write_triangle_mesh(self.save_dir + 'obj.ply', mesh)
         return SetBoolResponse(True, 'success create mesh')
+
+    def reset_volume(self, req):
+        self.volume.reset()
+        return SetBoolResponse(True, 'reset volume')
 
     def run(self):
         try:
