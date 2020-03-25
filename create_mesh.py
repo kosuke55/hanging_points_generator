@@ -247,6 +247,7 @@ class Create_mesh():
 
     def reset_volume(self, req):
         self.volume.reset()
+        self.integrate_count = 0
         return SetBoolResponse(True, 'reset volume')
 
     def run(self):
