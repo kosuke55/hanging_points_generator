@@ -36,8 +36,8 @@ class Contact_points_publiser():
             rotation_quaternion = matrix2quaternion(cp[1:])
             contact_point_pose = Pose()
             contact_point_pose.position.x = cp[0][0]
-            contact_point_pose.position.y = cp[1][1]
-            contact_point_pose.position.z = cp[2][2]
+            contact_point_pose.position.y = cp[0][1]
+            contact_point_pose.position.z = cp[0][2]
             contact_point_pose.orientation.x = rotation_quaternion[1]
             contact_point_pose.orientation.y = rotation_quaternion[2]
             contact_point_pose.orientation.z = rotation_quaternion[3]
