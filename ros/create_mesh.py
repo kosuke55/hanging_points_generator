@@ -6,6 +6,7 @@ import image_geometry
 import message_filters
 import numpy as np
 import open3d as o3d
+import os
 import pathlib2
 import rospy
 import skrobot
@@ -20,6 +21,7 @@ from std_srvs.srv import SetBool, SetBoolResponse
 
 class CreateMesh():
     def __init__(self):
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.input_color = rospy.get_param(
             '~input_color',
             '/head_mount_kinect/hd/image_color_rect_repub_desktop')
@@ -43,6 +45,8 @@ class CreateMesh():
 
         self.save_dir = rospy.get_param(
             '~save_dir', 'save_dir/')
+
+        self.save_dir = os.path.join(self.current_dir, '..', self.save_dir)
         pathlib2.Path(self.save_dir + 'raw').mkdir(
             parents=True, exist_ok=True)
         pathlib2.Path(self.save_dir + 'camera_pose').mkdir(
@@ -82,7 +86,7 @@ class CreateMesh():
             self.camera_model.cx(),
             self.camera_model.cy())
         print('load camera model')
-        np.savetxt(self.save_dir + 'camera_pose/intrinsic.txt',
+        np.savetxt(os.path.join(self.save_dir, 'camera_pose/intrinsic.txt'),
                    self.intrinsic.intrinsic_matrix)
 
     def subscribe(self):
@@ -118,10 +122,10 @@ class CreateMesh():
                                                  self.create_mesh)
         self.meshfix_service = rospy.Service('meshfix',
                                              SetBool,
-                                             self.create_mesh)
+                                             self.meshfix)
         self.reset_volume_service = rospy.Service('reset_volume',
                                                   SetBool,
-                                                  self.create_mesh)
+                                                  self.reset_volume)
 
     def integrate_point_cloud(self, req):
         if self.header is None:
@@ -155,27 +159,36 @@ class CreateMesh():
                 rot=skrobot.coordinates.math.xyzw2wxyz(rot))
 
             np.savetxt(
-                self.save_dir +
-                'camera_pose/camera_pose{:03}.txt'.format(
-                    self.integrate_count),
+                os.path.join(self.save_dir,
+                             'camera_pose/camera_pose{:03}.txt'.format(
+                                 self.integrate_count)),
                 camera_pose.T())
 
-            cv2.imwrite(self.save_dir + 'color{:03}.png'.format(
-                self.integrate_count), cv2.cvtColor(
+            cv2.imwrite(os.path.join(self.save_dir, 'color{:03}.png'.format(
+                self.integrate_count)), cv2.cvtColor(
                     self.color_clip.astype(np.uint8), cv2.COLOR_BGR2RGB))
 
-            cv2.imwrite(self.save_dir + 'depth{:03}.png'.format(
-                self.integrate_count), self.depth_clip.astype(np.uint16))
+            cv2.imwrite(os.path.join(self.save_dir, 'depth{:03}.png'.format(
+                self.integrate_count)), self.depth_clip.astype(np.uint16))
 
             if self.save_raw_img:
-                cv2.imwrite(self.save_dir + 'raw/color_raw{:03}.png'.format(
-                    self.integrate_count), cv2.cvtColor(
-                        self.color.astype(np.uint8), cv2.COLOR_BGR2RGB))
-                cv2.imwrite(self.save_dir + 'raw/depth_raw{:03}.png'.format(
-                    self.integrate_count), self.depth.astype(np.uint16))
+                cv2.imwrite(os.path.join(
+                    self.save_dir,
+                    'raw/color_raw{:03}.png'.format(
+                        self.integrate_count)),
+                            cv2.cvtColor(
+                                self.color.astype(np.uint8),
+                                cv2.COLOR_BGR2RGB))
+                cv2.imwrite(os.path.join(
+                    self.save_dir,
+                    'raw/depth_raw{:03}.png'.format(
+                        self.integrate_count)), self.depth.astype(np.uint16))
 
-            cv2.imwrite(self.save_dir + 'mask{:03}.png'.format(
-                self.integrate_count), mask_morph_close.astype(np.uint8))
+            cv2.imwrite(os.path.join(
+                self.save_dir,
+                'mask{:03}.png'.format(
+                    self.integrate_count)),
+                        mask_morph_close.astype(np.uint8))
 
             color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
             depth = o3d.geometry.Image(self.depth_clip.astype(np.uint16))
@@ -210,12 +223,15 @@ class CreateMesh():
                 self.target_pcd += pcd
 
             np.savetxt(
-                self.save_dir + 'camera_pose/camera_pose_icp{:03}.txt'.format(
-                    self.integrate_count), camera_pose_icp.T())
+                os.path.join(
+                    self.save_dir,
+                    'camera_pose/camera_pose_icp{:03}.txt'.format(
+                        self.integrate_count)), camera_pose_icp.T())
 
             # Save camera pose and intrinsic for texture-mapping
-            with open(self.save_dir + 'color{:03}.txt'.format(
-                    self.integrate_count), 'w') as f:
+            with open(os.path.join(
+                    self.save_dir,
+                    'color{:03}.txt'.format(self.integrate_count)), 'w') as f:
                 np.savetxt(f, np.concatenate(
                     [camera_pose_icp.T()[:3, 3][None, :],
                      camera_pose_icp.T()[:3, :3]],
@@ -252,9 +268,11 @@ class CreateMesh():
     def meshfix(self, req):
         subprocess.call(
             ['python3',
-             'meshfix.py',
+             os.path.join(
+                 self.current_dir,
+                 '../hanging_points_generator/meshfix.py'),
              '-i',
-             self.save_dir + 'obj.ply',
+             os.path.join(self.save_dir, 'obj.ply'),
              '-o',
              self.save_dir])
         return SetBoolResponse(True, 'reset volume')
