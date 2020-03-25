@@ -1,10 +1,10 @@
 ## hanging\_points\_generator
 
 `rosrun hanging_points_generator create_mesh.py`  
-`python hanging_points_generator.py`  **TODO call by serice.**  
+`python hanging_points_generator.py`  **TODO call by service.**  
 `rosrun hanging_points_generator pub_contact_points.py`  
 
-###create_mesh.py services  
+### create_mesh.py services  
 - `/integrate_point_cloud`  : Add rgbd image and camerapose adjusted by icp registration to TSDF volume.  
 - `/create_mesh` : Extract mesh.  
 - **TODO** `/meshfix` : Generate the completed mesh(urdf) from the missing mesh(ply).  
