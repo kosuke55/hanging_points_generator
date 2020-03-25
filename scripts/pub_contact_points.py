@@ -6,6 +6,7 @@ import rospy
 import sys
 
 from geometry_msgs.msg import PoseArray, Pose
+from skrobot.coordinates.math import matrix2quaternion
 from std_srvs.srv import SetBool
 
 
@@ -32,14 +33,15 @@ class Contact_points_publiser():
         contact_points_list = json.load(
             open(self.contact_points_json, 'r'))['contact_points']
         for i, cp in enumerate(contact_points_list):
+            rotation_quaternion = matrix2quaternion(cp[1:])
             contact_point_pose = Pose()
-            contact_point_pose.position.x = cp[0]
-            contact_point_pose.position.y = cp[1]
-            contact_point_pose.position.z = cp[2]
-            contact_point_pose.orientation.x = 0
-            contact_point_pose.orientation.y = 0
-            contact_point_pose.orientation.z = 0
-            contact_point_pose.orientation.w = 1
+            contact_point_pose.position.x = cp[0][0]
+            contact_point_pose.position.y = cp[1][1]
+            contact_point_pose.position.z = cp[2][2]
+            contact_point_pose.orientation.x = rotation_quaternion[1]
+            contact_point_pose.orientation.y = rotation_quaternion[2]
+            contact_point_pose.orientation.z = rotation_quaternion[3]
+            contact_point_pose.orientation.w = rotation_quaternion[0]
             self.contact_points_pose_array.poses.append(contact_point_pose)
 
     def timer_callback(self, timer):
