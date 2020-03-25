@@ -36,7 +36,7 @@ def generate(urdf_file, required_points_num, enable_gui):
     contact_points_list = []
     contact_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
 
-    tree = ET.parse(os.path.join(current_dir, args.urdf))
+    tree = ET.parse(os.path.join(current_dir, urdf_file))
     root = tree.getroot()
     center = np.array([float(i) for i in root[0].find(
         "inertial").find("origin").attrib['xyz'].split(' ')])
