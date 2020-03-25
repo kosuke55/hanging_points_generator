@@ -8,8 +8,9 @@ import numpy as np
 import open3d as o3d
 import pathlib2
 import rospy
-import sys
 import skrobot
+import subprocess
+import sys
 import tf
 
 from cv_bridge import CvBridge
@@ -115,6 +116,9 @@ class Create_mesh():
         self.create_mesh_service = rospy.Service('create_mesh',
                                                  SetBool,
                                                  self.create_mesh)
+        self.meshfix_service = rospy.Service('meshfix',
+                                             SetBool,
+                                             self.create_mesh)
         self.reset_volume_service = rospy.Service('reset_volume',
                                                   SetBool,
                                                   self.create_mesh)
@@ -244,6 +248,14 @@ class Create_mesh():
         o3d.visualization.draw_geometries([mesh])
         o3d.io.write_triangle_mesh(self.save_dir + 'obj.ply', mesh)
         return SetBoolResponse(True, 'success create mesh')
+
+    def meshfix(self, req):
+        subprocess.call(
+            [python,
+             ,
+             ,
+             ])
+        return SetBoolResponse(True, 'reset volume')
 
     def reset_volume(self, req):
         self.volume.reset()
