@@ -7,7 +7,7 @@ import sys
 
 from geometry_msgs.msg import PoseArray, Pose
 from skrobot.coordinates.math import matrix2quaternion
-from std_srvs.srv import SetBool
+from std_srvs.srv import SetBool, SetBoolResponse
 
 
 class ContactPointsPublisher():
@@ -43,6 +43,8 @@ class ContactPointsPublisher():
             contact_point_pose.orientation.z = rotation_quaternion[3]
             contact_point_pose.orientation.w = rotation_quaternion[0]
             self.contact_points_pose_array.poses.append(contact_point_pose)
+        print(self.contact_points_pose_array)
+        return SetBoolResponse(True, 'load contact points')
 
     def timer_callback(self, timer):
         self.contact_points_pose_array.header.stamp = rospy.Time.now()
