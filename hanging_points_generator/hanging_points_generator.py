@@ -160,7 +160,7 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--urdf', '-u', type=str,
                         help='input urdf',
-                        default='./urdf/610/scissors/base.urdf')
+                        default='../urdf/610/scissors/base.urdf')
     parser.add_argument('--required_points_num', '-n', type=int,
                         help='required points number',
                         default=1)

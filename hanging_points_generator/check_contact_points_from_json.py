@@ -14,7 +14,7 @@ parser.add_argument('--input', '-i', type=str,
                     default='contact_points.json')
 parser.add_argument('--urdf', '-u', type=str,
                     help='input urdf',
-                    default='./urdf/610/scissors/base.urdf')
+                    default='../urdf/610/scissors/base.urdf')
 args = parser.parse_args()
 
 contact_points_dict = json.load(open(args.input, 'r'))
