@@ -4,6 +4,7 @@
 import argparse
 import numpy as np
 import open3d as o3d
+import os
 
 
 if __name__ == "__main__":
@@ -20,7 +21,8 @@ if __name__ == "__main__":
                         default=24)
     args = parser.parse_args()
 
-    intrinsic_np = np.loadtxt(args.input + "camera_pose/intrinsic.txt")
+    intrinsic_np = np.loadtxt(os.path.join(args.input,
+                                           "camera_pose/intrinsic.txt"))
     intrinsic = o3d.camera.PinholeCameraIntrinsic()
     intrinsic.set_intrinsics(
         1920,
@@ -40,12 +42,12 @@ if __name__ == "__main__":
         print("Integrate {:d}-th image into the volume.".format(i))
 
         camera_pose = np.loadtxt(
-            args.input +
-            "camera_pose/camera_pose_icp{:03}.txt".format(i))
+            os.path.join(args.input,
+                         "camera_pose/camera_pose_icp{:03}.txt".format(i)))
         color = o3d.io.read_image(
-            args.input + "/color{:03}.png".format(i))
+            os.path.join(args.input, "/color{:03}.png".format(i)))
         depth = o3d.io.read_image(
-            args.input + "/depth{:03}.png".format(i))
+            os.path.join(args.input, "/depth{:03}.png".format(i)))
 
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
             color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)

@@ -31,8 +31,8 @@ def fix(input_mesh, output_dir):
     center = ''.join(str(i) + ' ' for i in mesh.centroid.tolist()).strip()
     root[0].find('inertial').find('origin').attrib['xyz'] = center
     os.makedirs(os.path.join(output_dir), exist_ok=True)
-    mesh.export(output_dir + 'base.stl', "stl")
-    tree.write(output_dir + 'base.urdf',
+    mesh.export(os.path.join(output_dir, 'base.stl'), "stl")
+    tree.write(os.path.join(output_dir, 'base.urdf'),
                encoding='utf-8', xml_declaration=True)
 
 

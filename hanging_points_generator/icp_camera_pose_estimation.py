@@ -5,6 +5,7 @@ import argparse
 import copy
 import numpy as np
 import open3d as o3d
+import os
 import skrobot
 
 
@@ -24,7 +25,8 @@ if __name__ == '__main__':
 
     width = 1920
     height = 1080
-    intrinsic_np = np.loadtxt(args.input + 'camera_pose/intrinsic.txt')
+    intrinsic_np = np.loadtxt(os.path.join(
+        args.input, 'camera_pose/intrinsic.txt'))
 
     intrinsic = o3d.camera.PinholeCameraIntrinsic()
     fx = intrinsic_np[0, 0]
@@ -44,12 +46,15 @@ if __name__ == '__main__':
     for i in range(image_num):
         print('Create {:d}-th point cloud.'.format(i))
         camera_pose = np.loadtxt(
-            args.input + 'camera_pose/camera_pose{:03}.txt'.format(i))
+            os.path.join(args.input,
+                         'camera_pose/camera_pose{:03}.txt'.format(i)))
 
         color = o3d.io.read_image(
-            args.input + 'color{:03}.png'.format(i))
+            os.path.join(args.input,
+                         'color{:03}.png'.format(i)))
         depth = o3d.io.read_image(
-            args.input + 'depth{:03}.png'.format(i))
+            os.path.join(args.input,
+                         'depth{:03}.png'.format(i)))
 
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
             color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
@@ -109,7 +114,8 @@ if __name__ == '__main__':
         #     camera_pose_icp.T())
 
         # Save camera pose and intrinsic for texture-mapping
-        with open(args.input + 'color{:03}.txt'.format(i), 'w') as f:
+        with open(os.path.join(args.input,
+                               'color{:03}.txt'.format(i)), 'w') as f:
             np.savetxt(f, np.concatenate(
                 [camera_pose_icp.T()[:3, 3][None, :],
                  camera_pose_icp.T()[:3, :3]],
