@@ -251,10 +251,12 @@ class Create_mesh():
 
     def meshfix(self, req):
         subprocess.call(
-            [python,
-             ,
-             ,
-             ])
+            ['python3',
+             'meshfix.py',
+             '-i',
+             self.save_dir + 'obj.ply',
+             '-o',
+             self.save_dir])
         return SetBoolResponse(True, 'reset volume')
 
     def reset_volume(self, req):
