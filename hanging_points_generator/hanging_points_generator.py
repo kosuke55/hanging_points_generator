@@ -29,8 +29,9 @@ def reset_pose(object_id):
         pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
 
 
-def generate(urdf_file, required_points_num, enable_gui):
+def generate(urdf_file, required_points_num, enable_gui, save_dir):
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    save_dir = os.path.join(current_dir, save_dir)
     urdf_file = os.path.join(current_dir, urdf_file)
 
     contact_points_list = []
