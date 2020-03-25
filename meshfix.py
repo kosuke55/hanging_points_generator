@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''
+python3
+Generate the completed mesh(urdf) from the missing mesh(ply).
+'''
+
 import argparse
 import os
 import trimesh
@@ -23,7 +28,7 @@ def fix(input_mesh, output_dir):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     tree = ET.parse(os.path.join(current_dir, 'urdf/base/base.urdf'))
     root = tree.getroot()
-    center = ''.join(str(i)+' ' for i in mesh.centroid.tolist()).strip()
+    center = ''.join(str(i) + ' ' for i in mesh.centroid.tolist()).strip()
     root[0].find('inertial').find('origin').attrib['xyz'] = center
     os.makedirs(os.path.join(output_dir), exist_ok=True)
     mesh.export(output_dir + 'base.stl', "stl")
