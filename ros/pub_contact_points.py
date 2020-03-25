@@ -10,7 +10,7 @@ from skrobot.coordinates.math import matrix2quaternion
 from std_srvs.srv import SetBool
 
 
-class Contact_points_publiser():
+class ContactPointsPublisher():
     def __init__(self):
         self.contact_points_json = rospy.get_param(
             '~contact_points_json', 'contact_points.json')
@@ -60,5 +60,5 @@ class Contact_points_publiser():
 
 if __name__ == '__main__':
     rospy.init_node('contact_points_publisher', anonymous=False)
-    contact_points_publiser = Contact_points_publiser()
+    contact_points_publiser = ContactPointsPublisher()
     contact_points_publiser.run()

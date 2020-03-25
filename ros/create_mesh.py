@@ -18,7 +18,7 @@ from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import SetBool, SetBoolResponse
 
 
-class Create_mesh():
+class CreateMesh():
     def __init__(self):
         self.input_color = rospy.get_param(
             '~input_color',
@@ -275,5 +275,5 @@ class Create_mesh():
 
 if __name__ == '__main__':
     rospy.init_node('create_mesh', anonymous=False)
-    create_mesh = Create_mesh()
+    create_mesh = CreateMesh()
     create_mesh.run()
