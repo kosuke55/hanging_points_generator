@@ -275,7 +275,7 @@ class CreateMesh():
              os.path.join(self.save_dir, 'obj.ply'),
              '-o',
              self.save_dir])
-        return SetBoolResponse(True, 'reset volume')
+        return SetBoolResponse(True, 'meshfix')
 
     def reset_volume(self, req):
         self.volume.reset()
