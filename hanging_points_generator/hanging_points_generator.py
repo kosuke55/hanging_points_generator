@@ -141,7 +141,8 @@ def generate(urdf_file, required_points_num, enable_gui, save_dir):
 
             contact_points_dict['contact_points'] = contact_points_list
 
-            with open("contact_points.json", "w") as f:
+            with open(os.path.join(save_dir,
+                                   'contact_points.json', ), 'w') as f:
                 json.dump(contact_points_dict, f, ensure_ascii=False,
                           indent=4, sort_keys=True, separators=(',', ': '))
 
