@@ -15,6 +15,7 @@ import sys
 import tf
 
 from cv_bridge import CvBridge
+from hanging_points_generator import hanging_points_generator
 from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import SetBool, SetBoolResponse
 
@@ -126,6 +127,10 @@ class CreateMesh():
         self.reset_volume_service = rospy.Service('reset_volume',
                                                   SetBool,
                                                   self.reset_volume)
+        self.generate_hanging_points = rospy.Service(
+            'generate_hanging_points',
+            SetBool,
+            self.generate_hanging_points)
 
     def integrate_point_cloud(self, req):
         if self.header is None:
@@ -282,6 +287,14 @@ class CreateMesh():
         self.volume.reset()
         self.integrate_count = 0
         return SetBoolResponse(True, 'reset volume')
+
+    def generate_hanging_points(self, req):
+        hanging_points_generator.generate(
+            urdf_file=os.path.join(self.save_dir, 'base.urdf'),
+            required_points_num=1,
+            enable_gui='False',
+            save_dir=self.save_dir)
+        return SetBoolResponse(True, 'success create mesh')
 
     def run(self):
         try:

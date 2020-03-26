@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 import rospy
 import sys
 
@@ -12,8 +13,12 @@ from std_srvs.srv import SetBool, SetBoolResponse
 
 class ContactPointsPublisher():
     def __init__(self):
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.contact_points_json = rospy.get_param(
-            '~contact_points_json', 'contact_points.json')
+            '~contact_points_json', 'save_dir/contact_points.json')
+        self.contact_points_json = os.path.join(self.current_dir,
+                                                '..',
+                                                self.contact_points_json)
         self.gripper_frame = rospy.get_param(
             '~gripper', "/l_gripper_tool_frame")
         self.contact_points_pose_array = PoseArray()
