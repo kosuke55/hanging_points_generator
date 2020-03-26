@@ -139,7 +139,7 @@ class CreateMesh():
         mask_morph_open = cv2.morphologyEx(
             self.mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
         mask_morph_close = cv2.morphologyEx(
-            mask_morph_open, cv2.MORPH_CLOSE, np.ones((50, 50), np.uint8))
+            mask_morph_open, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
 
         self.color_clip[mask_morph_close == 0] = [0, 0, 0]
         self.depth_clip[mask_morph_open == 0] = 0
@@ -213,7 +213,7 @@ class CreateMesh():
                 ).inverse_transformation().transform(camera_pose)
                 result_icp = o3d.registration.registration_icp(
                     pcd, self.target_pcd, 0.01, trans_init.T(),
-                    o3d.registration.TransformationEstimationPointToPlane())
+                    o3d.registration.TransformationEstimationPointToPoint())
                 icp_coords = skrobot.coordinates.Coordinates(
                     pos=result_icp.transformation[:3, 3],
                     rot=result_icp.transformation[:3, :3])
