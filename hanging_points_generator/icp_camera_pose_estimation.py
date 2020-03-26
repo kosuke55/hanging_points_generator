@@ -80,13 +80,15 @@ if __name__ == '__main__':
         # mesh.create_from_point_cloud_poisson(pcd)
         # o3d.visualization.draw_geometries([mesh])
 
-    # np.savetxt(args.input + 'camera_pose/camera_pose_icp000.txt',
-    #            camera_poses[0].T())
+    np.savetxt(
+        os.path.join(args.input,
+                     'camera_pose/camera_pose_icp000.txt'),
+        camera_poses[0].T())
 
     print('ICP registration start.')
     target = pcds[0]
     for i in range(image_num - 1):
-        print('ICP registration {:d}-th point cloud.'.format(i))
+        print('ICP registration {:d}-th point cloud.'.format(i+1))
         trans_init = camera_poses[0].copy_worldcoords().inverse_transformation(
         ).transform(camera_poses[i + 1])
 
@@ -109,13 +111,15 @@ if __name__ == '__main__':
         camera_pose_icp = camera_poses[0].copy_worldcoords(
         ).transform(icp_coords)
 
-        # np.savetxt(
-        #     args.input + 'camera_pose/camera_pose_icp{:03}.txt'.format(i+1),
-        #     camera_pose_icp.T())
+        np.savetxt(
+            os.path.join(
+                args.input,
+                'camera_pose/camera_pose_icp{:03}.txt'.format(i+1)),
+            camera_pose_icp.T())
 
         # Save camera pose and intrinsic for texture-mapping
         with open(os.path.join(args.input,
-                               'color{:03}.txt'.format(i)), 'w') as f:
+                               'color{:03}.txt'.format(i+1)), 'w') as f:
             np.savetxt(f, np.concatenate(
                 [camera_pose_icp.T()[:3, 3][None, :],
                  camera_pose_icp.T()[:3, :3]],
@@ -138,4 +142,5 @@ if __name__ == '__main__':
     cl, ind = target.remove_radius_outlier(nb_points=100, radius=0.01)
     target = target.select_down_sample(ind)
     o3d.visualization.draw_geometries([target])
-    o3d.io.write_point_cloud('icp_result.ply', target)
+    o3d.io.write_point_cloud(os.path.join(
+        args.input, 'icp_result.ply'), target)
