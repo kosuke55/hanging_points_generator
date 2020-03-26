@@ -47,9 +47,9 @@ class CreateMesh():
             '~save_dir', 'save_dir/')
 
         self.save_dir = os.path.join(self.current_dir, '..', self.save_dir)
-        pathlib2.Path(self.save_dir + 'raw').mkdir(
+        pathlib2.Path(os.path.join(self.save_dir, 'raw')).mkdir(
             parents=True, exist_ok=True)
-        pathlib2.Path(self.save_dir + 'camera_pose').mkdir(
+        pathlib2.Path(os.path.join(self.save_dir, 'camera_pose')).mkdir(
             parents=True, exist_ok=True)
 
         self.camera_info = None
@@ -262,7 +262,8 @@ class CreateMesh():
         mesh = self.volume.extract_triangle_mesh()
         mesh.compute_vertex_normals()
         o3d.visualization.draw_geometries([mesh])
-        o3d.io.write_triangle_mesh(self.save_dir + 'obj.ply', mesh)
+        o3d.io.write_triangle_mesh(os.path.join(self.save_dir,
+                                                'obj.ply'), mesh)
         return SetBoolResponse(True, 'success create mesh')
 
     def meshfix(self, req):
