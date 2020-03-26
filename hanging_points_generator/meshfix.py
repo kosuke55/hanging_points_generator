@@ -22,9 +22,12 @@ def fix(input_mesh, output_dir):
     tin.load_file(input_mesh)
     tin.fill_small_boundaries()
     tin.clean(max_iters=10, inner_loops=3)
-    tin.save_file(input_mesh)
+    fixed_mesh_name = os.path.join(os.path.dirname(input_mesh),
+                                   'fixed_mesh.ply')
+    tin.save_file(fixed_mesh_name)
 
-    mesh = trimesh.load(input_mesh)
+    mesh = trimesh.load(fixed_mesh_name)
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     tree = ET.parse(os.path.join(current_dir, '../urdf/base/base.urdf'))
     root = tree.getroot()
