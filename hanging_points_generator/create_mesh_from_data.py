@@ -45,9 +45,9 @@ if __name__ == "__main__":
             os.path.join(args.input,
                          "camera_pose/camera_pose_icp{:03}.txt".format(i)))
         color = o3d.io.read_image(
-            os.path.join(args.input, "/color{:03}.png".format(i)))
+            os.path.join(args.input, "color{:03}.png".format(i)))
         depth = o3d.io.read_image(
-            os.path.join(args.input, "/depth{:03}.png".format(i)))
+            os.path.join(args.input, "depth{:03}.png".format(i)))
 
         rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
             color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
