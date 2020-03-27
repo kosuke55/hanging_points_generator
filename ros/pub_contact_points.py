@@ -20,7 +20,7 @@ class ContactPointsPublisher():
                                                 '..',
                                                 self.contact_points_json)
         self.gripper_frame = rospy.get_param(
-            '~gripper', "/l_gripper_tool_frame")
+            '~gripper_frame', "/l_gripper_tool_frame")
         self.contact_points_pose_array = PoseArray()
         self.pub_contact_points = rospy.Publisher(
             "/contact_points", PoseArray, queue_size=10)
