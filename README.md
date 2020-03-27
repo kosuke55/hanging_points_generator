@@ -1,5 +1,10 @@
 ## hanging\_points\_generator
 
+### Setup  
+`sudo pip install -e .`
+`pip3 install -r py3_requirement.txt`
+
+### Run  
 `roslaunch hanging_points_generator hanging_points_generator.lanuch`  
 
 ### create_mesh.py services  
