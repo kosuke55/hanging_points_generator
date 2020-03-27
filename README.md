@@ -15,11 +15,14 @@
 - `/reset_volume` (just util): Reset voulume and integrate count.
 
 ### Example
-Republish PointCloud and extract it around gripper. [republish_kinectv2_hd_desktop.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/republish_kinectv2_hd_desktop.launch), [attention_clipper_gripper.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/attention_clipper_giripper.launch)  
+Republish PointCloud and extract it around gripper. ex) [republish_kinectv2_hd_qhdhalf.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/republish_kinectv2_hd_qhdhalf.launch), [attention_clipper_gripper.launch](https://github.com/kosuke55/pr2demo/blob/master/mesh_hooking/launch/attention_clipper_giripper.launch)  
 
 In [skrobot_node.py](https://github.com/kosuke55/pr2demo/blob/master/scripts/skrobot_node.py)  
 `create_mesh()`  
 `generate_hanging_points()`  
+
+And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/mesh_hooking.launch) to detect hook.
+
 
 ### Result
 **1.** Collect rgbd images.  
