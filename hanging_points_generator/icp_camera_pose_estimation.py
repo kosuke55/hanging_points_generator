@@ -66,8 +66,8 @@ if __name__ == '__main__':
                 radius=0.1, max_nn=30))
 
         # pcd.remove_radius_outlier(nb_points=100, radius=0.002)
-        # pcd.remove_statistical_outlier(nb_neighbors=100,
-        #                                std_ratio=0.001)
+        pcd.remove_statistical_outlier(nb_neighbors=100,
+                                       std_ratio=0.001)
 
         # o3d.visualization.draw_geometries([pcd])
 
@@ -103,6 +103,11 @@ if __name__ == '__main__':
         result_icp = o3d.registration.registration_icp(
             source, target, 0.01, trans_init.T(),
             o3d.registration.TransformationEstimationPointToPoint())
+        # result_icp = o3d.registration.registration_colored_icp(
+        #     source, target, 0.01, trans_init.T(),
+        #     o3d.registration.ICPConvergenceCriteria(relative_fitness=1e-6,
+        #                                             relative_rmse=1e-6,
+        #                                             max_iteration=10))
         # print(result_icp.transformation)
 
         icp_coords = skrobot.coordinates.Coordinates(
@@ -138,6 +143,10 @@ if __name__ == '__main__':
 
         target = target + source
         target = target.voxel_down_sample(voxel_length)
+        target.remove_statistical_outlier(nb_neighbors=100,
+                                          std_ratio=0.001)
+        # pcd.remove_radius_outlier(nb_points=100, radius=0.002)
+        # o3d.visualization.draw_geometries([target])
 
     cl, ind = target.remove_radius_outlier(nb_points=100, radius=0.01)
     target = target.select_down_sample(ind)
