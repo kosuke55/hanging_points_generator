@@ -22,10 +22,9 @@ In [skrobot_node.py](https://github.com/kosuke55/pr2demo/blob/master/scripts/skr
 `generate_hanging_points()`  
 
 ### Result
-1. Collect rgbd images.   
-<img src="docs/gif/scissors_0328.gif" width="200">
-1.  Create mesh using ICP and TSDF, then fix it.  
-<img src="docs/gif/scissors_mesh_0318.gif" width="200" height="200"> <img src="docs/gif/scissors_mesh_fix_0318.gif" width="200" height="200">  
-1.  Find hanging points in pybullet.  
-<img src="docs/gif/scissors_pybullet_0328.gif" width="200" height="200">
-<img src="docs/image/scissors_hanging_point.png" width="200" height="200">  
+**1.** Collect rgbd images.  
+<img src="docs/gif/scissors_0328.gif" width="200">  
+**2.** Create mesh using ICP and TSDF, then fix it.  
+<img src="docs/gif/scissors_mesh_0318.gif" width="200" height="200" > <img src="docs/gif/scissors_mesh_fix_0318.gif" width="200" height="200">  
+**3.** Find hanging points in pybullet.  
+<img src="docs/gif/scissors_pybullet_0328.gif" width="200" height="200"> <img src="docs/image/scissors_hanging_point.png" width="200" height="200">  
