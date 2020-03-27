@@ -101,7 +101,7 @@ if __name__ == '__main__':
         #     source, target, 0.005, trans_init.T(),
         #     o3d.registration.TransformationEstimationPointToPlane())
         result_icp = o3d.registration.registration_icp(
-            source, target, 0.01, trans_init.T(),
+            source, target, 0.02, trans_init.T(),
             o3d.registration.TransformationEstimationPointToPoint())
         # result_icp = o3d.registration.registration_colored_icp(
         #     source, target, 0.01, trans_init.T(),

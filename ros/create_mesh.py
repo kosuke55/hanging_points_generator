@@ -217,8 +217,12 @@ class CreateMesh():
                 trans_init = self.target_camera_pose.copy_worldcoords(
                 ).inverse_transformation().transform(camera_pose)
                 result_icp = o3d.registration.registration_icp(
-                    pcd, self.target_pcd, 0.01, trans_init.T(),
+                    pcd, self.target_pcd, 0.02, trans_init.T(),
                     o3d.registration.TransformationEstimationPointToPoint())
+                print(result_icp.fitness)
+                if result_icp.fitness < 0.4:
+                    print("ICP score is too low. Not integrate.")
+                    return
                 icp_coords = skrobot.coordinates.Coordinates(
                     pos=result_icp.transformation[:3, 3],
                     rot=result_icp.transformation[:3, :3])
