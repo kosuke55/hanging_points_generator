@@ -30,4 +30,4 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 **2.** Create mesh using ICP and TSDF, then fix it.  
 <img src="docs/gif/scissors_mesh_0318.gif" width="200" height="200" > <img src="docs/gif/scissors_mesh_fix_0318.gif" width="200" height="200">  
 **3.** Find hanging points in pybullet.  
-<img src="docs/gif/scissors_pybullet_0328.gif" width="200" height="200"> <img src="docs/image/scissors_hanging_point.png" width="200" height="200">  
+<img src="docs/gif/scissors_pybullet_0328.gif" width="200" height="200"> <img src="docs/image/scissors_hanging_points.png" width="200" height="200">  
