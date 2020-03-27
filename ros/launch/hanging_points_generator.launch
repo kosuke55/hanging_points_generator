@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="INPUT_COLOR" value="/head_mount_kinect/hd/image_color_rect_repub_desktop" />
+  <arg name="INPUT_DEPTH" value="/head_mount_kinect/hd/image_depth_rect_repub_desktop" />
+  <arg name="INPUT_MASK" value="/point_indices_to_mask_image_gripper/output" />
+  <arg name="CAMERA_FRAME" value="/head_mount_kinect_rgb_link" />
+  <arg name="GRIPPER_FRAME" value="/l_gripper_tool_frame" />
+  <arg name="CAMERA_INFO" value="/head_mount_kinect/hd/camera_info" />
+  <arg name="SAVE_RAW_IMAGE" value="true" />
+  <arg name="SAVE_DIR" value="tape2/" />
+
+  <node name="create_mesh"
+        pkg="hanging_points_generator" type="create_mesh.py"
+        output="screen" respawn="true">
+    <rosparam subst_value="true">
+      input_color: $(arg INPUT_COLOR)
+      input_depth: $(arg INPUT_DEPTH)
+      input_mask: $(arg INPUT_MASK)
+      camera_frame_frame: $(arg CAMERA_FRAME)
+      gripper_frame: $(arg GRIPPER_FRAME)
+      camera_info: $(arg CAMERA_INFO)
+      save_raw_img: $(arg SAVE_RAW_IMAGE)
+      save_dir: $(arg SAVE_DIR)
+    </rosparam>
+  </node>
+
+  <node name="pub_contact_points"
+        pkg="hanging_points_generator" type="pub_contact_points.py"
+        output="screen" respawn="true">
+    <rosparam subst_value="true">
+      contact_points_json: $(arg SAVE_DIR)contact_points.json
+      gripper_frame: $(arg GRIPPER_FRAME)
+    </rosparam>
+  </node>
+
+</launch>
