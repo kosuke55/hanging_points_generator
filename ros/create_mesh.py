@@ -226,6 +226,9 @@ class CreateMesh():
                 ).transform(icp_coords)
                 pcd.transform(result_icp.transformation)
                 self.target_pcd += pcd
+                self.target_pcd.remove_statistical_outlier(nb_neighbors=100,
+                                                           std_ratio=0.001)
+                # o3d.visualization.draw_geometries([self.target_pcd])
 
             np.savetxt(
                 os.path.join(
