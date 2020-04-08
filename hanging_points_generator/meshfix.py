@@ -45,10 +45,14 @@ if __name__ == '__main__':
 
     parser.add_argument('--input_mesh', '-i', type=str,
                         help='input mesh file',
-                        default='save_dir/obj.ply')
+                        default=os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            '../save_dir/obj.ply'))
     parser.add_argument('--output_dir', '-o', type=str,
                         help='output mesh file',
-                        default='save_dir/')
+                        default=os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            '../save_dir/'))
     args = parser.parse_args()
 
     fix(args.input_mesh, args.output_dir)
