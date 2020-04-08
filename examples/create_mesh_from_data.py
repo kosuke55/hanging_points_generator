@@ -24,7 +24,16 @@ if __name__ == "__main__":
     parser.add_argument('--scenes', '-s', type=int,
                         help='How many scenes were shot.',
                         default=4)
+    parser.add_argument('--voxel_length', '-vl', type=float,
+                        help='voxel_length',
+                        default=0.002)
+    parser.add_argument('--sdf_trunc', '-st', type=float,
+                        help='sdf_trunc',
+                        default=0.002)
     args = parser.parse_args()
 
-    mesh = create_mesh_tsdf(args.input, args.output, args.scenes)
+    mesh = create_mesh_tsdf(args.input,
+                            args.output,
+                            args.scenes,
+                            args.voxel_length)
     o3d.visualization.draw_geometries([mesh])
