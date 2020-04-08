@@ -8,7 +8,8 @@ import skrobot
 import trimesh
 
 
-def create_mesh_tsdf(input_dir, output_dir, scenes):
+def create_mesh_tsdf(input_dir, output_dir,
+                     scenes, voxel_length=0.002, sdf_trunc=0.005):
     """
     Create mesh using tsdf.
     TODO: Making input image list is better.
@@ -25,25 +26,30 @@ def create_mesh_tsdf(input_dir, output_dir, scenes):
     Returns
     -------------
     mesh : open3d.open3d.geometry.TriangleMesh
-      Voxelized mesh
+      Mesh created by tsdf
     """
 
     intrinsic_np = np.loadtxt(os.path.join(input_dir,
                                            "camera_pose/intrinsic.txt"))
     intrinsic = o3d.camera.PinholeCameraIntrinsic()
-    # TODO load widht and height from file.
+    image_shape = np.array(o3d.io.read_image(
+        os.path.join(input_dir, "color000.png"))).shape
+    width = image_shape[1]
+    height = image_shape[0]
     intrinsic.set_intrinsics(
-        640,
-        480,
+        width,
+        height,
         intrinsic_np[0, 0],
         intrinsic_np[1, 1],
         intrinsic_np[0, 2],
         intrinsic_np[1, 2])
 
     volume = o3d.integration.ScalableTSDFVolume(
-        voxel_size=0.002,
-        sdf_trunc=0.005,
-        color_type=o3d.integration.TSDFVolumeColorType.RGB8)
+        voxel_length=voxel_length,
+        sdf_trunc=sdf_trunc,
+        color_type=o3d.integration.TSDFVolumeColorType.RGB8,
+        volume_unit_resolution=16,
+        depth_sampling_stride=1)
 
     for i in range(scenes):
         print("Integrate {:d}-th image into the volume.".format(i))
@@ -150,9 +156,10 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
     pcd : open3d.open3d.geometry.PointCloud
     """
 
-    # TODO load widht and height from file.
-    width = 640
-    height = 480
+    image_shape = np.array(o3d.io.read_image(
+        os.path.join(input_dir, "color000.png"))).shape
+    width = image_shape[1]
+    height = image_shape[0]
     intrinsic_np = np.loadtxt(os.path.join(
         input_dir, 'camera_pose/intrinsic.txt'))
     fx = intrinsic_np[0, 0]
