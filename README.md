@@ -1,8 +1,12 @@
 ## hanging\_points\_generator
 
 ### Setup  
-`sudo pip install -e .`
-`pip3 install -r py3_requirement.txt`
+`sudo pip install -e .`  
+`pip3 install -r py3_requirement.txt`  
+To get voxels contained in voxel grid  
+`git clone -b hotfix/voxels https://github.com/kosuke55/Open3D.git`  
+and build it with reference to [this page](http://www.open3d.org/docs/release/compilation.html#ubuntu).  
+
 
 ### Run  
 `roslaunch hanging_points_generator hanging_points_generator.lanuch`  

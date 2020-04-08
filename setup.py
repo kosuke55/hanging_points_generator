@@ -34,7 +34,6 @@ if sys.argv[-1] == "release":
 setup_requires = []
 install_requires = [
     'cameramodels',
-    'open3d>=0.9.0',
     'pybullet',
     'scikit-robot',
 ]
