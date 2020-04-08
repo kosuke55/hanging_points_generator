@@ -271,11 +271,13 @@ class CreateMesh():
             return SetBoolResponse(False, 'failed listen transform')
 
     def create_mesh(self, req):
+        o3d.io.write_point_cloud(
+            os.path.join(self.save_dir, 'obj.pcd'), self.target_pcd)
         mesh = self.volume.extract_triangle_mesh()
         mesh.compute_vertex_normals()
         o3d.visualization.draw_geometries([mesh])
-        o3d.io.write_triangle_mesh(os.path.join(self.save_dir,
-                                                'obj.ply'), mesh)
+        o3d.io.write_triangle_mesh(
+            os.path.join(self.save_dir, 'obj.ply'), mesh)
         return SetBoolResponse(True, 'success create mesh')
 
     def meshfix(self, req):
