@@ -4,8 +4,10 @@
 import numpy as np
 import open3d as o3d
 import os
+import pathlib2
 import skrobot
 import trimesh
+import xml.etree.ElementTree as ET
 
 
 def create_mesh_tsdf(input_dir, scenes,
@@ -77,6 +79,34 @@ def create_mesh_tsdf(input_dir, scenes,
     mesh.compute_vertex_normals()
 
     return mesh
+
+
+def create_urdf(mesh, output_dir):
+    """
+    Create urdf from mesh
+
+    Parameters
+    --------------
+    mesh : trimesh.base.Trimesh
+       mesh
+    output_dir : str
+      Ouput directry where output mesh saved
+
+    Returns
+    -------------
+    """
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    tree = ET.parse(os.path.join(current_dir, '../urdf/base/base.urdf'))
+    root = tree.getroot()
+    center = ''.join(str(i) + ' ' for i in mesh.centroid.tolist()).strip()
+    root[0].find('inertial').find('origin').attrib['xyz'] = center
+    # os.makedirs(os.path.join(output_dir), exist_ok=True)
+    pathlib2.Path(os.path.join(output_dir)).mkdir(parents=True,
+                                                  exist_ok=True)
+    mesh.export(os.path.join(output_dir, 'base.stl'), "stl")
+    tree.write(os.path.join(output_dir, 'base.urdf'),
+               encoding='utf-8', xml_declaration=True)
 
 
 def create_voxelized_mesh(pcd, voxel_size=0.002):
