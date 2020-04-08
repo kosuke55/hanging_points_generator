@@ -8,8 +8,8 @@ import skrobot
 import trimesh
 
 
-def create_mesh_tsdf(input_dir, output_dir,
-                     scenes, voxel_length=0.002, sdf_trunc=0.005):
+def create_mesh_tsdf(input_dir, scenes,
+                     voxel_length=0.002, sdf_trunc=0.005):
     """
     Create mesh using tsdf.
     TODO: Making input image list is better.
@@ -75,7 +75,6 @@ def create_mesh_tsdf(input_dir, output_dir,
 
     mesh = volume.extract_triangle_mesh()
     mesh.compute_vertex_normals()
-    o3d.io.write_triangle_mesh(output_dir, mesh)
 
     return mesh
 
@@ -284,7 +283,7 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
 
     target.remove_radius_outlier(nb_points=100, radius=0.002)
     # o3d.visualization.draw_geometries([target])
-    o3d.io.write_point_cloud(os.path.join(
-        input_dir, 'icp_result.pcd'), target)
+    # o3d.io.write_point_cloud(os.path.join(
+    #     input_dir, 'icp_result.pcd'), target)
 
     return camera_poses_icp, target

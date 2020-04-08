@@ -11,10 +11,15 @@ if __name__ == '__main__':
                         help='input pcd file',
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
-                            '../scissors_realsense_work/obj.pcd'))
-
+                            '../save_dir/obj.pcd'))
+    parser.add_argument('--output', '-o', type=str,
+                        help='output file name',
+                        default=os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            '../save_dir/voxelized_obj.ply'))
     args = parser.parse_args()
 
     pcd = o3d.io.read_point_cloud(args.input)
     mesh = create_voxelized_mesh(pcd, voxel_size=0.002)
     mesh.show()
+    mesh.export(args.output)

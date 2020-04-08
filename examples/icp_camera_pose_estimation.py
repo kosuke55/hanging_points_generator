@@ -23,9 +23,15 @@ if __name__ == '__main__':
     parser.add_argument('--voxel_size', '-v', type=float,
                         help='voxel length for down sampling.',
                         default=0.002)
+    parser.add_argument('--output', '-o', type=str,
+                        help='output file name',
+                        default=os.path.join(
+                            os.path.dirname(os.path.abspath(__file__)),
+                            '../save_dir/icp_result.pcd'))
     args = parser.parse_args()
 
     camera_poses_icp, pcd = icp_registration(args.input,
                                              args.scenes,
                                              args.voxel_size)
     o3d.visualization.draw_geometries([pcd])
+    o3d.io.write_point_cloud(args.output, pcd)

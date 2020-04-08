@@ -20,7 +20,7 @@ if __name__ == "__main__":
                         help='output file name',
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
-                            '../save_dir/out.ply'))
+                            '../save_dir/tsdf_obj.ply'))
     parser.add_argument('--scenes', '-s', type=int,
                         help='How many scenes were shot.',
                         default=4)
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mesh = create_mesh_tsdf(args.input,
-                            args.output,
                             args.scenes,
                             args.voxel_length)
     o3d.visualization.draw_geometries([mesh])
+    o3d.io.write_triangle_mesh(args.output, mesh)
