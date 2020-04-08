@@ -34,7 +34,7 @@ def check_contact_points(contact_points_file, urdf_file):
         viewer.add(contact_point_sphere)
 
 
-def generate(urdf_file, required_points_num, enable_gui, save_dir):
+def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     save_dir = os.path.join(current_dir, save_dir)
     urdf_file = os.path.join(current_dir, urdf_file)
@@ -47,14 +47,8 @@ def generate(urdf_file, required_points_num, enable_gui, save_dir):
     center = np.array([float(i) for i in root[0].find(
         "inertial").find("origin").attrib['xyz'].split(' ')])
 
-    obj_model = skrobot.models.urdf.RobotModelFromURDF(
-        urdf_file=urdf_file)
-
     if strtobool(enable_gui):
         pybullet.connect(pybullet.GUI)
-        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
-        viewer.add(obj_model)
-        viewer.show()
     else:
         pybullet.connect(pybullet.DIRECT)
     pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
@@ -62,6 +56,13 @@ def generate(urdf_file, required_points_num, enable_gui, save_dir):
     pybullet.setGravity(0, 0, gravity)
     pybullet.setTimeStep(1 / 240.0)
     pybullet.loadURDF("plane.urdf")
+
+    if strtobool(viz_obj):
+        obj_model = skrobot.models.urdf.RobotModelFromURDF(
+            urdf_file=urdf_file)
+        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+        viewer.add(obj_model)
+        viewer.show()
 
     StartPos = [0, 0, 0]
     StartOrientation = pybullet.getQuaternionFromEuler([0, 0, 0])
@@ -137,7 +138,7 @@ def generate(urdf_file, required_points_num, enable_gui, save_dir):
                     pos=contact_point_obj.worldpos(),
                     rot=contact_point_obj.worldrot()))
 
-            if strtobool(enable_gui):
+            if strtobool(viz_obj):
                 viewer.add(contact_point_sphere)
 
             contact_points_list.append(np.concatenate(
@@ -188,9 +189,13 @@ if __name__ == '__main__':
     parser.add_argument('--gui', '-g', type=str,
                         help='gui',
                         default="True")
+    parser.add_argument('--viz_obj', '-v', type=str,
+                        help='viz obj with contactpoints',
+                        default="False")
     args = parser.parse_args()
 
     contact_points_list = generate(args.urdf,
                                    args.required_points_num,
                                    args.gui,
+                                   args.viz_obj,
                                    os.path.dirname(args.urdf))

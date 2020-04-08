@@ -313,6 +313,7 @@ class CreateMesh():
             urdf_file=os.path.join(self.save_dir, 'base.urdf'),
             required_points_num=1,
             enable_gui='False',
+            viz_obj='False',
             save_dir=self.save_dir)
         return SetBoolResponse(True, 'success create mesh')
 
