@@ -16,6 +16,7 @@ import tf
 
 from cv_bridge import CvBridge
 from hanging_points_generator import hanging_points_generator
+from hanging_points_generator import create_mesh
 from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import SetBool, SetBoolResponse
 
@@ -121,6 +122,9 @@ class CreateMesh():
         self.create_mesh_service = rospy.Service('create_mesh',
                                                  SetBool,
                                                  self.create_mesh)
+        self.create_mesh_service = rospy.Service('create_voxelized_mesh',
+                                                 SetBool,
+                                                 self.create_voxelized_mesh)
         self.meshfix_service = rospy.Service('meshfix',
                                              SetBool,
                                              self.meshfix)
@@ -279,6 +283,13 @@ class CreateMesh():
         o3d.io.write_triangle_mesh(
             os.path.join(self.save_dir, 'obj.ply'), mesh)
         return SetBoolResponse(True, 'success create mesh')
+
+    def create_voxelized_mesh(self, req):
+        mesh = create_mesh.create_voxelized_mesh(self.target_pcd,
+                                                 voxel_size=0.002)
+        mesh.show()
+        mesh.export(os.path.join(self.save_dir, 'obj.ply'))
+        return SetBoolResponse(True, 'success create voxelized_mesh')
 
     def meshfix(self, req):
         subprocess.call(
