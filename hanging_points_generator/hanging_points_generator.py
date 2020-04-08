@@ -15,6 +15,25 @@ from distutils.util import strtobool
 from math import pi
 
 
+def check_contact_points(contact_points_file, urdf_file):
+    contact_points_dict = json.load(open(contact_points_file, 'r'))
+    contact_points = contact_points_dict['contact_points']
+
+    obj_model = skrobot.models.urdf.RobotModelFromURDF(
+        urdf_file=urdf_file)
+
+    viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+    viewer.add(obj_model)
+    viewer.show()
+
+    for i, cp in enumerate(contact_points):
+        contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
+        contact_point_sphere.newcoords(
+            skrobot.coordinates.Coordinates(pos=cp[0],
+                                            rot=cp[1:]))
+        viewer.add(contact_point_sphere)
+
+
 def generate(urdf_file, required_points_num, enable_gui, save_dir):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     save_dir = os.path.join(current_dir, save_dir)
