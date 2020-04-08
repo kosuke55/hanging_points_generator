@@ -6,6 +6,21 @@ import trimesh
 
 
 def create_voxel_mesh_from_pcd(pcd, voxel_size=0.002):
+    """
+    Create voxelized mesh from pcd
+
+    Parameters
+    --------------
+    pcd : open3d.open3d.geometry.PointCloud
+      Input pcd data
+    voxel_size : float
+
+    Returns
+    -------------
+    mesh : trimesh.base.Trimesh
+      Voxelized mesh
+    """
+
     voxel_grid \
         = o3d.geometry.VoxelGrid.create_from_point_cloud(pcd, voxel_size)
     mesh = trimesh.Trimesh()
