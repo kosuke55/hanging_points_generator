@@ -192,4 +192,5 @@ if __name__ == '__main__':
 
     contact_points_list = generate(args.urdf,
                                    args.required_points_num,
-                                   args.gui)
+                                   args.gui,
+                                   os.path.dirname(args.urdf))
