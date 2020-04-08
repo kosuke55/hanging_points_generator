@@ -15,20 +15,6 @@ from distutils.util import strtobool
 from math import pi
 
 
-def reset_pose(object_id):
-    x = (np.random.rand() - 0.5) * 0.1
-    y = (np.random.rand() - 0.5) * 0.1
-    z = 1 + (np.random.rand() - 0.5) * 0.1
-    roll = np.random.rand() * pi
-    pitch = np.random.rand() * pi
-    yaw = np.random.rand() * pi
-    pybullet.setGravity(0, 0, 0)
-    pybullet.resetBasePositionAndOrientation(
-        object_id,
-        [x, y, z],
-        pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
-
-
 def generate(urdf_file, required_points_num, enable_gui, save_dir):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     save_dir = os.path.join(current_dir, save_dir)
@@ -155,6 +141,20 @@ def generate(urdf_file, required_points_num, enable_gui, save_dir):
 
     pybullet.disconnect()
     return contact_points_list
+
+
+def reset_pose(object_id):
+    x = (np.random.rand() - 0.5) * 0.1
+    y = (np.random.rand() - 0.5) * 0.1
+    z = 1 + (np.random.rand() - 0.5) * 0.1
+    roll = np.random.rand() * pi
+    pitch = np.random.rand() * pi
+    yaw = np.random.rand() * pi
+    pybullet.setGravity(0, 0, 0)
+    pybullet.resetBasePositionAndOrientation(
+        object_id,
+        [x, y, z],
+        pybullet.getQuaternionFromEuler([roll, pitch, yaw]))
 
 
 if __name__ == '__main__':
