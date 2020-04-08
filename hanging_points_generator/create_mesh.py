@@ -287,3 +287,22 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
     #     input_dir, 'icp_result.pcd'), target)
 
     return camera_poses_icp, target
+
+
+def smoothing_mesh(mesh, method='humphrey'):
+    if method == 'humphrey':
+        trimesh.smoothing.filter_humphrey(mesh, alpha=0.1, beta=0.5,
+                                          iterations=10,
+                                          laplacian_operator=None)
+    if method == 'laplacian':
+        trimesh.smoothing.filter_laplacian(mesh, lamb=0.3, iterations=10,
+                                           implicit_time_integration=False,
+                                           volume_constraint=True,
+                                           laplacian_operator=None)
+    if method == 'taubin':
+        trimesh.smoothing.filter_taubin(mesh, lamb=0.5, nu=0.5,
+                                        iterations=10, laplacian_operator=None)
+    if method == 'laplacian_calculation':
+        trimesh.smoothing.laplacian_calculation(mesh, equal_weight=True)
+
+    return mesh
