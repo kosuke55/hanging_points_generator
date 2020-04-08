@@ -22,7 +22,7 @@ if __name__ == '__main__':
                         default=2)
     parser.add_argument('--voxel_size', '-v', type=float,
                         help='voxel length for down sampling.',
-                        default=0.001)
+                        default=0.002)
     args = parser.parse_args()
 
     camera_poses_icp, pcd = icp_registration(args.input,
