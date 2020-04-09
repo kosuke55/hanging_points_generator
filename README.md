@@ -7,7 +7,6 @@ To get voxels contained in voxel grid
 `git clone -b hotfix/voxels https://github.com/kosuke55/Open3D.git`  
 and build it with reference to [this page](http://www.open3d.org/docs/release/compilation.html#ubuntu).  
 
-
 ### Run  
 `roslaunch hanging_points_generator hanging_points_generator.lanuch`  
 
@@ -35,3 +34,14 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 <img src="docs/gif/scissors_mesh_0318.gif" width="200" height="200" > <img src="docs/gif/scissors_mesh_fix_0318.gif" width="200" height="200">  
 **3.** Find hanging points in pybullet.  
 <img src="docs/gif/scissors_pybullet_0328.gif" width="200" height="200"> <img src="docs/image/scissors_hanging_points.png" width="200" height="200">  
+
+### Externals  
+[andyzeng/tsdf-fusion-python](https://github.com/andyzeng/tsdf-fusion-python)  
+```
+@inproceedings{zeng20163dmatch,
+    title={3DMatch: Learning Local Geometric Descriptors from RGB-D Reconstructions},
+    author={Zeng, Andy and Song, Shuran and Nie{\ss}ner, Matthias and Fisher, Matthew and Xiao, Jianxiong and Funkhouser, Thomas},
+    booktitle={CVPR},
+    year={2017}
+}
+```
