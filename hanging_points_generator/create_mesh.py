@@ -161,7 +161,6 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.002):
 
     for voxel_index, voxel in enumerate(voxel_grid.get_voxels()):
         grid_indices.append(voxel.grid_index.tolist())
-        print(voxel.grid_index.tolist())
 
     x = max(grid_indices, key=lambda x: x[0])[0]
     y = max(grid_indices, key=lambda x: x[1])[1]
