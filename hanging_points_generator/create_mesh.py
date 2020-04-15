@@ -81,6 +81,62 @@ def create_mesh_tsdf(input_dir, scenes,
     return mesh
 
 
+def create_mesh_voxelize(pcd, voxel_size=0.002):
+    """
+    Create voxelized mesh from pcd
+
+    Parameters
+    --------------
+    pcd : open3d.open3d.geometry.PointCloud
+      Input pcd data
+    voxel_size : float
+
+    Returns
+    -------------
+    mesh : trimesh.base.Trimesh
+      Voxelized mesh
+    """
+
+    voxel_grid \
+        = o3d.geometry.VoxelGrid.create_from_point_cloud(pcd, voxel_size)
+    mesh = trimesh.Trimesh()
+    vertices = []
+    faces = []
+
+    for voxel_index, voxel in enumerate(voxel_grid.get_voxels()):
+        grid_index = voxel.grid_index
+
+        voxel_origin \
+            = grid_index * voxel_size + voxel_grid.origin
+
+        vertices.append(voxel_origin)
+        vertices.append(voxel_origin + [0, 0, voxel_size])
+        vertices.append(voxel_origin + [0, voxel_size, 0])
+        vertices.append(voxel_origin + [0, voxel_size, voxel_size])
+        vertices.append(voxel_origin + [voxel_size, 0, 0])
+        vertices.append(voxel_origin + [voxel_size, 0, voxel_size])
+        vertices.append(voxel_origin + [voxel_size, voxel_size, 0])
+        vertices.append(voxel_origin + [voxel_size, voxel_size, voxel_size])
+
+        faces.append((np.array([1, 3, 0]) + voxel_index * 8).tolist())
+        faces.append((np.array([4, 1, 0]) + voxel_index * 8).tolist())
+        faces.append((np.array([0, 3, 2]) + voxel_index * 8).tolist())
+        faces.append((np.array([2, 4, 0]) + voxel_index * 8).tolist())
+        faces.append((np.array([1, 7, 3]) + voxel_index * 8).tolist())
+        faces.append((np.array([5, 1, 4]) + voxel_index * 8).tolist())
+        faces.append((np.array([5, 7, 1]) + voxel_index * 8).tolist())
+        faces.append((np.array([3, 7, 2]) + voxel_index * 8).tolist())
+        faces.append((np.array([6, 4, 2]) + voxel_index * 8).tolist())
+        faces.append((np.array([2, 7, 6]) + voxel_index * 8).tolist())
+        faces.append((np.array([6, 5, 4]) + voxel_index * 8).tolist())
+        faces.append((np.array([7, 5, 6]) + voxel_index * 8).tolist())
+
+    mesh.vertices = trimesh.caching.tracked_array(vertices)
+    mesh.faces = trimesh.caching.tracked_array(faces)
+    mesh.merge_vertices()
+
+    return mesh
+
 def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.002):
     """
     Voxelize point cloud and apply marching cubes
@@ -154,62 +210,6 @@ def create_urdf(mesh, output_dir):
     mesh.export(os.path.join(output_dir, 'base.stl'), "stl")
     tree.write(os.path.join(output_dir, 'base.urdf'),
                encoding='utf-8', xml_declaration=True)
-
-
-def create_voxelized_mesh(pcd, voxel_size=0.002):
-    """
-    Create voxelized mesh from pcd
-
-    Parameters
-    --------------
-    pcd : open3d.open3d.geometry.PointCloud
-      Input pcd data
-    voxel_size : float
-
-    Returns
-    -------------
-    mesh : trimesh.base.Trimesh
-      Voxelized mesh
-    """
-
-    voxel_grid \
-        = o3d.geometry.VoxelGrid.create_from_point_cloud(pcd, voxel_size)
-    mesh = trimesh.Trimesh()
-    vertices = []
-    faces = []
-
-    for voxel_index, voxel in enumerate(voxel_grid.get_voxels()):
-        grid_index = voxel.grid_index
-
-        voxel_origin \
-            = grid_index * voxel_size + voxel_grid.origin
-
-        vertices.append(voxel_origin)
-        vertices.append(voxel_origin + [0, 0, voxel_size])
-        vertices.append(voxel_origin + [0, voxel_size, 0])
-        vertices.append(voxel_origin + [0, voxel_size, voxel_size])
-        vertices.append(voxel_origin + [voxel_size, 0, 0])
-        vertices.append(voxel_origin + [voxel_size, 0, voxel_size])
-        vertices.append(voxel_origin + [voxel_size, voxel_size, 0])
-        vertices.append(voxel_origin + [voxel_size, voxel_size, voxel_size])
-
-        faces.append((np.array([1, 3, 0]) + voxel_index * 8).tolist())
-        faces.append((np.array([4, 1, 0]) + voxel_index * 8).tolist())
-        faces.append((np.array([0, 3, 2]) + voxel_index * 8).tolist())
-        faces.append((np.array([2, 4, 0]) + voxel_index * 8).tolist())
-        faces.append((np.array([1, 7, 3]) + voxel_index * 8).tolist())
-        faces.append((np.array([5, 1, 4]) + voxel_index * 8).tolist())
-        faces.append((np.array([5, 7, 1]) + voxel_index * 8).tolist())
-        faces.append((np.array([3, 7, 2]) + voxel_index * 8).tolist())
-        faces.append((np.array([6, 4, 2]) + voxel_index * 8).tolist())
-        faces.append((np.array([2, 7, 6]) + voxel_index * 8).tolist())
-        faces.append((np.array([6, 5, 4]) + voxel_index * 8).tolist())
-        faces.append((np.array([7, 5, 6]) + voxel_index * 8).tolist())
-
-    mesh.vertices = trimesh.caching.tracked_array(vertices)
-    mesh.faces = trimesh.caching.tracked_array(faces)
-
-    return mesh
 
 
 def icp_registration(input_dir, scenes, voxel_size=0.002):

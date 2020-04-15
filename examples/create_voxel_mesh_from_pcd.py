@@ -3,7 +3,7 @@ import open3d as o3d
 import os
 
 from hanging_points_generator.create_mesh \
-    import create_voxelized_mesh, create_urdf
+    import create_mesh_voxelize, create_urdf
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     pcd = o3d.io.read_point_cloud(args.input)
-    mesh = create_voxelized_mesh(pcd, voxel_size=0.002)
+    mesh = create_mesh_voxelize(pcd, voxel_size=0.002)
     mesh.show()
     mesh.export(args.output)
     create_urdf(mesh, os.path.dirname(args.output))
