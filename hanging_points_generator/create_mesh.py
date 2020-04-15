@@ -81,6 +81,53 @@ def create_mesh_tsdf(input_dir, scenes,
     return mesh
 
 
+def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.002):
+    """
+    Voxelize point cloud and apply marching cubes
+
+    Parameters
+    -------------
+    pcd : open3d.open3d.geometry.PointCloud
+      Input pcd data
+    voxel_size : float
+
+    Returns
+    -------------
+    mesh : trimesh.base.Trimesh
+    Mesh with voxelization and marching cubes applied
+
+    """
+
+    voxel_grid \
+        = o3d.geometry.VoxelGrid.create_from_point_cloud(pcd, voxel_size)
+    mesh = trimesh.Trimesh()
+    grid_indices = []
+
+    for voxel_index, voxel in enumerate(voxel_grid.get_voxels()):
+        grid_indices.append(voxel.grid_index.tolist())
+        print(voxel.grid_index.tolist())
+
+    x = max(grid_indices, key=lambda x: x[0])[0]
+    y = max(grid_indices, key=lambda x: x[1])[1]
+    z = max(grid_indices, key=lambda x: x[2])[2]
+
+    occupacy_grid = np.zeros([x + 1, y + 1, z + 1], dtype=np.bool)
+
+    for voxel_index, voxel in enumerate(voxel_grid.get_voxels()):
+        occupacy_grid[voxel.grid_index[0],
+                      voxel.grid_index[1],
+                      voxel.grid_index[2]] = True
+
+    mesh = trimesh.voxel.ops.matrix_to_marching_cubes(
+        matrix=occupacy_grid,
+        pitch=voxel_size)
+
+    mesh.merge_vertices()
+    mesh.remove_duplicate_faces()
+
+    return mesh
+
+
 def create_urdf(mesh, output_dir):
     """
     Create urdf from mesh
