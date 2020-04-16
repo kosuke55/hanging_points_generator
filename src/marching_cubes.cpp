@@ -44,7 +44,6 @@
 #include <pcl/surface/marching_cubes_hoppe.h>
 #include <pcl/surface/mls.h>
 
-
 int main(int argc, char **argv) {
   std::string input_file, output_file;
 
@@ -55,7 +54,6 @@ int main(int argc, char **argv) {
   input_file = argv[1];
   output_file = argv[2];
 
-
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::io::loadPCDFile(input_file, *cloud);
 
@@ -65,12 +63,12 @@ int main(int argc, char **argv) {
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(
       new pcl::search::KdTree<pcl::PointXYZ>);
 
-  mls.setComputeNormals (true);
-  mls.setInputCloud (cloud);
-  mls.setPolynomialFit (true);
-  mls.setSearchMethod (tree);
-  mls.setSearchRadius (0.03);
-  mls.process (*cloud_with_normals);
+  mls.setComputeNormals(true);
+  mls.setInputCloud(cloud);
+  mls.setPolynomialFit(true);
+  mls.setSearchMethod(tree);
+  mls.setSearchRadius(0.03);
+  mls.process(*cloud_with_normals);
 
   pcl::search::KdTree<pcl::PointNormal>::Ptr tree_pointnormal(
       new pcl::search::KdTree<pcl::PointNormal>);
