@@ -9,6 +9,7 @@ import pybullet
 import pybullet_data
 import skrobot
 import six
+import time
 import xml.etree.ElementTree as ET
 
 from distutils.util import strtobool
@@ -35,6 +36,9 @@ def check_contact_points(contact_points_file, urdf_file):
 
 
 def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
+    start_time = time.time()
+    finding_times = []
+    finding_times.append(start_time)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     save_dir = os.path.join(current_dir, save_dir)
     urdf_file = os.path.join(current_dir, urdf_file)
@@ -54,8 +58,17 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
     gravity = -10
     pybullet.setGravity(0, 0, gravity)
-    pybullet.setTimeStep(1 / 240.0)
+    timestep = 240.
+    pybullet.setTimeStep(1 / timestep)
     pybullet.loadURDF("plane.urdf")
+
+    hook_id = pybullet.loadURDF(os.path.join(current_dir, '../urdf/hook/hook.urdf'),
+                               [0, 0, 0.98],
+                               [0, 0, 0, 1])
+
+    pybullet.loadURDF(os.path.join(current_dir, '../urdf/hook/plate.urdf'),
+                      [0, 0, 0.98],
+                      [0, 0, 0, 1])
 
     if strtobool(viz_obj):
         obj_model = skrobot.models.urdf.RobotModelFromURDF(
@@ -69,18 +82,6 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     object_id = pybullet.loadURDF(urdf_file,
                                   StartPos, StartOrientation)
 
-    bar = pybullet.createCollisionShape(
-        pybullet.GEOM_CYLINDER,
-        radius=0.005,
-        height=1)
-    bar_pos = [0, 0, 1]
-    bar_rot = [-0.0, 0.7071067811865475, -0.0, 0.7071067811865476]
-    bar_id = pybullet.createMultiBody(
-        baseMass=0.,
-        baseCollisionShapeIndex=bar,
-        basePosition=bar_pos,
-        baseOrientation=bar_rot)
-
     loop_num = int(1e10)
     find_count = 0
 
@@ -92,13 +93,18 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
             pybullet.setGravity(0, 0, 0)
             reset_pose(object_id)
             pybullet.stepSimulation()
-            contact_points = pybullet.getContactPoints(object_id, bar_id)
+            contact_points = pybullet.getContactPoints(object_id, hook_id)
             if contact_points:
                 continue
-            pybullet.setGravity(0, 0, gravity)
 
+            pybullet.resetBaseVelocity(object_id, [-0.1, 0, 0])
+            for _ in range(int(timestep * 2)):
+                pybullet.stepSimulation()
+
+            pybullet.resetBaseVelocity(object_id, [0, 0, 0])
+            pybullet.setGravity(0, 0, gravity)
             failed = False
-            for _ in range(240 * 2):
+            for _ in range(int(timestep) * 2):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
@@ -107,13 +113,18 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
             if failed:
                 continue
 
-            contact_points = pybullet.getContactPoints(object_id, bar_id)
+            contact_points = pybullet.getContactPoints(object_id, hook_id)
             pos, rot = pybullet.getBasePositionAndOrientation(object_id)
 
             if len(contact_points) == 0:
                 continue
 
-            print("Find the hanging part {}".format(find_count))
+            finding_times.append(time.time())
+            print("Find the hanging point {}   time {}  total time {}".format(
+                find_count,
+                finding_times[len(finding_times) - 1]
+                - finding_times[len(finding_times) - 2],
+                finding_times[len(finding_times) - 1] - start_time))
 
             obj_coords = skrobot.coordinates.Coordinates(
                 pos=pos,
@@ -164,7 +175,7 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
 
 
 def reset_pose(object_id):
-    x = (np.random.rand() - 0.5) * 0.1
+    x = (np.random.rand() - 0.5) * 0.1 + 0.3
     y = (np.random.rand() - 0.5) * 0.1
     z = 1 + (np.random.rand() - 0.5) * 0.1
     roll = np.random.rand() * pi
