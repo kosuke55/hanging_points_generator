@@ -62,13 +62,15 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     pybullet.setTimeStep(1 / timestep)
     pybullet.loadURDF("plane.urdf")
 
-    hook_id = pybullet.loadURDF(os.path.join(current_dir, '../urdf/hook/hook.urdf'),
-                               [0, 0, 0.98],
-                               [0, 0, 0, 1])
+    hook_id = pybullet.loadURDF(
+        os.path.join(current_dir, '../urdf/hook/hook.urdf'),
+        [0, 0, 1], [0, 0, 0, 1])
+    hook_direction = np.array([1, 0, np.tan(np.pi / 2 - 1.2)])
+    hook_direction /= np.linalg.norm(hook_direction)
 
-    pybullet.loadURDF(os.path.join(current_dir, '../urdf/hook/plate.urdf'),
-                      [0, 0, 0.98],
-                      [0, 0, 0, 1])
+    pybullet.loadURDF(
+        os.path.join(current_dir, '../urdf/hook/plate.urdf'),
+        [0, 0, 1], [0, 0, 0, 1])
 
     if strtobool(viz_obj):
         obj_model = skrobot.models.urdf.RobotModelFromURDF(
@@ -97,7 +99,7 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
             if contact_points:
                 continue
 
-            pybullet.resetBaseVelocity(object_id, [-0.1, 0, 0])
+            pybullet.resetBaseVelocity(object_id, [-0.1, 0, -0.05])
             for _ in range(int(timestep * 2)):
                 pybullet.stepSimulation()
 
@@ -130,15 +132,15 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
                 pos=pos,
                 rot=skrobot.coordinates.math.xyzw2wxyz(rot))
 
-            max_height_contact_point = sorted(contact_points, key=lambda x: x[5][2],
-                                              reverse=True)[0][5]
+            min_height_contact_point = sorted(
+                contact_points, key=lambda x: x[5][2])[0][5]
             contact_point_to_hole_vector = np.array(
-                [max_height_contact_point[0], 0, 1]) - np.array(
-                    max_height_contact_point)
+                [min_height_contact_point[0], 0, 1]) - np.array(
+                    min_height_contact_point)
             contact_point = skrobot.coordinates.Coordinates(
-                pos=max_height_contact_point,
+                pos=min_height_contact_point,
                 rot=skrobot.coordinates.math.rotation_matrix_from_axis(
-                    x_axis=[1, 0, 0],
+                    x_axis=hook_direction,
                     y_axis=contact_point_to_hole_vector))
             contact_point_obj = obj_coords.inverse_transformation().transform(
                 contact_point).translate(center, 'world')
@@ -177,7 +179,7 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
 def reset_pose(object_id):
     x = (np.random.rand() - 0.5) * 0.1 + 0.3
     y = (np.random.rand() - 0.5) * 0.1
-    z = 1 + (np.random.rand() - 0.5) * 0.1
+    z = 1.15 + (np.random.rand() - 0.5) * 0.1
     roll = np.random.rand() * pi
     pitch = np.random.rand() * pi
     yaw = np.random.rand() * pi
