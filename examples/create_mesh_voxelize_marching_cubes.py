@@ -21,7 +21,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     pcd = o3d.io.read_point_cloud(args.input)
-    mesh = create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.002)
+    mesh = create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004)
     mesh.show()
     mesh.export(args.output)
     create_urdf(mesh, os.path.dirname(args.output))

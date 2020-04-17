@@ -137,7 +137,8 @@ def create_mesh_voxelize(pcd, voxel_size=0.002):
 
     return mesh
 
-def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.002):
+
+def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
     """
     Voxelize point cloud and apply marching cubes
 
