@@ -82,7 +82,7 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     object_id = pybullet.loadURDF(urdf_file,
                                   StartPos, StartOrientation)
 
-    try_num = 1000
+    try_num = 10000
     find_count = 0
 
     height_thresh = 0.5
