@@ -40,13 +40,11 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     finding_times = []
     finding_times.append(start_time)
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    save_dir = os.path.join(current_dir, save_dir)
-    urdf_file = os.path.join(current_dir, urdf_file)
 
     contact_points_list = []
     contact_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
 
-    tree = ET.parse(os.path.join(current_dir, urdf_file))
+    tree = ET.parse(urdf_file)
     root = tree.getroot()
     center = np.array([float(i) for i in root[0].find(
         "inertial").find("origin").attrib['xyz'].split(' ')])
@@ -155,8 +153,8 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
                 viewer.add(contact_point_sphere)
 
             contact_points_list.append(np.concatenate(
-                    [contact_point_obj.T()[:3, 3][None, :],
-                     contact_point_obj.T()[:3, :3]]).tolist())
+                [contact_point_obj.T()[:3, 3][None, :],
+                 contact_point_obj.T()[:3, :3]]).tolist())
 
             contact_points_dict['contact_points'] = contact_points_list
 
