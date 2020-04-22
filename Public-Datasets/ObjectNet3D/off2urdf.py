@@ -25,6 +25,10 @@ for file in files:
             continue
         try:
             mesh = trimesh.load(file)
+            mesh_invert = mesh.copy()
+            mesh_invert.invert()
+            mesh += mesh_invert
+            mesh.merge_vertices()
             mesh.vertices *= scale
         except Exception:
             continue
