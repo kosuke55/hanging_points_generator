@@ -82,13 +82,15 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     object_id = pybullet.loadURDF(urdf_file,
                                   StartPos, StartOrientation)
 
-    loop_num = int(1e10)
+    try_num = 1000
     find_count = 0
 
     height_thresh = 0.5
 
     try:
-        for i in six.moves.range(loop_num):
+        for try_count in six.moves.range(try_num):
+            if np.mod(try_count, 50) == 0:
+                print("try count:{}".format(try_count))
             # emerge object
             pybullet.setGravity(0, 0, 0)
             reset_pose(object_id)
