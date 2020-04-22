@@ -106,12 +106,38 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
             pybullet.resetBaseVelocity(object_id, [0, 0, 0])
             pybullet.setGravity(0, 0, gravity)
             failed = False
-            for _ in range(int(timestep) * 2):
+            for _ in range(int(timestep)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                     break
                 pybullet.stepSimulation()
+
+            for _ in range(int(timestep * 0.5)):
+                pybullet.resetBaseVelocity(object_id, [0, 0.1, 0])
+                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+                if pos[2] < height_thresh:
+                    failed = True
+                    break
+                pybullet.stepSimulation()
+
+            for _ in range(int(timestep * 0.5)):
+                pybullet.resetBaseVelocity(object_id, [0, -0.1, 0])
+                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+                if pos[2] < height_thresh:
+                    failed = True
+                    break
+                pybullet.stepSimulation()
+
+            pybullet.resetBaseVelocity(object_id, [0, 0, 0])
+            failed = False
+            for _ in range(int(timestep * 0.5)):
+                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+                if pos[2] < height_thresh:
+                    failed = True
+                    break
+                pybullet.stepSimulation()
+
             if failed:
                 continue
 
