@@ -7,6 +7,14 @@ To get voxels contained in voxel grid
 `git clone -b hotfix/voxels https://github.com/kosuke55/Open3D.git`  
 and build it with reference to [this page](http://www.open3d.org/docs/release/compilation.html#ubuntu).  
 
+### Mesh Reconstruction demo  
+```
+python donwload_sample_data.py  
+tar -zcvf sample_data.tgz sample_data  
+cd examples/  
+ipython -i ~.py  
+```
+
 ### Run  
 `roslaunch hanging_points_generator hanging_points_generator.lanuch`  
 
