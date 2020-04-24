@@ -18,10 +18,14 @@ if __name__ == "__main__":
     parser.add_argument(
         '--input_dir',
         "-i",
+        default=os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            '../sample_data/'),
         help='input data directory in which formed data are contained')
     parser.add_argument(
         '--n_imgs',
         "-n",
+        default=24,
         type=int,
         help='number of images in the selected directrory')
     args = parser.parse_args()

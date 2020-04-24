@@ -7,7 +7,7 @@
   <arg name="GRIPPER_FRAME" value="/l_gripper_tool_frame" />
   <arg name="CAMERA_INFO" value="/head_mount_kinect/hd/camera_info" />
   <arg name="SAVE_RAW_IMAGE" value="true" />
-  <arg name="SAVE_DIR" value="tape2/" />
+  <arg name="SAVE_DIR" value="save_dir/" />
 
   <node name="create_mesh"
         pkg="hanging_points_generator" type="create_mesh.py"

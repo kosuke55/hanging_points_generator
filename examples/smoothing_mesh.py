@@ -11,7 +11,7 @@ if __name__ == '__main__':
                         help='input ply file',
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
-                            '../save_dir/voxelized_obj.ply'))
+                            '../sample_data/voxelized_obj.ply'))
     args = parser.parse_args()
 
     mesh = trimesh.load(args.input)

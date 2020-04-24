@@ -12,12 +12,12 @@ if __name__ == '__main__':
                         help='input pcd file',
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
-                            '../save_dir/obj.pcd'))
+                            '../sample_data/icp_result.pcd'))
     parser.add_argument('--output', '-o', type=str,
                         help='output file name',
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
-                            '../save_dir/voxelized_mc_obj.ply'))
+                            '../sample_data/voxelized_mc_obj.ply'))
     args = parser.parse_args()
 
     pcd = o3d.io.read_point_cloud(args.input)

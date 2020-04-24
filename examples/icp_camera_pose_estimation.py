@@ -16,10 +16,10 @@ if __name__ == '__main__':
                         help='input dir',
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
-                            '../save_dir/'))
+                            '../sample_data/'))
     parser.add_argument('--scenes', '-s', type=int,
                         help='How many scenes were shot.',
-                        default=2)
+                        default=24)
     parser.add_argument('--voxel_size', '-v', type=float,
                         help='voxel length for down sampling.',
                         default=0.002)
@@ -27,7 +27,7 @@ if __name__ == '__main__':
                         help='output file name',
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
-                            '../save_dir/icp_result.pcd'))
+                            '../sample_data/icp_result.pcd'))
     args = parser.parse_args()
 
     camera_poses_icp, pcd = icp_registration(args.input,
