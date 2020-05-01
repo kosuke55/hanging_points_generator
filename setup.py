@@ -34,6 +34,7 @@ if sys.argv[-1] == "release":
 setup_requires = []
 install_requires = [
     'cameramodels',
+    'gdown',
     'pybullet',
     'scikit-robot',
 ]
