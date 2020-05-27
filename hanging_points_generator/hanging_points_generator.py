@@ -55,7 +55,7 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
         pybullet.connect(pybullet.DIRECT)
     pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
     gravity = -10
-    pybullet.setGravity(0, 0, gravity)
+    # pybullet.setGravity(0, 0, gravity)
     timestep = 240.
     pybullet.setTimeStep(1 / timestep)
     pybullet.loadURDF("plane.urdf")
@@ -91,6 +91,13 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
         for try_count in six.moves.range(try_num):
             if np.mod(try_count, 50) == 0:
                 print("try count:{}".format(try_count))
+            if find_count == 0 and try_count > 5000:
+                print("Not find hanging points")
+                with open(os.path.join(save_dir,
+                                       'contact_points.json', ), 'w') as f:
+                    json.dump(contact_points_dict, f, ensure_ascii=False,
+                              indent=4, sort_keys=True, separators=(',', ': '))
+                return contact_points_list
             # emerge object
             pybullet.setGravity(0, 0, 0)
             reset_pose(object_id)
