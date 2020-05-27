@@ -55,7 +55,6 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
         pybullet.connect(pybullet.DIRECT)
     pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
     gravity = -10
-    # pybullet.setGravity(0, 0, gravity)
     timestep = 240.
     pybullet.setTimeStep(1 / timestep)
     pybullet.loadURDF("plane.urdf")
@@ -106,39 +105,29 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
             if contact_points:
                 continue
 
-            pybullet.resetBaseVelocity(object_id, [-0.1, 0, -0.05])
-            for _ in range(int(timestep * 2)):
+            pybullet.resetBaseVelocity(object_id, [-0.01, 0, -0.005])
+            for _ in range(int(timestep * 20)):
                 pybullet.stepSimulation()
 
-            pybullet.resetBaseVelocity(object_id, [0, 0, 0])
+            pybullet.resetBaseVelocity(object_id, [0, 0.5, 0])
+            for _ in range(int(timestep * 1)):
+                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+                if pos[2] < height_thresh:
+                    failed = True
+                    break
+                pybullet.stepSimulation()
+
+            pybullet.resetBaseVelocity(object_id, [0, -0.5, 0])
+            for _ in range(int(timestep * 1)):
+                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+                if pos[2] < height_thresh:
+                    failed = True
+                    break
+                pybullet.stepSimulation()
+
             pybullet.setGravity(0, 0, gravity)
             failed = False
-            for _ in range(int(timestep)):
-                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
-                if pos[2] < height_thresh:
-                    failed = True
-                    break
-                pybullet.stepSimulation()
-
-            for _ in range(int(timestep * 0.5)):
-                pybullet.resetBaseVelocity(object_id, [0, 0.1, 0])
-                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
-                if pos[2] < height_thresh:
-                    failed = True
-                    break
-                pybullet.stepSimulation()
-
-            for _ in range(int(timestep * 0.5)):
-                pybullet.resetBaseVelocity(object_id, [0, -0.1, 0])
-                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
-                if pos[2] < height_thresh:
-                    failed = True
-                    break
-                pybullet.stepSimulation()
-
-            pybullet.resetBaseVelocity(object_id, [0, 0, 0])
-            failed = False
-            for _ in range(int(timestep * 0.5)):
+            for _ in range(int(timestep * 2)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
