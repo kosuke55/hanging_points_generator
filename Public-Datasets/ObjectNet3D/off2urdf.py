@@ -11,8 +11,6 @@ files = glob.glob("off/*/*")
 os.makedirs("ply", exist_ok=True)
 os.makedirs("urdf", exist_ok=True)
 
-scale = 0.1
-
 for file in files:
     dirname, filename = os.path.split(file)
     filename_without_ext, ext = os.path.splitext(filename)
@@ -23,6 +21,19 @@ for file in files:
     if 'off' in ext.lower():
         if category_name not in hanging_object_list:
             continue
+
+        if category_name in ['cap', 'headphone', 'helmet', 'slipper']:
+            scale = 0.3
+
+        elif category_name == 'cup':
+            scale = 0.15
+
+        elif category_name == 'key':
+            scale = 0.1
+
+        elif category_name == "scissors":
+            scale = 0.2
+
         try:
             mesh = trimesh.load(file)
             mesh_invert = mesh.copy()
