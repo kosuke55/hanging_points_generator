@@ -179,7 +179,7 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
         pitch=voxel_size)
 
     mesh.merge_vertices()
-    mesh.remove_duplicate_faces()
+    # mesh.remove_duplicate_faces()
 
     return mesh
 
