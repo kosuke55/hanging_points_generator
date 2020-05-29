@@ -3,17 +3,17 @@
 
 import argparse
 import json
-import numpy as np
 import os
+import time
+from math import pi
+
+import numpy as np
 import pybullet
 import pybullet_data
 import skrobot
 import six
-import time
 import xml.etree.ElementTree as ET
-
 from distutils.util import strtobool
-from math import pi
 
 
 def check_contact_points(contact_points_file, urdf_file):
@@ -35,7 +35,8 @@ def check_contact_points(contact_points_file, urdf_file):
         viewer.add(contact_point_sphere)
 
 
-def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
+def generate(urdf_file, required_points_num,
+             enable_gui, viz_obj, save_dir, hook_type='just_bar'):
     start_time = time.time()
     finding_times = []
     finding_times.append(start_time)
@@ -55,19 +56,35 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
         pybullet.connect(pybullet.DIRECT)
     pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
     gravity = -10
-    timestep = 240.
+    timestep = 1000.
     pybullet.setTimeStep(1 / timestep)
-    pybullet.loadURDF("plane.urdf")
 
-    hook_id = pybullet.loadURDF(
-        os.path.join(current_dir, '../urdf/hook/hook.urdf'),
-        [0, 0, 1], [0, 0, 0, 1])
-    hook_direction = np.array([1, 0, np.tan(np.pi / 2 - 1.2)])
+    # Just bar
+    if hook_type == 'just_bar':
+        hook_id = pybullet.createMultiBody(
+            baseMass=0.,
+            baseCollisionShapeIndex=pybullet.createCollisionShape(
+                pybullet.GEOM_CYLINDER,
+                radius=0.0025,
+                height=0.3),
+            basePosition=[0, 0, 1],
+            baseOrientation=[-0.0, 0.7071067811865475, -0.0, 0.7071067811865476])
+        hook_direction = np.array([1., 0, 0])
+        pybullet.loadURDF(
+            os.path.join(current_dir, '../urdf/hook/plate_visual.urdf'),
+            [-0.15, 0, 0.8], [0, 0, 0, 1])
+
+    # hook urdf model
+    else:
+        hook_id = pybullet.loadURDF(
+            os.path.join(current_dir, '../urdf/hook/hook.urdf'),
+            [0, 0, 1], [0, 0, 0, 1])
+        hook_direction = np.array([1, 0, np.tan(np.pi / 2 - 1.2)])
+        pybullet.loadURDF(
+            os.path.join(current_dir, '../urdf/hook/plate.urdf'),
+            [0, 0, 1], [0, 0, 0, 1])
+
     hook_direction /= np.linalg.norm(hook_direction)
-
-    pybullet.loadURDF(
-        os.path.join(current_dir, '../urdf/hook/plate.urdf'),
-        [0, 0, 1], [0, 0, 0, 1])
 
     if strtobool(viz_obj):
         obj_model = skrobot.models.urdf.RobotModelFromURDF(
@@ -97,33 +114,41 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
                     json.dump(contact_points_dict, f, ensure_ascii=False,
                               indent=4, sort_keys=True, separators=(',', ': '))
                 return contact_points_list
+
             # emerge object
             pybullet.setGravity(0, 0, 0)
-            reset_pose(object_id)
+            if hook_type == 'just_bar':
+                reset_pose(object_id, x_offset=0.2, y_offset=0., z_offset=1.)
+            else:
+                reset_pose(object_id, x_offset=0.2, y_offset=0., z_offset=1.1)
             pybullet.stepSimulation()
             contact_points = pybullet.getContactPoints(object_id, hook_id)
             if contact_points:
                 continue
 
-            pybullet.resetBaseVelocity(object_id, [-0.01, 0, -0.005])
-            for _ in range(int(timestep * 20)):
+            if hook_type == 'just_bar':
+                pybullet.resetBaseVelocity(object_id, [-0.05, 0, 0])
+            else:
+                pybullet.resetBaseVelocity(object_id, [-0.1, 0, -0.05])
+
+            for _ in range(int(timestep * 2)):
                 pybullet.stepSimulation()
 
-            pybullet.resetBaseVelocity(object_id, [0, 0.5, 0])
-            for _ in range(int(timestep * 1)):
+            pybullet.resetBaseVelocity(object_id, [0, 0.05, 0])
+            for _ in range(int(timestep * 2)):
+
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                     break
                 pybullet.stepSimulation()
 
-            pybullet.resetBaseVelocity(object_id, [0, -0.5, 0])
-            for _ in range(int(timestep * 1)):
+            pybullet.resetBaseVelocity(object_id, [0, -0.05, 0])
+            for _ in range(int(timestep * 2)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                     break
-                pybullet.stepSimulation()
 
             pybullet.setGravity(0, 0, gravity)
             failed = False
@@ -156,6 +181,7 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
 
             min_height_contact_point = sorted(
                 contact_points, key=lambda x: x[5][2])[0][5]
+
             contact_point_to_hole_vector = np.array(
                 [min_height_contact_point[0], 0, 1]) - np.array(
                     min_height_contact_point)
@@ -198,10 +224,11 @@ def generate(urdf_file, required_points_num, enable_gui, viz_obj, save_dir):
     return contact_points_list
 
 
-def reset_pose(object_id):
-    x = (np.random.rand() - 0.5) * 0.1 + 0.3
-    y = (np.random.rand() - 0.5) * 0.1
-    z = 1.15 + (np.random.rand() - 0.5) * 0.1
+def reset_pose(object_id, x_offset=0.2, y_offset=0., z_offset=1.):
+    x = (np.random.rand() - 0.5) * 0.1 + x_offset
+    y = (np.random.rand() - 0.5) * 0.2 + y_offset
+    z = (np.random.rand() - 0.5) * 0.2 + z_offset
+
     roll = np.random.rand() * pi
     pitch = np.random.rand() * pi
     yaw = np.random.rand() * pi
@@ -233,4 +260,5 @@ if __name__ == '__main__':
                                    args.required_points_num,
                                    args.gui,
                                    args.viz_obj,
-                                   os.path.dirname(args.urdf))
+                                   os.path.dirname(args.urdf),
+                                   hook_type='just_bar')
