@@ -19,7 +19,11 @@ if __name__ == '__main__':
     parser.add_argument('--urdf', '-u', type=str,
                         help='input urdf',
                         default='../urdf/610/scissors/base.urdf')
+    parser.add_argument('--clustering', '-c', type=int,
+                        help='dbscan clustering',
+                        default=1)
     args = parser.parse_args()
 
     check_contact_points(os.path.join(current_dir, args.input),
-                         os.path.join(current_dir, args.urdf))
+                         os.path.join(current_dir, args.urdf),
+                         clustering=args.clustering)

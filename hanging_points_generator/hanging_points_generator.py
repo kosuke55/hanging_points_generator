@@ -14,11 +14,15 @@ import skrobot
 import six
 import xml.etree.ElementTree as ET
 from distutils.util import strtobool
+from sklearn.cluster import DBSCAN
 
 
-def check_contact_points(contact_points_file, urdf_file):
+def check_contact_points(contact_points_file, urdf_file, clustering=True):
     contact_points_dict = json.load(open(contact_points_file, 'r'))
     contact_points = contact_points_dict['contact_points']
+    if clustering:
+        contact_points = cluster_hanging_points(
+            contact_points, eps=0.005, min_samples=2)
 
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=urdf_file)
@@ -33,6 +37,24 @@ def check_contact_points(contact_points_file, urdf_file):
             skrobot.coordinates.Coordinates(pos=cp[0],
                                             rot=cp[1:]))
         viewer.add(contact_point_sphere)
+
+
+def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1):
+    points = [c[0] for c in hanging_points]
+    dbscan = DBSCAN(
+        eps=eps, min_samples=min_samples).fit(points)
+    clustered_hanging_points = []
+    print('--- dbscan ---')
+    print(points)
+    print(dbscan.labels_)
+    for label in range(np.max(dbscan.labels_) + 1):
+        if np.count_nonzero(dbscan.labels_ == label) <= 1:
+            continue
+        for idx, hp in enumerate(hanging_points):
+            if dbscan.labels_[idx] == label:
+                clustered_hanging_points.append(hp)
+
+    return clustered_hanging_points
 
 
 def generate(urdf_file, required_points_num,
