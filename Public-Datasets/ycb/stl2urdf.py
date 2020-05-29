@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import glob
+import open3d as o3d
 import os
 import trimesh
 
@@ -33,7 +34,13 @@ for file in files:
         continue
 
     try:
-        mesh = trimesh.load(file)
+        # mesh = trimesh.load(file)
+        mesh = o3d.io.read_triangle_mesh(file)
+        mesh = mesh.simplify_vertex_clustering(
+            voxel_size=0.01,
+            contraction=o3d.geometry.SimplificationContraction.Average)
+        o3d.io.write_triangle_mesh("/tmp/mesh_tmp.stl", mesh)
+        mesh = trimesh.load("/tmp/mesh_tmp.stl")
         mesh_invert = mesh.copy()
         mesh_invert.invert()
         mesh += mesh_invert
