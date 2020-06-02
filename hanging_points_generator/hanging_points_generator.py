@@ -16,6 +16,8 @@ import xml.etree.ElementTree as ET
 from distutils.util import strtobool
 from sklearn.cluster import DBSCAN
 
+from hanging_points_generator.renderer import Renderer
+
 
 def check_contact_points(contact_points_file, urdf_file, clustering=True):
     contact_points_dict = json.load(open(contact_points_file, 'r'))
@@ -58,7 +60,9 @@ def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1):
 
 
 def generate(urdf_file, required_points_num,
-             enable_gui, viz_obj, save_dir, hook_type='just_bar'):
+             enable_gui, viz_obj, save_dir,
+             hook_type='just_bar', render=True):
+
     start_time = time.time()
     finding_times = []
     finding_times.append(start_time)
@@ -125,62 +129,106 @@ def generate(urdf_file, required_points_num,
 
     height_thresh = 0.5
 
+    if render:
+        im_w = 1920
+        im_h = 1080
+        im_fov = 42.5
+        nf = 0.1
+        ff = 2.0
+        pos = np.array([0.6, 0, 1.0])
+        rot = skrobot.coordinates.math.rotation_matrix_from_rpy(
+            [np.pi / 2, 0, -np.pi / 2])
+        r = Renderer(im_w, im_h, im_fov, nf, ff, pos, rot)
+
     try:
         for try_count in six.moves.range(try_num):
             if np.mod(try_count, 50) == 0:
                 print("try count:{}".format(try_count))
-            if find_count == 0 and try_count > 5000:
-                print("Not find hanging points")
-                with open(os.path.join(save_dir,
-                                       'contact_points.json', ), 'w') as f:
-                    json.dump(contact_points_dict, f, ensure_ascii=False,
-                              indent=4, sort_keys=True, separators=(',', ': '))
-                return contact_points_list
+            # if find_count == 0 and try_count > 5000:
+            #     print("Not find hanging points")
+            #     with open(os.path.join(save_dir,
+            #                            'contact_points.json', ), 'w') as f:
+            #         json.dump(contact_points_dict, f, ensure_ascii=False,
+            #                   indent=4, sort_keys=True, separators=(',', ': '))
+            #     return contact_points_list
 
             # emerge object
             pybullet.setGravity(0, 0, 0)
+            failed = False
             if hook_type == 'just_bar':
-                reset_pose(object_id, x_offset=0.2, y_offset=0., z_offset=1.)
+                reset_pose(object_id, x_offset=0.2,
+                           y_offset=0., z_offset=1.)
             else:
-                reset_pose(object_id, x_offset=0.2, y_offset=0., z_offset=1.1)
+                reset_pose(object_id, x_offset=0.2,
+                           y_offset=0., z_offset=1.1)
             pybullet.stepSimulation()
             contact_points = pybullet.getContactPoints(object_id, hook_id)
             if contact_points:
                 continue
 
             if hook_type == 'just_bar':
-                pybullet.resetBaseVelocity(object_id, [-0.05, 0, 0])
+                pybullet.resetBaseVelocity(object_id, [-0.1, 0, 0])
             else:
                 pybullet.resetBaseVelocity(object_id, [-0.1, 0, -0.05])
 
-            for _ in range(int(timestep * 2)):
+            for _ in range(int(timestep * 0.5)):
                 pybullet.stepSimulation()
+                if render:
+                    r.render()
+                    # depth = (r.get_depth_metres() * 1000).astype(np.float32)
 
-            pybullet.resetBaseVelocity(object_id, [0, 0.05, 0])
-            for _ in range(int(timestep * 2)):
-
+            pybullet.resetBaseVelocity(object_id, [0, 0, 0])
+            pybullet.setGravity(0, 0, gravity)
+            for _ in range(int(timestep * 1)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                     break
                 pybullet.stepSimulation()
+                # if render:
+                #     depth = (r.get_depth_metres() * 1000).astype(np.float32)
 
-            pybullet.resetBaseVelocity(object_id, [0, -0.05, 0])
-            for _ in range(int(timestep * 2)):
+            if failed:
+                continue
+
+            # pybullet.resetBaseVelocity(object_id, [0, 0.05, 0])
+            pybullet.setGravity(0, 5, -5)
+            for _ in range(int(timestep * 1)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                     break
+                pybullet.stepSimulation()
+                # if render:
+                #     r.render()
+                #     depth = (r.get_depth_metres() * 1000).astype(np.float32)
+            if failed:
+                continue
+
+            # pybullet.resetBaseVelocity(object_id, [0, -0.05, 0])
+            pybullet.setGravity(0, -5, -5)
+            for _ in range(int(timestep * 1)):
+                pos, rot = pybullet.getBasePositionAndOrientation(object_id)
+                if pos[2] < height_thresh:
+                    failed = True
+                    break
+                pybullet.stepSimulation()
+                # if render:
+                #     r.render()
+                #     depth = (r.get_depth_metres() * 1000).astype(np.float32)
+            if failed:
+                continue
 
             pybullet.setGravity(0, 0, gravity)
-            failed = False
-            for _ in range(int(timestep * 2)):
+            for _ in range(int(timestep * 1)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                     break
                 pybullet.stepSimulation()
-
+                # if render:
+                    # r.render()
+                    # depth = (r.get_depth_metres() * 1000).astype(np.float32)
             if failed:
                 continue
 
@@ -211,11 +259,13 @@ def generate(urdf_file, required_points_num,
                 pos=min_height_contact_point,
                 rot=skrobot.coordinates.math.rotation_matrix_from_axis(
                     x_axis=hook_direction,
-                    y_axis=contact_point_to_hole_vector))
+                    y_axis=[0, 0, -1]))
+            # y_axis=contact_point_to_hole_vector))
             contact_point_obj = obj_coords.inverse_transformation().transform(
                 contact_point).translate(center, 'world')
 
-            contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
+            contact_point_sphere = skrobot.models.Sphere(
+                0.001, color=[255, 0, 0])
             contact_point_sphere.newcoords(
                 skrobot.coordinates.Coordinates(
                     pos=contact_point_obj.worldpos(),
@@ -248,8 +298,8 @@ def generate(urdf_file, required_points_num,
 
 def reset_pose(object_id, x_offset=0.2, y_offset=0., z_offset=1.):
     x = (np.random.rand() - 0.5) * 0.1 + x_offset
-    y = (np.random.rand() - 0.5) * 0.2 + y_offset
-    z = (np.random.rand() - 0.5) * 0.2 + z_offset
+    y = (np.random.rand() - 0.5) * 0.4 + y_offset
+    z = (np.random.rand() - 0.5) * 0.4 + z_offset
 
     roll = np.random.rand() * pi
     pitch = np.random.rand() * pi
