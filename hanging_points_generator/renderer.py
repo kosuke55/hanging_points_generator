@@ -20,25 +20,21 @@ class Renderer:
             far_plane,
             pos,
             rot):
-        self.objects = []
         self.im_width = im_width
         self.im_height = im_height
         self.fov = fov
         self.near_plane = near_plane
         self.far_plane = far_plane
-        aspect = self.im_width / self.im_height
         self.camera_model \
             = cameramodels.PinholeCameraModel.from_fov(
                 fov, im_height, im_width)
+        aspect = self.im_width / self.im_height
         self.pm = pybullet.computeProjectionMatrixFOV(
             fov, aspect, near_plane, far_plane)
 
         self.camera_coords = skrobot.coordinates.Coordinates(
             pos=pos,
             rot=rot)
-        # pos=np.array([0.5, 0, 1.0]),
-        # rot=skrobot.coordinates.math.rotation_matrix_from_rpy(
-        #     [np.pi / 2, 0, -np.pi / 2]))
 
         pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())
 
