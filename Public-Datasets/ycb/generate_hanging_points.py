@@ -19,7 +19,7 @@ hanging_object_dict = {
     9: "052_extra_large_clamp"
 }
 
-files = glob.glob("urdf/*/*/*")
+files = glob.glob("urdf/*/*")
 
 for file in files:
     dirname, filename = os.path.split(file)
@@ -30,7 +30,7 @@ for file in files:
     # if category_name != hanging_object_dict[0]:
     #     continue
 
-    if 'urdf' in ext.lower():
+    if filename == 'base.urdf':
         print('-----------------------')
         print(file)
         hpg.generate(urdf_file=file,

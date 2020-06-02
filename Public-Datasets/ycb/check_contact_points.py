@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--input', '-i', type=str,
                     help='input contact points',
-                    default='urdf/019_pitcher_base/nontextured')
+                    default='urdf/019_pitcher_base/')
 parser.add_argument('--clustering', '-c', type=int,
                     help='dbscan clustering',
                     default=1)
@@ -21,5 +21,6 @@ args = parser.parse_args()
 
 check_contact_points(
     os.path.join(current_dir, args.input, 'contact_points.json'),
-    os.path.join(current_dir, args.input, 'base.urdf'),
+    os.path.join(current_dir, args.input, 'textured.urdf'),
+    # os.path.join(current_dir, args.input, 'base.urdf'),
     clustering=args.clustering)

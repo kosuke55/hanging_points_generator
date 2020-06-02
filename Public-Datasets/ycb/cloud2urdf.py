@@ -12,7 +12,7 @@ from hanging_points_generator.create_mesh \
 
 # files = glob.glob("ycb/*/*/*")
 files = glob.glob("ycb_processed/*/*/*")
-out_dir = "ycb_hanging_object/urdf"
+out_dir = "ycb_hanging_object_cloud/urdf"
 # os.makedirs(out_dir, exist_ok=True)
 
 # http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/

@@ -4,12 +4,15 @@
 import glob
 import open3d as o3d
 import os
+import subprocess
 import trimesh
+import xml.etree.ElementTree as ET
 
 from hanging_points_generator import create_mesh
 
-files = glob.glob("ycb/*/*/*")
-os.makedirs("ycb_hanging_object/urdf", exist_ok=True)
+files = glob.glob("ycb_hanging_object_16/*/*/*")
+save_dir = "ycb_hanging_object/urdf"
+os.makedirs(save_dir, exist_ok=True)
 
 # http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/
 hanging_object_list = [
@@ -52,7 +55,19 @@ for file in files:
     if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
         print(file, mesh)
         os.makedirs(os.path.join(
-            "ycb_hanging_object/urdf",
-            category_name, filename_without_ext), exist_ok=True)
+            save_dir,
+            category_name,), exist_ok=True)
+
+        subprocess.call(
+            ["cp " + dirname + "/* " + os.path.join(save_dir, category_name)],
+            shell=True)
+
         create_mesh.create_urdf(mesh, os.path.join(
-            "ycb_hanging_object/urdf", category_name, filename_without_ext))
+            save_dir, category_name))
+
+        tree = ET.parse(os.path.join(save_dir, category_name, 'base.urdf'))
+        root = tree.getroot()
+        root[0].find('visual').find('geometry').find(
+            'mesh').attrib['filename'] = 'textured.obj'
+        tree.write(os.path.join(save_dir, category_name, 'textured.urdf'),
+                   encoding='utf-8', xml_declaration=True)
