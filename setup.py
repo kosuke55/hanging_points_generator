@@ -65,6 +65,9 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
     ],
     packages=find_packages(),
+    entry_points={
+        'console_scripts':
+        ['check_hanging_pose=hanging_points_generator.apps.check_hanging_pose:main']},
     zip_safe=False,
     setup_requires=setup_requires,
     install_requires=install_requires,

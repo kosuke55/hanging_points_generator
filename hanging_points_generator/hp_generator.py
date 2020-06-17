@@ -31,7 +31,6 @@ def check_contact_points(contact_points_file, urdf_file, clustering=True):
 
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
     viewer.add(obj_model)
-    viewer.show()
 
     for i, cp in enumerate(contact_points):
         contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
@@ -40,8 +39,10 @@ def check_contact_points(contact_points_file, urdf_file, clustering=True):
                                             rot=cp[1:]))
         viewer.add(contact_point_sphere)
 
+    viewer._init_and_start_app()
 
-def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1):
+
+def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1, merge_clusters=True):
     points = [c[0] for c in hanging_points]
     dbscan = DBSCAN(
         eps=eps, min_samples=min_samples).fit(points)
