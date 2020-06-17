@@ -240,11 +240,11 @@ def generate(urdf_file, required_points_num,
                 continue
 
             finding_times.append(time.time())
-            print("Find the hanging point {}   time {}  total time {}".format(
-                find_count,
-                finding_times[len(finding_times) - 1]
-                - finding_times[len(finding_times) - 2],
-                finding_times[len(finding_times) - 1] - start_time))
+            # print("Find the hanging point {}   time {}  total time {}".format(
+            #     find_count,
+            #     finding_times[len(finding_times) - 1]
+            #     - finding_times[len(finding_times) - 2],
+            #     finding_times[len(finding_times) - 1] - start_time))
 
             obj_coords = skrobot.coordinates.Coordinates(
                 pos=pos,
@@ -275,18 +275,40 @@ def generate(urdf_file, required_points_num,
             if strtobool(viz_obj):
                 viewer.add(contact_point_sphere)
 
-            contact_points_list.append(np.concatenate(
+            pose = np.concatenate(
                 [contact_point_obj.T()[:3, 3][None, :],
-                 contact_point_obj.T()[:3, :3]]).tolist())
+                 contact_point_obj.T()[:3, :3]]).tolist()
+            contact_points_list.append(pose)
+            # contact_points_list.append(np.concatenate(
+            #     [contact_point_obj.T()[:3, 3][None, :],
+            #      contact_point_obj.T()[:3, :3]]).tolist())
 
             contact_points_dict['contact_points'] = contact_points_list
 
-            with open(os.path.join(save_dir,
-                                   'contact_points.json', ), 'w') as f:
-                json.dump(contact_points_dict, f, ensure_ascii=False,
-                          indent=4, sort_keys=True, separators=(',', ': '))
+            if os.path.exists(os.path.join(save_dir, 'contact_points.json')):
+                contact_points_dict_existed = json.load(
+                    open(os.path.join(save_dir, 'contact_points.json'), 'r'))
+                contact_points_dict_existed['contact_points'].append(pose)
+                find_count = len(contact_points_dict_existed['contact_points'])
+                with open(os.path.join(save_dir,
+                                       'contact_points.json', ), 'w') as f:
+                    json.dump(contact_points_dict_existed, f, ensure_ascii=False,
+                              indent=4, sort_keys=True, separators=(',', ': '))
+                # for cp in contact_points_dict['contact_points']:
+                    # contact_points_dict_existed['contact_points'].append(cp)
+                    # with open(os.path.join(save_dir,
+                    #                        'contact_points.json', ), 'w') as f:
+                    #     json.dump(contact_points_dict_existed, f, ensure_ascii=False,
+                    #               indent=4, sort_keys=True, separators=(',', ': '))
 
-            find_count += 1
+            else:
+                with open(os.path.join(save_dir,
+                                       'contact_points.json', ), 'w') as f:
+                    json.dump(contact_points_dict, f, ensure_ascii=False,
+                              indent=4, sort_keys=True, separators=(',', ': '))
+                find_count += 1
+
+            print("Find the hanging point {}".format(find_count))
             if find_count == required_points_num:
                 break
 
