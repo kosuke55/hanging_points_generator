@@ -10,7 +10,7 @@ import tqdm
 from hanging_points_generator import create_mesh
 
 
-files = glob.glob('/media/kosuke/SANDISK/meshdata/ramdom_shape/*/*')
+files = glob.glob('/media/kosuke/SANDISK/meshdata/random_shape_ycb/*/*')
 
 for file in tqdm.tqdm(files, total=len(files)):
     save_dir, filename = os.path.split(file)

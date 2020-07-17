@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from hanging_points_generator import hanging_points_generator as hpg
+from hanging_points_generator import hp_generator as hpg
 
 import glob
 import os
@@ -18,4 +18,5 @@ for file in files:
                      required_points_num=100,
                      enable_gui="false",
                      viz_obj="false",
-                     save_dir=dirname)
+                     save_dir=dirname,
+                     render=False)

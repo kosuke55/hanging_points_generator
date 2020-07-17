@@ -62,7 +62,7 @@ def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1, merge_cluste
 
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir,
-             hook_type='just_bar', render=True):
+             hook_type='just_bar', render=False):
 
     start_time = time.time()
     finding_times = []
