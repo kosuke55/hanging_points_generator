@@ -4,6 +4,8 @@
 import argparse
 import json
 import os
+import os.path as osp
+import sys
 import time
 from math import pi
 
@@ -12,6 +14,7 @@ import pybullet
 import pybullet_data
 import skrobot
 import six
+import trimesh
 import xml.etree.ElementTree as ET
 from distutils.util import strtobool
 from sklearn.cluster import DBSCAN
@@ -19,15 +22,18 @@ from sklearn.cluster import DBSCAN
 from hanging_points_generator.renderer import Renderer
 
 
-def check_contact_points(contact_points_file, urdf_file, clustering=True):
+def check_contact_points(contact_points_file, urdf_file,
+                         use_clustering=True, use_filter_penetration=True):
     contact_points_dict = json.load(open(contact_points_file, 'r'))
     contact_points = contact_points_dict['contact_points']
-    if clustering:
+    if use_clustering:
         contact_points = cluster_hanging_points(
             contact_points, eps=0.005, min_samples=2)
+    if use_filter_penetration:
+        contact_points, _ = filter_penetration(urdf_file, contact_points)
 
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
-        urdf_file=urdf_file)
+        urdf_file=osp.abspath(urdf_file))
 
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
     viewer.add(obj_model)
@@ -60,13 +66,61 @@ def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1, merge_cluste
     return clustered_hanging_points
 
 
+def filter_penetration(obj_file, hanging_points, box_size=[0.1, 0.0001, 0.0001]):
+    """Filter the penetrating hanging points
+
+    Parameters
+    ----------
+    obj_file : srt
+        obj file path (urdf or stl)
+    hanging_points : list
+        list of hanging points(=contact points)
+    box_size : list
+        penetration check box of size [length, width, width]
+
+    Returns
+    -------
+    penetrating_hanging_points: list
+    filtered_hanging_points: list
+    """
+
+    filtered_hanging_points = []
+    penetrating_hanging_points = []
+
+    path_without_ext, ext = osp.splitext(obj_file)
+    if ext == '.urdf':
+        obj_file = path_without_ext + '.stl'
+    obj = skrobot.models.MeshLink(obj_file)
+
+    collision_manager = trimesh.collision.CollisionManager()
+    collision_manager.add_object('obj', obj.visual_mesh)
+
+    for hp in hanging_points:
+        penetration_check_box = skrobot.models.Box(
+            box_size,
+            face_colors=[255, 0, 0],
+            pos=hp[0], rot=hp[1:])
+        penetration_check_box.translate([0, 0.005, 0])
+
+        penetration = collision_manager.in_collision_single(
+            penetration_check_box.visual_mesh, penetration_check_box.T())
+
+        if penetration:
+            penetrating_hanging_points.append(hp)
+        else:
+            filtered_hanging_points.append(hp)
+
+    return filtered_hanging_points, penetrating_hanging_points
+
+
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir,
              hook_type='just_bar', render=False):
 
-    start_time = time.time()
-    finding_times = []
-    finding_times.append(start_time)
+    # start_time = time.time()
+    # finding_times = []
+    # finding_times.append(start_time)
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     contact_points_list = []
@@ -79,6 +133,11 @@ def generate(urdf_file, required_points_num,
 
     if strtobool(enable_gui):
         pybullet.connect(pybullet.GUI)
+        pybullet.resetDebugVisualizerCamera(
+            cameraDistance=0.3,
+            cameraYaw=90,
+            cameraPitch=0,
+            cameraTargetPosition=[0.15, 0, 1])
     else:
         pybullet.connect(pybullet.DIRECT)
     pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
@@ -125,7 +184,7 @@ def generate(urdf_file, required_points_num,
     object_id = pybullet.loadURDF(urdf_file,
                                   StartPos, StartOrientation)
 
-    try_num = 10000
+    try_num = 100000
     find_count = 0
 
     height_thresh = 0.5
@@ -143,8 +202,9 @@ def generate(urdf_file, required_points_num,
 
     try:
         for try_count in six.moves.range(try_num):
-            if np.mod(try_count, 50) == 0:
-                print("try count:{}".format(try_count))
+            # if np.mod(try_count, 500) == 0:
+                # print("try count:{}".format(try_count))
+
             # if find_count == 0 and try_count > 5000:
             #     print("Not find hanging points")
             #     with open(os.path.join(save_dir,
@@ -228,8 +288,8 @@ def generate(urdf_file, required_points_num,
                     break
                 pybullet.stepSimulation()
                 # if render:
-                    # r.render()
-                    # depth = (r.get_depth_metres() * 1000).astype(np.float32)
+                # r.render()
+                # depth = (r.get_depth_metres() * 1000).astype(np.float32)
             if failed:
                 continue
 
@@ -239,7 +299,7 @@ def generate(urdf_file, required_points_num,
             if len(contact_points) == 0:
                 continue
 
-            finding_times.append(time.time())
+            # finding_times.append(time.time())
             # print("Find the hanging point {}   time {}  total time {}".format(
             #     find_count,
             #     finding_times[len(finding_times) - 1]
@@ -253,15 +313,50 @@ def generate(urdf_file, required_points_num,
             min_height_contact_point = sorted(
                 contact_points, key=lambda x: x[5][2])[0][5]
 
-            contact_point_to_hole_vector = np.array(
-                [min_height_contact_point[0], 0, 1]) - np.array(
-                    min_height_contact_point)
+            # contact_point_to_hole_vector = np.array(
+            #     [min_height_contact_point[0], 0, 1]) - np.array(
+            #         min_height_contact_point)
             contact_point = skrobot.coordinates.Coordinates(
                 pos=min_height_contact_point,
                 rot=skrobot.coordinates.math.rotation_matrix_from_axis(
                     x_axis=hook_direction,
                     y_axis=[0, 0, -1]))
             # y_axis=contact_point_to_hole_vector))
+
+            # # check penetration. only for hook_type='just_bar'
+            # penetration_check_coords = contact_point.copy_worldcoords().translate([
+            #     0, 0, 0])
+            # penetration_check_id = pybullet.createMultiBody(
+            #     baseMass=0.,
+            #     baseCollisionShapeIndex=pybullet.createCollisionShape(
+            #         pybullet.GEOM_BOX,
+            #         halfExtents=[0.01, 0.001, 0.001]),
+            #     # basePosition=penetration_check_coords.worldpos())
+            #     basePosition=[penetration_check_coords.worldpos()[0], 0, 1])
+
+            # # for making penetration object easier to see (1)
+            # # pybullet.removeBody(hook_id)
+            # # time.sleep(5)
+            # pybullet.resetBaseVelocity(object_id, [0, 0, 0])
+            # pybullet.setGravity(0, 0, 0)
+            # pybullet.stepSimulation()
+            # penetration = pybullet.getContactPoints(
+            #     object_id, penetration_check_id)
+            # if penetration:
+            #     print('penetration')
+            #     pybullet.removeBody(penetration_check_id)
+            #     continue
+            # pybullet.removeBody(penetration_check_id)
+            # # for making penetration object easier to see (2)
+            # # hook_id = pybullet.createMultiBody(
+            # #     baseMass=0.,
+            # #     baseCollisionShapeIndex=pybullet.createCollisionShape(
+            # #         pybullet.GEOM_CYLINDER,
+            # #         radius=0.0025,
+            # #         height=0.3),
+            # #     basePosition=[0, 0, 1],
+            # #     baseOrientation=[-0.0, 0.7071067811865475, -0.0, 0.7071067811865476])
+
             contact_point_obj = obj_coords.inverse_transformation().transform(
                 contact_point).translate(center, 'world')
 
@@ -309,11 +404,11 @@ def generate(urdf_file, required_points_num,
                 find_count += 1
 
             print("Find the hanging point {}".format(find_count))
-            if find_count == required_points_num:
+            if find_count >= required_points_num:
                 break
 
     except KeyboardInterrupt:
-        pass
+        sys.exit()
 
     pybullet.disconnect()
     return contact_points_list

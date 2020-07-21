@@ -1,8 +1,6 @@
 import argparse
 import os
 
-# from hanging_points_generator.hp_generator \
-#     import check_contact_points
 from hanging_points_generator.hp_generator \
     import check_contact_points
 
@@ -20,10 +18,14 @@ def main():
     parser.add_argument('--clustering', '-c', type=int,
                         help='dbscan clustering',
                         default=1)
+    parser.add_argument('--filter_penetration', '-f', type=int,
+                        help='filter penetration',
+                        default=0)
     args = parser.parse_args()
 
     check_contact_points(args.pose, args.input,
-                         clustering=args.clustering)
+                         use_clustering=args.clustering,
+                         use_filter_penetration=args.filter_penetration)
 
 
 if __name__ == '__main__':
