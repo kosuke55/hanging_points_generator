@@ -17,6 +17,7 @@ import six
 import trimesh
 import xml.etree.ElementTree as ET
 from distutils.util import strtobool
+from filelock import FileLock
 from sklearn.cluster import DBSCAN
 
 from hanging_points_generator.renderer import Renderer
@@ -53,9 +54,9 @@ def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1, merge_cluste
     dbscan = DBSCAN(
         eps=eps, min_samples=min_samples).fit(points)
     clustered_hanging_points = []
-    print('--- dbscan ---')
-    print(points)
-    print(dbscan.labels_)
+    # print('--- dbscan ---')
+    # print(points)
+    # print(dbscan.labels_)
     for label in range(np.max(dbscan.labels_) + 1):
         if np.count_nonzero(dbscan.labels_ == label) <= 1:
             continue
@@ -149,8 +150,8 @@ def generate(urdf_file, required_points_num,
     if hook_type == 'just_bar':
         hook_id = pybullet.createMultiBody(
             baseMass=0.,
-            baseCollisionShapeIndex=pybullet.createCollisionShape(
-                pybullet.GEOM_CYLINDER,
+            baseCollisionShapeIndex=p.createCollisionShape(
+                p.GEOM_CYLINDER,
                 radius=0.0025,
                 height=0.3),
             basePosition=[0, 0, 1],
@@ -184,7 +185,7 @@ def generate(urdf_file, required_points_num,
     object_id = pybullet.loadURDF(urdf_file,
                                   StartPos, StartOrientation)
 
-    try_num = 100000
+    try_num = 10000
     find_count = 0
 
     height_thresh = 0.5
