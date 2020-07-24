@@ -56,6 +56,14 @@ def step(n=1):
         pybullet.stepSimulation()
 
 
+def remove_out_sphere(sphere_ids):
+    for sphere_id in sphere_ids:
+        pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
+        if pos[2] < -0.1:
+            pybullet.removeBody(sphere_id)
+            sphere_ids.remove(sphere_id)
+
+
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir):
     """Drop the ball and find the pouring points.
@@ -101,14 +109,19 @@ def generate(urdf_file, required_points_num,
     sphere_ids = []
     pybullet.setGravity(0, 0, gravity)
 
-    for _ in range(1000):
-        step(10)
+    for _ in range(100):
         sphere_ids.append(make_sphere())
-        for sphere_id in sphere_ids:
-            pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
-            if pos[2] < -0.1:
-                pybullet.removeBody(sphere_id)
-                sphere_ids.remove(sphere_id)
+        step(10)
+        remove_out_sphere(sphere_ids)
+
+    for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5]]:
+        pybullet.setGravity(f[0], f[1], gravity)
+        for _ in range(10):
+            step(10)
+            remove_out_sphere(sphere_ids)
+
+    print(sphere_ids)
+    print(len(sphere_ids))
 
 
 if __name__ == '__main__':
