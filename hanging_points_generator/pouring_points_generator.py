@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import json
 import os
 import time
 from pathlib import Path
@@ -9,7 +10,9 @@ from pathlib import Path
 import numpy as np
 import pybullet
 import pybullet_data
+import skrobot
 import xml.etree.ElementTree as ET
+from filelock import FileLock
 
 
 def random_pos(z_offset=0.2):
@@ -39,14 +42,9 @@ def load_static_urdf(urdf_file, position=[0, 0, 0], orientation=[0, 0, 0, 1]):
 def make_sphere(radius=0.005, use_random_pos=True):
     sphere = pybullet.createCollisionShape(
         pybullet.GEOM_SPHERE, radius=radius)
-
-    if use_random_pos:
-        pos = random_pos()
-    else:
-        pos = [0, 0, 0]
-
     sphere_id = pybullet.createMultiBody(
-        1, sphere, -1, basePosition=pos)
+        1, sphere, -1,
+        basePosition=random_pos() if use_random_pos else [0, 0, 0])
 
     return sphere_id
 
@@ -62,6 +60,79 @@ def remove_out_sphere(sphere_ids):
         if pos[2] < -0.1:
             pybullet.removeBody(sphere_id)
             sphere_ids.remove(sphere_id)
+
+
+def save_contact_points(
+        save_dir, save_file_name, contact_points_dict):
+    if os.path.exists(os.path.join(save_dir, save_file_name)):
+        filelock_path = os.path.join(
+            save_dir, save_file_name + '.lock')
+        with FileLock(filelock_path):
+            with open(os.path.join(save_dir, save_file_name), 'r') as f:
+                contact_points_dict_existed = json.load(f)
+                for c in contact_points_dict['contact_points']:
+                    contact_points_dict_existed['contact_points'].append(c)
+                # find_count = len(
+                #     contact_points_dict_existed['contact_points'])
+
+        filelock_path = os.path.join(
+            save_dir, save_file_name + '.lock')
+        with FileLock(filelock_path):
+            with open(os.path.join(save_dir, save_file_name), 'w') as f:
+                json.dump(contact_points_dict_existed, f, ensure_ascii=False,
+                          indent=4, sort_keys=True, separators=(',', ': '))
+    else:
+        with open(os.path.join(save_dir, save_file_name), 'w') as f:
+            json.dump(contact_points_dict, f, ensure_ascii=False,
+                      indent=4, sort_keys=True, separators=(',', ': '))
+        # find_count += 1
+
+
+def get_urdf_center(urdf_file):
+    tree = ET.parse(urdf_file)
+    root = tree.getroot()
+    center = np.array([float(i) for i in root[0].find(
+        "inertial").find("origin").attrib['xyz'].split(' ')])
+    return center
+
+
+def get_contact_points(
+        object_id, object_center, sphere_ids,
+        x_axis=[1, 0, 0], y_axis=[0, 0, -1], use_min_height=False):
+    contact_points_list = []
+    object_pos, object_rot = pybullet.getBasePositionAndOrientation(object_id)
+    obj_coords = skrobot.coordinates.Coordinates(
+        pos=object_pos,
+        rot=skrobot.coordinates.math.xyzw2wxyz(object_rot))
+
+    for sphere_id in sphere_ids:
+        contact_points = pybullet.getContactPoints(object_id, sphere_id)
+        if len(contact_points) == 0:
+            continue
+
+        if use_min_height:
+            contact_point = sorted(
+                contact_points, key=lambda x: x[5][2])[0][5]
+        else:
+            contact_point = sorted(
+                contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
+
+        rot = skrobot.coordinates.math.rotation_matrix_from_axis(
+            x_axis=x_axis, y_axis=y_axis)
+
+        contact_point = skrobot.coordinates.Coordinates(
+            pos=contact_point, rot=rot)
+
+        contact_point_obj = obj_coords.inverse_transformation().transform(
+            contact_point).translate(object_center, 'world')
+
+        pose = np.concatenate(
+            [contact_point_obj.T()[:3, 3][None, :],
+             contact_point_obj.T()[:3, :3]]).tolist()
+
+        contact_points_list.append(pose)
+
+    return contact_points_list
 
 
 def generate(urdf_file, required_points_num,
@@ -83,8 +154,10 @@ def generate(urdf_file, required_points_num,
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
-    pour_points_list = []
-    pour_points_dict = {'urdf_file': urdf_file, 'pour_points': []}
+    pouring_points_list = []
+    pouring_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
+
+    object_center = get_urdf_center(urdf_file)
 
     if enable_gui:
         pybullet.connect(pybullet.GUI)
@@ -114,14 +187,18 @@ def generate(urdf_file, required_points_num,
         step(10)
         remove_out_sphere(sphere_ids)
 
-    for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5]]:
+    for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
         pybullet.setGravity(f[0], f[1], gravity)
         for _ in range(10):
             step(10)
             remove_out_sphere(sphere_ids)
 
-    print(sphere_ids)
-    print(len(sphere_ids))
+    pouring_points_list = get_contact_points(
+        object_id, object_center, sphere_ids)
+    pouring_points_dict['contact_points'] = pouring_points_list
+
+    save_contact_points(
+        save_dir, 'pouring_poitns.json', pouring_points_dict)
 
 
 if __name__ == '__main__':
