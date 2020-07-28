@@ -11,9 +11,9 @@ import time
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('cmd', type=str)
-    parser.add_argument('--jobs', '-j', type=int, default=16,
+    parser.add_argument('--jobs', '-j', type=int, default=64,
                         help='number of parallel process')
-    parser.add_argument('--num-exp', type=int, default=32,
+    parser.add_argument('--num-exp', type=int, default=64,
                         help='number of trial')
     parser.add_argument('--sleep-time', type=int, default=2)
     args = parser.parse_args()

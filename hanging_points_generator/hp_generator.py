@@ -91,6 +91,8 @@ def filter_penetration(obj_file, hanging_points, box_size=[0.1, 0.0001, 0.0001])
     path_without_ext, ext = osp.splitext(obj_file)
     if ext == '.urdf':
         obj_file = path_without_ext + '.stl'
+        if not osp.isfile(obj_file):
+            obj_file = path_without_ext + '.obj'
     obj = skrobot.models.MeshLink(obj_file)
 
     collision_manager = trimesh.collision.CollisionManager()
@@ -150,8 +152,8 @@ def generate(urdf_file, required_points_num,
     if hook_type == 'just_bar':
         hook_id = pybullet.createMultiBody(
             baseMass=0.,
-            baseCollisionShapeIndex=p.createCollisionShape(
-                p.GEOM_CYLINDER,
+            baseCollisionShapeIndex=pybullet.createCollisionShape(
+                pybullet.GEOM_CYLINDER,
                 radius=0.0025,
                 height=0.3),
             basePosition=[0, 0, 1],
@@ -187,6 +189,20 @@ def generate(urdf_file, required_points_num,
 
     try_num = 10000
     find_count = 0
+    is_hanging_object = True
+
+    if os.path.exists(os.path.join(save_dir, 'contact_points.json')):
+        filelock_path = os.path.join(
+            save_dir, 'contact_points.json.lock')
+        with FileLock(filelock_path):
+            with open(os.path.join(save_dir, 'contact_points.json'), 'r') as f:
+                contact_points_dict_existed = json.load(f)
+                find_count = len(
+                    contact_points_dict_existed['contact_points'])
+        if find_count == 0:
+            print(urdf_file, 'Not hanging object')
+            is_hanging_object = False
+    print("{}: num hanging points: {}".format(urdf_file, find_count))
 
     height_thresh = 0.5
 
@@ -203,16 +219,51 @@ def generate(urdf_file, required_points_num,
 
     try:
         for try_count in six.moves.range(try_num):
-            # if np.mod(try_count, 500) == 0:
-                # print("try count:{}".format(try_count))
+            if os.path.exists(os.path.join(save_dir, 'contact_points.json')):
+                filelock_path = os.path.join(
+                    save_dir, 'contact_points.json.lock')
+                with FileLock(filelock_path):
+                    with open(os.path.join(save_dir, 'contact_points.json'), 'r') as f:
+                        contact_points_dict_existed = json.load(f)
+                        find_count = len(
+                            contact_points_dict_existed['contact_points'])
+                if find_count == 0:
+                    print(urdf_file, 'Not hanging object')
+                    is_hanging_object = False
 
-            # if find_count == 0 and try_count > 5000:
-            #     print("Not find hanging points")
-            #     with open(os.path.join(save_dir,
-            #                            'contact_points.json', ), 'w') as f:
-            #         json.dump(contact_points_dict, f, ensure_ascii=False,
-            #                   indent=4, sort_keys=True, separators=(',', ': '))
-            #     return contact_points_list
+            if try_count > try_num - 10:
+                print('try_count:{}'.format(try_count))
+            # if np.mod(try_count, 500) == 0:
+            #     print("try count:{}".format(try_count))
+
+            if find_count >= required_points_num or not is_hanging_object:
+                print('break {} find_count:{} require:{} hanging_object:{}'.format(
+                    urdf_file, find_count, required_points_num, is_hanging_object))
+
+                break
+
+            if find_count == 0 and try_count > 10000:
+                print("Not find hanging points")
+                filelock_path = os.path.join(
+                    save_dir, 'contact_points.json.lock')
+                with FileLock(filelock_path):
+                    with open(os.path.join(save_dir, 'contact_points.json'), 'r') as f:
+                        json.dump(
+                            contact_points_dict, f, ensure_ascii=False,
+                            indent=4, sort_keys=True, separators=(',', ': '))
+                # if os.path.isfile(filelock_path):
+                #     os.remove(filelock_path)
+
+                # with open(os.path.join(save_dir, 'contact_points.json', ), 'w') as f:
+                #     fcntl.flock(f, fcntl.LOCK_EX)
+                #     json.dump(contact_points_dict, f, ensure_ascii=False,
+                #               indent=4, sort_keys=True, separators=(',', ': ')
+                print('break {} find_count{} try_count:{}'.format(
+                    urdf_file, find_count, try_count))
+                # print(urdf_file, 'break', find_count, try_count)
+                break
+
+                # return contact_points_list
 
             # emerge object
             pybullet.setGravity(0, 0, 0)
@@ -245,7 +296,6 @@ def generate(urdf_file, required_points_num,
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
-                    break
                 pybullet.stepSimulation()
                 # if render:
                 #     depth = (r.get_depth_metres() * 1000).astype(np.float32)
@@ -259,7 +309,6 @@ def generate(urdf_file, required_points_num,
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
-                    break
                 pybullet.stepSimulation()
                 # if render:
                 #     r.render()
@@ -273,7 +322,6 @@ def generate(urdf_file, required_points_num,
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
-                    break
                 pybullet.stepSimulation()
                 # if render:
                 #     r.render()
@@ -286,7 +334,6 @@ def generate(urdf_file, required_points_num,
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
-                    break
                 pybullet.stepSimulation()
                 # if render:
                 # r.render()
@@ -382,14 +429,39 @@ def generate(urdf_file, required_points_num,
             contact_points_dict['contact_points'] = contact_points_list
 
             if os.path.exists(os.path.join(save_dir, 'contact_points.json')):
-                contact_points_dict_existed = json.load(
-                    open(os.path.join(save_dir, 'contact_points.json'), 'r'))
-                contact_points_dict_existed['contact_points'].append(pose)
-                find_count = len(contact_points_dict_existed['contact_points'])
-                with open(os.path.join(save_dir,
-                                       'contact_points.json', ), 'w') as f:
-                    json.dump(contact_points_dict_existed, f, ensure_ascii=False,
-                              indent=4, sort_keys=True, separators=(',', ': '))
+                filelock_path = os.path.join(
+                    save_dir, 'contact_points.json.lock')
+                with FileLock(filelock_path):
+                    with open(os.path.join(save_dir, 'contact_points.json'), 'r') as f:
+                        contact_points_dict_existed = json.load(f)
+                        contact_points_dict_existed['contact_points'].append(
+                            pose)
+                        find_count = len(
+                            contact_points_dict_existed['contact_points'])
+                # if os.path.isfile(filelock_path):
+                #     os.remove(filelock_path)
+
+                # with open(os.path.join(save_dir, 'contact_points.json'), 'r')  as f:
+                #     fcntl.flock(f, fcntl.LOCK_EX)
+                #     contact_points_dict_existed = json.load(f)
+                #     contact_points_dict_existed['contact_points'].append(pose)
+                #     find_count = len(contact_points_dict_existed['contact_points'])
+
+                filelock_path = os.path.join(
+                    save_dir, 'contact_points.json.lock')
+                with FileLock(filelock_path):
+                    with open(os.path.join(save_dir,
+                                           'contact_points.json', ), 'w') as f:
+                        json.dump(contact_points_dict_existed, f, ensure_ascii=False,
+                                  indent=4, sort_keys=True, separators=(',', ': '))
+                # if os.path.isfile(filelock_path):
+                #     os.remove(filelock_path)
+                # with open(os.path.join(save_dir,
+                #                        'contact_points.json', ), 'w') as f:
+                #     fcntl.flock(f, fcntl.LOCK_EX)
+                #     json.dump(contact_points_dict_existed, f, ensure_ascii=False,
+                #               indent=4, sort_keys=True, separators=(',', ': '))
+
                 # for cp in contact_points_dict['contact_points']:
                     # contact_points_dict_existed['contact_points'].append(cp)
                     # with open(os.path.join(save_dir,
@@ -404,10 +476,8 @@ def generate(urdf_file, required_points_num,
                               indent=4, sort_keys=True, separators=(',', ': '))
                 find_count += 1
 
-            print("Find the hanging point {}".format(find_count))
-            if find_count >= required_points_num:
-                break
-
+            print("{}: Find the hanging point {}".format(urdf_file, find_count))
+        print('finish {}'.format(urdf_file))
     except KeyboardInterrupt:
         sys.exit()
 

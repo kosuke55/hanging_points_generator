@@ -2,98 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import json
 import os
-import time
-from pathlib import Path
+import sys
 
 import numpy as np
 import pybullet
-import pybullet_data
 import skrobot
 import six
-import xml.etree.ElementTree as ET
-from filelock import FileLock
 
-
-def random_pos(z_offset=0.2):
-    """generate random position for dropping sphare
-
-    Parameters
-    ----------
-    z_offset : float, optional
-        z offset, by default 0.2
-
-    Returns
-    -------
-    pos list [x, y, z]
-        random position
-    """
-    pos = [np.random.randn() * 0.05,
-           np.random.randn() * 0.05,
-           z_offset + np.random.rand() * 0.1]
-    return pos
-
-
-def random_rot():
-    """generate random rotation
-
-    Returns
-    -------
-    rot list
-        quaterenion [x, y, z, w]
-    """
-    roll = np.random.rand() * np.pi
-    pitch = np.random.rand() * np.pi
-    yaw = np.random.rand() * np.pi
-    rot = pybullet.getQuaternionFromEuler([roll, pitch, yaw])
-
-    return rot
-
-
-def random_rotate_object(object_id):
-    """Rotate to the random roatation
-
-    Parameters
-    ----------
-    object_id : int
-    """
-    pos, _ = pybullet.getBasePositionAndOrientation(object_id)
-    rot = random_rot()
-    pybullet.resetBasePositionAndOrientation(
-        object_id, pos, rot)
-
-
-def load_static_urdf(urdf_file, position=[0, 0, 0], orientation=[0, 0, 0, 1]):
-    """load mass=0 urdf by pybullet
-
-    Parameters
-    ----------
-    urdf_file : str
-    position : list, optional
-        position, by default [0, 0, 0]
-    orientation : list, optional
-        quaternion orientation, by default [0, 0, 0, 1]
-
-    Returns
-    -------
-    object_id ; int
-     pybullet object id
-    """
-    tree = ET.parse(urdf_file)
-    root = tree.getroot()
-    root[0].find('inertial').find('mass').attrib['value'] = '0'
-    urdf_path = Path(urdf_file)
-    static_urdf_path = urdf_path.parent / 'static.urdf'
-    tree.write(str(static_urdf_path),
-               encoding='utf-8', xml_declaration=True)
-    object_id = pybullet.loadURDF(str(static_urdf_path),
-                                  position, orientation)
-
-    if static_urdf_path.exists():
-        static_urdf_path.unlink()
-
-    return object_id
+from hanging_points_generator.generator_utils import get_contact_point
+from hanging_points_generator.generator_utils import get_urdf_center
+from hanging_points_generator.generator_utils import load_static_urdf
+from hanging_points_generator.generator_utils import random_pos
+from hanging_points_generator.generator_utils import rotate_object
+from hanging_points_generator.generator_utils import save_contact_points
+from hanging_points_generator.generator_utils import step
 
 
 def make_sphere(radius=0.005, use_random_pos=True):
@@ -117,18 +40,6 @@ def make_sphere(radius=0.005, use_random_pos=True):
         basePosition=random_pos() if use_random_pos else [0, 0, 0])
 
     return sphere_id
-
-
-def step(n=1):
-    """pybullet step simulation
-
-    Parameters
-    ----------
-    n : int, optional
-        the number of step, by default 1
-    """
-    for _ in range(n):
-        pybullet.stepSimulation()
 
 
 def remove_all_sphere(sphere_ids):
@@ -202,75 +113,8 @@ def get_key_rotatins(use_diagonal=True):
     return key_rotations
 
 
-def rotatate_object(object_id, rot):
-    """Rotate to the specified roatation
-
-    Parameters
-    ----------
-    object_id : [type]
-        [description]
-    rot : [type]
-        [description]
-    """
-    pos, _ = pybullet.getBasePositionAndOrientation(object_id)
-    pybullet.resetBasePositionAndOrientation(
-        object_id, pos, rot)
-
-
-def save_contact_points(
-        save_dir, save_file_name, contact_points_dict):
-    """Save contact points jso file with filelock
-
-    Parameters
-    ----------
-    save_dir : str
-    save_file_name : str
-    contact_points_dict : dict
-    """
-    if os.path.exists(os.path.join(save_dir, save_file_name)):
-        filelock_path = os.path.join(
-            save_dir, save_file_name + '.lock')
-        with FileLock(filelock_path):
-            with open(os.path.join(save_dir, save_file_name), 'r') as f:
-                contact_points_dict_existed = json.load(f)
-                for c in contact_points_dict['contact_points']:
-                    contact_points_dict_existed['contact_points'].append(c)
-                # find_count = len(
-                #     contact_points_dict_existed['contact_points'])
-
-        filelock_path = os.path.join(
-            save_dir, save_file_name + '.lock')
-        with FileLock(filelock_path):
-            with open(os.path.join(save_dir, save_file_name), 'w') as f:
-                json.dump(contact_points_dict_existed, f, ensure_ascii=False,
-                          indent=4, sort_keys=True, separators=(',', ': '))
-    else:
-        with open(os.path.join(save_dir, save_file_name), 'w') as f:
-            json.dump(contact_points_dict, f, ensure_ascii=False,
-                      indent=4, sort_keys=True, separators=(',', ': '))
-        # find_count += 1
-
-
-def get_urdf_center(urdf_file):
-    """Get urdf center
-
-    Parameters
-    ----------
-    urdf_file : str
-
-    Returns
-    -------
-    ceter : list [x, y ,z]
-    """
-    tree = ET.parse(urdf_file)
-    root = tree.getroot()
-    center = np.array([float(i) for i in root[0].find(
-        "inertial").find("origin").attrib['xyz'].split(' ')])
-    return center
-
-
 def get_contact_points(
-        object_id, object_center, sphere_ids,
+        object_id, object_center, sphere_ids, contact_points_list=None,
         x_axis=[1, 0, 0], y_axis=[0, 0, -1], use_min_height=False):
     """get contact points between object and spheres
 
@@ -290,36 +134,43 @@ def get_contact_points(
     -------
     contact_points_list
     """
-    contact_points_list = []
+    if contact_points_list is None:
+        contact_points_list = []
+
     object_pos, object_rot = pybullet.getBasePositionAndOrientation(object_id)
     obj_coords = skrobot.coordinates.Coordinates(
         pos=object_pos,
         rot=skrobot.coordinates.math.xyzw2wxyz(object_rot))
 
     for sphere_id in sphere_ids:
-        contact_points = pybullet.getContactPoints(object_id, sphere_id)
-        if len(contact_points) == 0:
+        pose = get_contact_point(
+            object_id, object_center, sphere_id, obj_coords,
+            x_axis, y_axis, use_min_height)
+        if pose is None:
             continue
+        # contact_points = pybullet.getContactPoints(object_id, sphere_id)
+        # if len(contact_points) == 0:
+        #     continue
 
-        if use_min_height:
-            contact_point = sorted(
-                contact_points, key=lambda x: x[5][2])[0][5]
-        else:
-            contact_point = sorted(
-                contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
+        # if use_min_height:
+        #     contact_point = sorted(
+        #         contact_points, key=lambda x: x[5][2])[0][5]
+        # else:
+        #     contact_point = sorted(
+        #         contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
 
-        rot = skrobot.coordinates.math.rotation_matrix_from_axis(
-            x_axis=x_axis, y_axis=y_axis)
+        # rot = skrobot.coordinates.math.rotation_matrix_from_axis(
+        #     x_axis=x_axis, y_axis=y_axis)
 
-        contact_point = skrobot.coordinates.Coordinates(
-            pos=contact_point, rot=rot)
+        # contact_point = skrobot.coordinates.Coordinates(
+        #     pos=contact_point, rot=rot)
 
-        contact_point_obj = obj_coords.inverse_transformation().transform(
-            contact_point).translate(object_center, 'world')
+        # contact_point_obj = obj_coords.inverse_transformation().transform(
+        #     contact_point).translate(object_center, 'world')
 
-        pose = np.concatenate(
-            [contact_point_obj.T()[:3, 3][None, :],
-             contact_point_obj.T()[:3, :3]]).tolist()
+        # pose = np.concatenate(
+        #     [contact_point_obj.T()[:3, 3][None, :],
+        #      contact_point_obj.T()[:3, :3]]).tolist()
 
         contact_points_list.append(pose)
 
@@ -374,12 +225,12 @@ def generate(urdf_file, required_points_num,
 
     try:
         for try_count in six.moves.range(try_num):
-            rotatate_object(object_id, key_rotations[try_count])
+            rotate_object(object_id, key_rotations[try_count])
             sphere_ids = []
             pybullet.setGravity(0, 0, gravity)
 
             for _ in range(30):
-                sphere_ids.append(make_sphere())
+                sphere_ids.append(mm_sphere())
                 step(10)
                 remove_out_sphere(sphere_ids)
 
@@ -390,7 +241,7 @@ def generate(urdf_file, required_points_num,
                     remove_out_sphere(sphere_ids)
 
             pouring_points_list = get_contact_points(
-                object_id, object_center, sphere_ids)
+                object_id, object_center, sphere_ids, pouring_points_list)
             pouring_points_dict['contact_points'] = pouring_points_list
 
             save_contact_points(
