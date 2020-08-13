@@ -3,6 +3,7 @@
 
 import json
 import os
+import os.path as osp
 from pathlib import Path
 
 import numpy as np
@@ -156,8 +157,9 @@ def get_urdf_center(urdf_file):
     return center
 
 
-def get_contact_point(object_id, object_center,  contact_object_id, obj_coords=None,
-                      x_axis=[1, 0, 0], y_axis=[0, 0, -1], use_min_height=False):
+def get_contact_point(
+        object_id, object_center,  contact_object_id, obj_coords=None,
+        x_axis=[1, 0, 0], y_axis=[0, 0, -1], use_min_height=False):
     contact_points = pybullet.getContactPoints(object_id, contact_object_id)
     if len(contact_points) == 0:
         return None
@@ -190,3 +192,38 @@ def get_contact_point(object_id, object_center,  contact_object_id, obj_coords=N
          contact_point_obj.T()[:3, :3]]).tolist()
 
     return pose
+
+
+def load_multiple_contact_points(
+        base_dir, json_name='contact_points.json'):
+    """Load multiple contact points
+
+    This is for eos fancy_dir
+
+    Parameters
+    ----------
+    base_dir : str
+        base_dir/*/json_file
+    json_name : str, optional
+        'contact_points.json' or 'pouring_points.json',
+        by default 'contact_points.json'
+
+    Returns
+    -------
+    base_cp_dict
+        merged contact_points dict
+
+    """
+    paths = list(sorted(Path(base_dir).glob(osp.join('*', json_name))))
+
+    for i, path in enumerate(paths):
+        if i == 0:
+            base_cp_file = str(path)
+            base_cp_dict = json.load(open(base_cp_file, 'r'))
+        else:
+            cp_file = str(path)
+            cp_dict = json.load(open(cp_file, 'r'))
+            for cp in cp_dict['contact_points']:
+                base_cp_dict['contact_points'].append(cp)
+
+    return base_cp_dict
