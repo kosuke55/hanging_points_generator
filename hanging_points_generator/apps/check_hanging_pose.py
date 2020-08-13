@@ -18,14 +18,18 @@ def main():
     parser.add_argument('--clustering', '-c', type=int,
                         help='dbscan clustering',
                         default=1)
-    parser.add_argument('--filter_penetration', '-f', type=int,
+    parser.add_argument('--filter-penetration', '-f', type=int,
                         help='filter penetration',
                         default=0)
+    parser.add_argument('--inf-penetration-check', '-ipc', type=int,
+                        help='infinity penetration check ',
+                        default=1)
     args = parser.parse_args()
 
     check_contact_points(args.pose, args.input,
                          use_clustering=args.clustering,
-                         use_filter_penetration=args.filter_penetration)
+                         use_filter_penetration=args.filter_penetration,
+                         inf_penetration_check=args.inf_penetration_check)
 
 
 if __name__ == '__main__':

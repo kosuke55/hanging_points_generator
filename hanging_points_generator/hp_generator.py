@@ -24,14 +24,20 @@ from hanging_points_generator.renderer import Renderer
 
 
 def check_contact_points(contact_points_file, urdf_file,
-                         use_clustering=True, use_filter_penetration=True):
+                         use_clustering=True, use_filter_penetration=True,
+                         inf_penetration_check=True):
     contact_points_dict = json.load(open(contact_points_file, 'r'))
     contact_points = contact_points_dict['contact_points']
     if use_clustering:
         contact_points = cluster_hanging_points(
             contact_points, eps=0.005, min_samples=2)
     if use_filter_penetration:
-        contact_points, _ = filter_penetration(urdf_file, contact_points)
+        if inf_penetration_check:
+            contact_points, _ = filter_penetration(
+                urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
+        else:
+            contact_points, _ = filter_penetration(
+                urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
 
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))
