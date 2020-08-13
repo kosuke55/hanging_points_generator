@@ -6,7 +6,6 @@ import json
 import os
 import os.path as osp
 import sys
-import time
 from math import pi
 
 import numpy as np
@@ -55,14 +54,13 @@ def check_contact_points(contact_points_file, urdf_file,
     viewer._init_and_start_app()
 
 
-def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1, merge_clusters=True):
+def cluster_hanging_points(hanging_points, eps=0.03,
+                           min_samples=1, merge_clusters=True):
     points = [c[0] for c in hanging_points]
     dbscan = DBSCAN(
         eps=eps, min_samples=min_samples).fit(points)
     clustered_hanging_points = []
-    # print('--- dbscan ---')
-    # print(points)
-    # print(dbscan.labels_)
+
     for label in range(np.max(dbscan.labels_) + 1):
         if np.count_nonzero(dbscan.labels_ == label) <= 1:
             continue
@@ -73,7 +71,8 @@ def cluster_hanging_points(hanging_points, eps=0.03, min_samples=1, merge_cluste
     return clustered_hanging_points
 
 
-def filter_penetration(obj_file, hanging_points, box_size=[0.1, 0.0001, 0.0001]):
+def filter_penetration(obj_file, hanging_points,
+                       box_size=[0.1, 0.0001, 0.0001]):
     """Filter the penetrating hanging points
 
     Parameters
@@ -125,11 +124,6 @@ def filter_penetration(obj_file, hanging_points, box_size=[0.1, 0.0001, 0.0001])
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir,
              hook_type='just_bar', render=False):
-
-    # start_time = time.time()
-    # finding_times = []
-    # finding_times.append(start_time)
-
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     contact_points_list = []
@@ -213,8 +207,8 @@ def generate(urdf_file, required_points_num,
     height_thresh = 0.5
 
     if render:
-        im_w = 1920
-        im_h = 1080
+        im_w = 512
+        im_h = 424
         im_fov = 42.5
         nf = 0.1
         ff = 2.0
@@ -253,25 +247,16 @@ def generate(urdf_file, required_points_num,
                 filelock_path = os.path.join(
                     save_dir, 'contact_points.json.lock')
                 with FileLock(filelock_path):
-                    with open(os.path.join(save_dir, 'contact_points.json'), 'r') as f:
+                    with open(os.path.join(
+                            save_dir, 'contact_points.json'), 'r') as f:
                         json.dump(
                             contact_points_dict, f, ensure_ascii=False,
                             indent=4, sort_keys=True, separators=(',', ': '))
-                # if os.path.isfile(filelock_path):
-                #     os.remove(filelock_path)
 
-                # with open(os.path.join(save_dir, 'contact_points.json', ), 'w') as f:
-                #     fcntl.flock(f, fcntl.LOCK_EX)
-                #     json.dump(contact_points_dict, f, ensure_ascii=False,
-                #               indent=4, sort_keys=True, separators=(',', ': ')
                 print('break {} find_count{} try_count:{}'.format(
                     urdf_file, find_count, try_count))
-                # print(urdf_file, 'break', find_count, try_count)
                 break
 
-                # return contact_points_list
-
-            # emerge object
             pybullet.setGravity(0, 0, 0)
             failed = False
             if hook_type == 'just_bar':
@@ -294,7 +279,7 @@ def generate(urdf_file, required_points_num,
                 pybullet.stepSimulation()
                 if render:
                     r.render()
-                    # depth = (r.get_depth_metres() * 1000).astype(np.float32)
+                    depth = (r.get_depth_metres() * 1000).astype(np.float32)
 
             pybullet.resetBaseVelocity(object_id, [0, 0, 0])
             pybullet.setGravity(0, 0, gravity)
@@ -303,35 +288,34 @@ def generate(urdf_file, required_points_num,
                 if pos[2] < height_thresh:
                     failed = True
                 pybullet.stepSimulation()
-                # if render:
-                #     depth = (r.get_depth_metres() * 1000).astype(np.float32)
+                if render:
+                    r.render()
+                    depth = (r.get_depth_metres() * 1000).astype(np.float32)
 
             if failed:
                 continue
 
-            # pybullet.resetBaseVelocity(object_id, [0, 0.05, 0])
             pybullet.setGravity(0, 5, -5)
             for _ in range(int(timestep * 1)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                 pybullet.stepSimulation()
-                # if render:
-                #     r.render()
-                #     depth = (r.get_depth_metres() * 1000).astype(np.float32)
+                if render:
+                    r.render()
+                    depth = (r.get_depth_metres() * 1000).astype(np.float32)
             if failed:
                 continue
 
-            # pybullet.resetBaseVelocity(object_id, [0, -0.05, 0])
             pybullet.setGravity(0, -5, -5)
             for _ in range(int(timestep * 1)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
                     failed = True
                 pybullet.stepSimulation()
-                # if render:
-                #     r.render()
-                #     depth = (r.get_depth_metres() * 1000).astype(np.float32)
+                if render:
+                    r.render()
+                    depth = (r.get_depth_metres() * 1000).astype(np.float32)
             if failed:
                 continue
 
@@ -353,13 +337,6 @@ def generate(urdf_file, required_points_num,
             if len(contact_points) == 0:
                 continue
 
-            # finding_times.append(time.time())
-            # print("Find the hanging point {}   time {}  total time {}".format(
-            #     find_count,
-            #     finding_times[len(finding_times) - 1]
-            #     - finding_times[len(finding_times) - 2],
-            #     finding_times[len(finding_times) - 1] - start_time))
-
             obj_coords = skrobot.coordinates.Coordinates(
                 pos=pos,
                 rot=skrobot.coordinates.math.xyzw2wxyz(rot))
@@ -376,40 +353,6 @@ def generate(urdf_file, required_points_num,
                     x_axis=hook_direction,
                     y_axis=[0, 0, -1]))
             # y_axis=contact_point_to_hole_vector))
-
-            # # check penetration. only for hook_type='just_bar'
-            # penetration_check_coords = contact_point.copy_worldcoords().translate([
-            #     0, 0, 0])
-            # penetration_check_id = pybullet.createMultiBody(
-            #     baseMass=0.,
-            #     baseCollisionShapeIndex=pybullet.createCollisionShape(
-            #         pybullet.GEOM_BOX,
-            #         halfExtents=[0.01, 0.001, 0.001]),
-            #     # basePosition=penetration_check_coords.worldpos())
-            #     basePosition=[penetration_check_coords.worldpos()[0], 0, 1])
-
-            # # for making penetration object easier to see (1)
-            # # pybullet.removeBody(hook_id)
-            # # time.sleep(5)
-            # pybullet.resetBaseVelocity(object_id, [0, 0, 0])
-            # pybullet.setGravity(0, 0, 0)
-            # pybullet.stepSimulation()
-            # penetration = pybullet.getContactPoints(
-            #     object_id, penetration_check_id)
-            # if penetration:
-            #     print('penetration')
-            #     pybullet.removeBody(penetration_check_id)
-            #     continue
-            # pybullet.removeBody(penetration_check_id)
-            # # for making penetration object easier to see (2)
-            # # hook_id = pybullet.createMultiBody(
-            # #     baseMass=0.,
-            # #     baseCollisionShapeIndex=pybullet.createCollisionShape(
-            # #         pybullet.GEOM_CYLINDER,
-            # #         radius=0.0025,
-            # #         height=0.3),
-            # #     basePosition=[0, 0, 1],
-            # #     baseOrientation=[-0.0, 0.7071067811865475, -0.0, 0.7071067811865476])
 
             contact_point_obj = obj_coords.inverse_transformation().transform(
                 contact_point).translate(center, 'world')
@@ -428,9 +371,6 @@ def generate(urdf_file, required_points_num,
                 [contact_point_obj.T()[:3, 3][None, :],
                  contact_point_obj.T()[:3, :3]]).tolist()
             contact_points_list.append(pose)
-            # contact_points_list.append(np.concatenate(
-            #     [contact_point_obj.T()[:3, 3][None, :],
-            #      contact_point_obj.T()[:3, :3]]).tolist())
 
             contact_points_dict['contact_points'] = contact_points_list
 
@@ -438,42 +378,22 @@ def generate(urdf_file, required_points_num,
                 filelock_path = os.path.join(
                     save_dir, 'contact_points.json.lock')
                 with FileLock(filelock_path):
-                    with open(os.path.join(save_dir, 'contact_points.json'), 'r') as f:
+                    with open(os.path.join(
+                            save_dir, 'contact_points.json'), 'r') as f:
                         contact_points_dict_existed = json.load(f)
                         contact_points_dict_existed['contact_points'].append(
                             pose)
                         find_count = len(
                             contact_points_dict_existed['contact_points'])
-                # if os.path.isfile(filelock_path):
-                #     os.remove(filelock_path)
-
-                # with open(os.path.join(save_dir, 'contact_points.json'), 'r')  as f:
-                #     fcntl.flock(f, fcntl.LOCK_EX)
-                #     contact_points_dict_existed = json.load(f)
-                #     contact_points_dict_existed['contact_points'].append(pose)
-                #     find_count = len(contact_points_dict_existed['contact_points'])
 
                 filelock_path = os.path.join(
                     save_dir, 'contact_points.json.lock')
                 with FileLock(filelock_path):
                     with open(os.path.join(save_dir,
                                            'contact_points.json', ), 'w') as f:
-                        json.dump(contact_points_dict_existed, f, ensure_ascii=False,
-                                  indent=4, sort_keys=True, separators=(',', ': '))
-                # if os.path.isfile(filelock_path):
-                #     os.remove(filelock_path)
-                # with open(os.path.join(save_dir,
-                #                        'contact_points.json', ), 'w') as f:
-                #     fcntl.flock(f, fcntl.LOCK_EX)
-                #     json.dump(contact_points_dict_existed, f, ensure_ascii=False,
-                #               indent=4, sort_keys=True, separators=(',', ': '))
-
-                # for cp in contact_points_dict['contact_points']:
-                    # contact_points_dict_existed['contact_points'].append(cp)
-                    # with open(os.path.join(save_dir,
-                    #                        'contact_points.json', ), 'w') as f:
-                    #     json.dump(contact_points_dict_existed, f, ensure_ascii=False,
-                    #               indent=4, sort_keys=True, separators=(',', ': '))
+                        json.dump(
+                            contact_points_dict_existed, f, ensure_ascii=False,
+                            indent=4, sort_keys=True, separators=(',', ': '))
 
             else:
                 with open(os.path.join(save_dir,
