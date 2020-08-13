@@ -25,6 +25,7 @@ def random_pos(z_offset=0.2):
     -------
     pos list [x, y, z]
         random position
+
     """
     pos = [np.random.randn() * 0.05,
            np.random.randn() * 0.05,
@@ -39,6 +40,7 @@ def random_rot():
     -------
     rot list
         quaterenion [x, y, z, w]
+
     """
     roll = np.random.rand() * np.pi
     pitch = np.random.rand() * np.pi
@@ -54,6 +56,7 @@ def random_rotate_object(object_id):
     Parameters
     ----------
     object_id : int
+
     """
     pos, _ = pybullet.getBasePositionAndOrientation(object_id)
     rot = random_rot()
@@ -76,6 +79,7 @@ def load_static_urdf(urdf_file, position=[0, 0, 0], orientation=[0, 0, 0, 1]):
     -------
     object_id ; int
      pybullet object id
+
     """
     tree = ET.parse(urdf_file)
     root = tree.getroot()
@@ -100,43 +104,50 @@ def step(n=1):
     ----------
     n : int, optional
         the number of step, by default 1
+
     """
     for _ in range(n):
         pybullet.stepSimulation()
 
 
 def save_contact_points(
-        save_dir, save_file_name, contact_points_dict):
-    """Save contact points jso file with filelock
+        save_dir, save_file_name, contact_points_dict, filelock=False):
+    """Save contact points json file with filelock
 
     Parameters
     ----------
     save_dir : str
     save_file_name : str
     contact_points_dict : dict
-    """
-    if os.path.exists(os.path.join(save_dir, save_file_name)):
-        filelock_path = os.path.join(
-            save_dir, save_file_name + '.lock')
-        with FileLock(filelock_path):
-            with open(os.path.join(save_dir, save_file_name), 'r') as f:
-                contact_points_dict_existed = json.load(f)
-                for c in contact_points_dict['contact_points']:
-                    contact_points_dict_existed['contact_points'].append(c)
-                # find_count = len(
-                #     contact_points_dict_existed['contact_points'])
 
-        filelock_path = os.path.join(
-            save_dir, save_file_name + '.lock')
-        with FileLock(filelock_path):
+    """
+    if filelock:
+        if os.path.exists(os.path.join(save_dir, save_file_name)):
+            filelock_path = os.path.join(
+                save_dir, save_file_name + '.lock')
+            with FileLock(filelock_path):
+                with open(os.path.join(save_dir, save_file_name), 'r') as f:
+                    contact_points_dict_existed = json.load(f)
+                    for c in contact_points_dict['contact_points']:
+                        contact_points_dict_existed['contact_points'].append(c)
+                    # find_count = len(
+                    #     contact_points_dict_existed['contact_points'])
+
+            filelock_path = os.path.join(
+                save_dir, save_file_name + '.lock')
+            with FileLock(filelock_path):
+                with open(os.path.join(save_dir, save_file_name), 'w') as f:
+                    json.dump(contact_points_dict_existed, f, ensure_ascii=False,
+                              indent=4, sort_keys=True, separators=(',', ': '))
+        else:
             with open(os.path.join(save_dir, save_file_name), 'w') as f:
-                json.dump(contact_points_dict_existed, f, ensure_ascii=False,
+                json.dump(contact_points_dict, f, ensure_ascii=False,
                           indent=4, sort_keys=True, separators=(',', ': '))
+            # find_count += 1
     else:
         with open(os.path.join(save_dir, save_file_name), 'w') as f:
             json.dump(contact_points_dict, f, ensure_ascii=False,
                       indent=4, sort_keys=True, separators=(',', ': '))
-        # find_count += 1
 
 
 def get_urdf_center(urdf_file):
