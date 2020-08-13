@@ -3,6 +3,7 @@
 
 import glob
 import os
+import os.path as osp
 
 from hanging_points_generator import hp_generator as hpg
 
@@ -19,7 +20,8 @@ hanging_object_dict = {
     9: "052_extra_large_clamp"
 }
 
-files = glob.glob("urdf/*/*")
+urdf_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf_cp'
+files = glob.glob(osp.join(urdf_dir, '*/*'))
 
 for file in files:
     dirname, filename = os.path.split(file)
