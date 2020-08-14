@@ -26,8 +26,7 @@ files = glob.glob(osp.join(urdf_dir, '*/*'))
 for file in files:
     dirname, filename = os.path.split(file)
     filename_without_ext, ext = os.path.splitext(filename)
-    category_name = dirname.split("/")[1]
-    idx = dirname.split("/")[2]
+    category_name = dirname.split("/")[-1]
 
     # if category_name != hanging_object_dict[0]:
     #     continue
@@ -37,7 +36,7 @@ for file in files:
         print(file)
         hpg.generate(urdf_file=file,
                      required_points_num=30,
-                     enable_gui="true",
+                     enable_gui="false",
                      viz_obj="false",
                      save_dir=dirname,
                      hook_type='just_bar',
