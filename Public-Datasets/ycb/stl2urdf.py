@@ -4,14 +4,19 @@
 import glob
 import open3d as o3d
 import os
+import os.path as osp
 import subprocess
 import trimesh
 import xml.etree.ElementTree as ET
 
 from hanging_points_generator import create_mesh
 
-files = glob.glob("ycb_hanging_object_16/*/*/*")
-save_dir = "ycb_hanging_object/urdf"
+input_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16'
+# example
+# /media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16/019_pitcher_base/google_16k/nontextured.stl
+files = glob.glob(osp.join(input_dir, '*/*/*'))
+
+save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf"
 os.makedirs(save_dir, exist_ok=True)
 
 # http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/
@@ -21,6 +26,7 @@ hanging_object_list = [
     "025_mug",
     "033_spatula",
     "035_power_drill",
+    "037_scissors",
     "042_adjustable_wrench",
     "048_hammer",
     "050_medium_clamp",
