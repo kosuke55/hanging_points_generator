@@ -21,13 +21,39 @@ from filelock import FileLock
 from sklearn.cluster import DBSCAN
 
 from hanging_points_generator.renderer import Renderer
+from hanging_points_generator.generator_utils import load_multiple_contact_points
 from hanging_points_generator.generator_utils import save_contact_points
 
 
-def check_contact_points(contact_points_file, urdf_file,
-                         use_clustering=True, use_filter_penetration=True,
-                         inf_penetration_check=True):
-    contact_points_dict = json.load(open(contact_points_file, 'r'))
+def check_contact_points(
+        contact_points_path, urdf_file, json_name='contact_points.json',
+        use_clustering=True, use_filter_penetration=True,
+        inf_penetration_check=True):
+    """Chaeck contact poitns with urdf
+
+    Parameters
+    ----------
+    contact_points_path : str
+        file or dir path
+        if dir load multiple contact_points
+    urdf_file : str
+    json_name : str, optional
+        'contact_points.json' or 'pouring_points.json',
+        by default 'contact_points.json'
+    use_clustering : bool, optional
+        by default True
+    use_filter_penetration : bool, optional
+        by default True
+    inf_penetration_check : bool, optional
+        by default True
+
+    """
+    if osp.isdir(contact_points_path):
+        contact_points_dict = load_multiple_contact_points(
+            contact_points_path, json_name)
+    else:
+        contact_points_dict = json.load(open(contact_points_path, 'r'))
+
     contact_points = contact_points_dict['contact_points']
     if use_clustering:
         contact_points = cluster_hanging_points(
