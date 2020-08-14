@@ -50,6 +50,29 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 **3.** Find hanging points in pybullet.  
 <img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="200" height="200"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="200" height="200">  
 
+### How to check contact points  
+```
+check_hanging_pose -i base.urdf -p contact_points -c 1 -f 1 -ipc 0
+# If contact_points is dir, load multiple contact_points.
+
+usage: check_hanging_pose [-h] --input INPUT --pose POSE
+                          [--clustering CLUSTERING]
+                          [--filter-penetration FILTER_PENETRATION]
+                          [--inf-penetration-check INF_PENETRATION_CHECK]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --input INPUT, -i INPUT
+                        input urdf (default: None)
+  --pose POSE, -p POSE  input pose (default: None)
+  --clustering CLUSTERING, -c CLUSTERING
+                        dbscan clustering (default: 1)
+  --filter-penetration FILTER_PENETRATION, -f FILTER_PENETRATION
+                        filter penetration (default: 0)
+  --inf-penetration-check INF_PENETRATION_CHECK, -ipc INF_PENETRATION_CHECK
+                        infinity penetration check (default: 1)
+```
+
 ### Externals  
 [andyzeng/tsdf-fusion-python](https://github.com/andyzeng/tsdf-fusion-python)  
 ```
