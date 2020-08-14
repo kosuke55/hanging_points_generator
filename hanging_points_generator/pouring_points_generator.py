@@ -245,7 +245,7 @@ def generate(urdf_file, required_points_num,
             pouring_points_dict['contact_points'] = pouring_points_list
 
             save_contact_points(
-                save_dir, 'pouring_poitns.json', pouring_points_dict)
+                save_dir, 'pouring_points.json', pouring_points_dict)
 
             remove_all_sphere(sphere_ids)
 
