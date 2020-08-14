@@ -18,8 +18,8 @@ for file in files:
     if filename == 'base.urdf':
         hpg.generate(urdf_file=file,
                      required_points_num=30,
-                     enable_gui="true",
-                     viz_obj="false",
+                     enable_gui=0,
+                     viz_obj=0,
                      save_dir=dirname,
                      hook_type='just_bar',
                      render=False)

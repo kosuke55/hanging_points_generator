@@ -36,8 +36,8 @@ for file in files:
         print(file)
         hpg.generate(urdf_file=file,
                      required_points_num=30,
-                     enable_gui="false",
-                     viz_obj="false",
+                     enable_gui=0,
+                     viz_obj=0,
                      save_dir=dirname,
                      hook_type='just_bar',
                      render=False)

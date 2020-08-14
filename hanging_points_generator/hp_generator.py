@@ -15,7 +15,6 @@ import skrobot
 import six
 import trimesh
 import xml.etree.ElementTree as ET
-from distutils.util import strtobool
 from eos import make_fancy_output_dir
 from filelock import FileLock
 from sklearn.cluster import DBSCAN
@@ -164,7 +163,7 @@ def generate(urdf_file, required_points_num,
     center = np.array([float(i) for i in root[0].find(
         "inertial").find("origin").attrib['xyz'].split(' ')])
 
-    if strtobool(enable_gui):
+    if enable_gui:
         pybullet.connect(pybullet.GUI)
         pybullet.resetDebugVisualizerCamera(
             cameraDistance=0.3,
@@ -205,7 +204,7 @@ def generate(urdf_file, required_points_num,
 
     hook_direction /= np.linalg.norm(hook_direction)
 
-    if strtobool(viz_obj):
+    if viz_obj:
         obj_model = skrobot.models.urdf.RobotModelFromURDF(
             urdf_file=urdf_file)
         viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
@@ -398,7 +397,7 @@ def generate(urdf_file, required_points_num,
                     pos=contact_point_obj.worldpos(),
                     rot=contact_point_obj.worldrot()))
 
-            if strtobool(viz_obj):
+            if viz_obj:
                 viewer.add(contact_point_sphere)
 
             pose = np.concatenate(
@@ -475,10 +474,10 @@ if __name__ == '__main__':
     parser.add_argument('--required_points_num', '-n', type=int,
                         help='required points number',
                         default=1)
-    parser.add_argument('--gui', '-g', type=str,
+    parser.add_argument('--gui', '-g', type=int,
                         help='gui',
                         default="True")
-    parser.add_argument('--viz_obj', '-v', type=str,
+    parser.add_argument('--viz_obj', '-v', type=int,
                         help='viz obj with contactpoints',
                         default="False")
     args = parser.parse_args()
