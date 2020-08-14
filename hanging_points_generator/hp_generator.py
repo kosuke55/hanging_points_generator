@@ -350,8 +350,8 @@ def generate(urdf_file, required_points_num,
             contact_point = skrobot.coordinates.Coordinates(
                 pos=min_height_contact_point,
                 rot=skrobot.coordinates.math.rotation_matrix_from_axis(
-                    x_axis=hook_direction,
-                    y_axis=[0, 0, -1]))
+                    hook_direction, [0, 0, -1]))
+
             # y_axis=contact_point_to_hole_vector))
 
             contact_point_obj = obj_coords.inverse_transformation().transform(
