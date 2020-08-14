@@ -214,7 +214,7 @@ def load_multiple_contact_points(
     Parameters
     ----------
     base_dir : str
-        base_dir/*/json_file
+        base_dir/**/json_file
     json_name : str, optional
         'contact_points.json' or 'pouring_points.json',
         by default 'contact_points.json'
@@ -225,7 +225,7 @@ def load_multiple_contact_points(
         merged contact_points dict
 
     """
-    paths = list(sorted(Path(base_dir).glob(osp.join('*', json_name))))
+    paths = list(sorted(Path(base_dir).glob(osp.join('**', json_name))))
 
     for i, path in enumerate(paths):
         if i == 0:
