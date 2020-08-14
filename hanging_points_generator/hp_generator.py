@@ -54,9 +54,7 @@ def check_contact_points(
         contact_points_dict = json.load(open(contact_points_path, 'r'))
 
     contact_points = contact_points_dict['contact_points']
-    if use_clustering:
-        contact_points = cluster_hanging_points(
-            contact_points, eps=0.005, min_samples=2)
+
     if use_filter_penetration:
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
@@ -64,6 +62,10 @@ def check_contact_points(
         else:
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
+
+    if use_clustering:
+        contact_points = cluster_hanging_points(
+            contact_points, eps=0.005, min_samples=5)
 
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))

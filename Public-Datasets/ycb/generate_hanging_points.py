@@ -13,11 +13,12 @@ hanging_object_dict = {
     2: "025_mug",
     3: "033_spatula",
     4: "035_power_drill",
-    5: "042_adjustable_wrench",
-    6: "048_hammer",
-    7: "050_medium_clamp",
-    8: "051_large_clamp",
-    9: "052_extra_large_clamp"
+    5: "037_scissors",
+    6: "042_adjustable_wrench",
+    7: "048_hammer",
+    8: "050_medium_clamp",
+    9: "051_large_clamp",
+    10: "052_extra_large_clamp"
 }
 
 urdf_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf_cp'
@@ -35,7 +36,7 @@ for file in files:
         print('-----------------------')
         print(file)
         hpg.generate(urdf_file=file,
-                     required_points_num=30,
+                     required_points_num=5,
                      enable_gui=0,
                      viz_obj=0,
                      save_dir=dirname,
