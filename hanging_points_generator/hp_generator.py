@@ -26,7 +26,7 @@ from hanging_points_generator.generator_utils import save_contact_points
 
 def check_contact_points(
         contact_points_path, urdf_file, json_name='contact_points.json',
-        use_clustering=True, use_filter_penetration=True,
+        cluster_min_points=2, use_filter_penetration=True,
         inf_penetration_check=True):
     """Chaeck contact poitns with urdf
 
@@ -39,8 +39,8 @@ def check_contact_points(
     json_name : str, optional
         'contact_points.json' or 'pouring_points.json',
         by default 'contact_points.json'
-    use_clustering : bool, optional
-        by default True
+    cluster_min_points : int, optional
+        by default 2
     use_filter_penetration : bool, optional
         by default True
     inf_penetration_check : bool, optional
@@ -63,9 +63,9 @@ def check_contact_points(
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
 
-    if use_clustering:
+    if cluster_min_points:
         contact_points = cluster_hanging_points(
-            contact_points, eps=0.005, min_samples=5)
+            contact_points, eps=0.005, min_samples=cluster_min_points)
 
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))

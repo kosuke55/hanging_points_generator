@@ -16,8 +16,8 @@ def main():
                         help='input pose',
                         required=True)
     parser.add_argument('--clustering', '-c', type=int,
-                        help='dbscan clustering',
-                        default=1)
+                        help='dbscan clustering min points',
+                        default=2)
     parser.add_argument('--filter-penetration', '-f', type=int,
                         help='filter penetration',
                         default=0)
@@ -27,7 +27,7 @@ def main():
     args = parser.parse_args()
 
     check_contact_points(args.pose, args.input,
-                         use_clustering=args.clustering,
+                         cluster_min_points=args.clustering,
                          use_filter_penetration=args.filter_penetration,
                          inf_penetration_check=args.inf_penetration_check)
 

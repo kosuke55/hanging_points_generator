@@ -52,7 +52,7 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 
 ### How to check contact points  
 ```
-check_hanging_pose -i base.urdf -p contact_points -c 1 -f 1 -ipc 0
+check_hanging_pose -i base.urdf -p contact_points -c 5 -f 1 -ipc 0
 # If contact_points is dir, load multiple contact_points.
 
 usage: check_hanging_pose [-h] --input INPUT --pose POSE
@@ -66,7 +66,7 @@ optional arguments:
                         input urdf (default: None)
   --pose POSE, -p POSE  input pose (default: None)
   --clustering CLUSTERING, -c CLUSTERING
-                        dbscan clustering (default: 1)
+                        dbscan clustering min points (default: 2)
   --filter-penetration FILTER_PENETRATION, -f FILTER_PENETRATION
                         filter penetration (default: 0)
   --inf-penetration-check INF_PENETRATION_CHECK, -ipc INF_PENETRATION_CHECK
