@@ -160,7 +160,7 @@ def get_contact_points(
         #         contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
 
         # rot = skrobot.coordinates.math.rotation_matrix_from_axis(
-        #     x_axis=x_axis, y_axis=y_axis)
+        #     x_axis, y_axis)
 
         # contact_point = skrobot.coordinates.Coordinates(
         #     pos=contact_point, rot=rot)

@@ -65,7 +65,7 @@ def check_contact_points(
 
     if cluster_min_points:
         contact_points = cluster_hanging_points(
-            contact_points, eps=0.005, min_samples=cluster_min_points)
+            contact_points, min_samples=cluster_min_points)
 
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))
@@ -83,7 +83,7 @@ def check_contact_points(
     viewer._init_and_start_app()
 
 
-def cluster_hanging_points(hanging_points, eps=0.03,
+def cluster_hanging_points(hanging_points, eps=0.01,
                            min_samples=1, merge_clusters=True):
     points = [c[0] for c in hanging_points]
     dbscan = DBSCAN(
@@ -218,7 +218,7 @@ def generate(urdf_file, required_points_num,
     object_id = pybullet.loadURDF(urdf_file,
                                   StartPos, StartOrientation)
 
-    try_num = 10000
+    try_num = 50000
     find_count = 0
     is_hanging_object = True
 
@@ -272,7 +272,7 @@ def generate(urdf_file, required_points_num,
             #         urdf_file, find_count, required_points_num, is_hanging_object))
             #     break
             if find_count >= required_points_num or \
-                    (find_count == 0 and try_count > 2000):
+                    (find_count == 0 and try_count > 10000):
                 print('break {} find_count:{} try_count:{} require:{}'.format(
                     urdf_file, find_count, try_count, required_points_num))
                 break
@@ -330,7 +330,7 @@ def generate(urdf_file, required_points_num,
             if failed:
                 continue
 
-            pybullet.setGravity(0, 5, -5)
+            pybullet.setGravity(0, 2, -5)
             for _ in range(int(timestep * 1)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
@@ -342,7 +342,7 @@ def generate(urdf_file, required_points_num,
             if failed:
                 continue
 
-            pybullet.setGravity(0, -5, -5)
+            pybullet.setGravity(0, -2, -5)
             for _ in range(int(timestep * 1)):
                 pos, rot = pybullet.getBasePositionAndOrientation(object_id)
                 if pos[2] < height_thresh:
