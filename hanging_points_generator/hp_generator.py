@@ -83,8 +83,27 @@ def check_contact_points(
     viewer._init_and_start_app()
 
 
-def cluster_hanging_points(hanging_points, eps=0.01,
-                           min_samples=1, merge_clusters=True):
+def cluster_hanging_points(hanging_points, eps=0.01, min_samples=-1):
+    """Clustering points
+
+    Parameters
+    ----------
+    hanging_points : [type]
+        [description]
+    eps : float, optional
+        [description], by default 0.01
+    min_samples : int, optional
+        clustering min samples, if -1 set 1/5 of the whole, by default -1
+
+    Returns
+    -------
+    clustered hanging_poitns
+        clustered hanging points
+    """
+
+    if min_samples == -1:
+        min_samples = len(hanging_points) // 5
+
     points = [c[0] for c in hanging_points]
     dbscan = DBSCAN(
         eps=eps, min_samples=min_samples).fit(points)
