@@ -172,9 +172,9 @@ class CreateMesh():
                     self.save_dir,
                     'raw/color_raw{:03}.png'.format(
                         self.integrate_count)),
-                            cv2.cvtColor(
-                                self.color.astype(np.uint8),
-                                cv2.COLOR_BGR2RGB))
+                    cv2.cvtColor(
+                    self.color.astype(np.uint8),
+                    cv2.COLOR_BGR2RGB))
                 cv2.imwrite(os.path.join(
                     self.save_dir,
                     'raw/depth_raw{:03}.png'.format(
@@ -184,7 +184,7 @@ class CreateMesh():
                 self.save_dir,
                 'mask{:03}.png'.format(
                     self.integrate_count)),
-                        mask_morph_close.astype(np.uint8))
+                mask_morph_close.astype(np.uint8))
 
             color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
             depth = o3d.geometry.Image(self.depth_clip.astype(np.uint16))
