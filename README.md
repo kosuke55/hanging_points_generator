@@ -14,7 +14,6 @@ If you use ubuntu 18.04, just
 ## Mesh Reconstruction demo  
 ```
 python donwload_sample_data.py  
-tar -zcvf sample_data.tgz sample_data  
 cd examples/  
 ipython -i icp_camera_pose_estimation.py  
 ipython -i create_mesh_from_data.py  
