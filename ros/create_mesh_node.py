@@ -24,27 +24,14 @@ from std_srvs.srv import SetBool, SetBoolResponse
 class CreateMesh():
     def __init__(self):
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.input_color = rospy.get_param(
-            '~input_color',
-            '/head_mount_kinect/hd/image_color_rect_repub_desktop')
-        self.input_depth = rospy.get_param(
-            '~input_depth',
-            '/head_mount_kinect/hd/image_depth_rect_repub_desktop')
-        self.input_mask = rospy.get_param(
-            '~input_mask',
-            '/point_indices_to_mask_image_gripper/output')
 
         self.camera_frame = rospy.get_param(
             '~camera_frame', '/head_mount_kinect_rgb_link')
         self.gripper_frame = rospy.get_param(
             '~gripper_frame', '/l_gripper_tool_frame')
 
-        self.camera_info_msg = rospy.get_param(
-            '~camera_info', '/head_mount_kinect/hd/camera_info')
-
         self.save_raw_img = rospy.get_param(
             '~save_raw_img', True)
-
         self.save_dir = rospy.get_param(
             '~save_dir', 'save_dir/')
 
@@ -77,7 +64,7 @@ class CreateMesh():
 
     def load_camera_info(self):
         self.camera_info = rospy.wait_for_message(
-            self.camera_info_msg, CameraInfo)
+            '~camera_info', CameraInfo)
         self.camera_model.fromCameraInfo(self.camera_info)
         self.intrinsic = o3d.camera.PinholeCameraIntrinsic()
         self.intrinsic.set_intrinsics(
@@ -93,11 +80,11 @@ class CreateMesh():
 
     def subscribe(self):
         sub_color = message_filters.Subscriber(
-            self.input_color, Image, queue_size=10)
+            '~input_color', Image, queue_size=10)
         sub_depth = message_filters.Subscriber(
-            self.input_depth, Image, queue_size=10)
+            '~input_depth', Image, queue_size=10)
         sub_mask = message_filters.Subscriber(
-            self.input_mask, Image, queue_size=10)
+            '~input_mask', Image, queue_size=10)
         self.subs = [sub_color, sub_depth, sub_mask]
         sync = message_filters.TimeSynchronizer(
             fs=self.subs, queue_size=100)

@@ -23,7 +23,7 @@ class ContactPointsPublisher():
             '~gripper_frame', "/l_gripper_tool_frame")
         self.contact_points_pose_array = PoseArray()
         self.pub_contact_points = rospy.Publisher(
-            "/contact_points", PoseArray, queue_size=10)
+            "~output", PoseArray, queue_size=10)
         self.service()
         self.timer = rospy.Timer(rospy.Duration(0.1), self.timer_callback)
 
