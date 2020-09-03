@@ -15,9 +15,9 @@ If you use ubuntu 18.04, just
 ```
 python donwload_sample_data.py  
 cd examples/  
-ipython -i icp_camera_pose_estimation.py  
-ipython -i create_mesh_from_data.py  
-ipython -i create_mesh_voxelize_marching_cubes.py  
+python icp_camera_pose_estimation.py  
+python create_mesh_from_data.py  
+python create_mesh_voxelize_marching_cubes.py  
 ```
 
 Use [this](https://github.com/iory/texture-mapping) for texture mapping  
