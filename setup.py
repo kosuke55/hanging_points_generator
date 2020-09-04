@@ -37,8 +37,12 @@ setup_requires = []
 install_requires = [
     'cameramodels',
     'gdown',
+    'pathlib2',
     'pybullet',
+    'pymesh',
     'scikit-robot',
+    'scikit-image',
+    'trimesh'
 ]
 
 

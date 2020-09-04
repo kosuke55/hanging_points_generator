@@ -1,0 +1,24 @@
+language: python
+dist: bionic
+
+cache:
+  - pip
+
+python:
+  - '3.7'
+  # - '2.7' Need to build open3d from source of kosuke55 hotfix/voxels branch
+
+install:
+  - pip install --upgrade pip setuptools wheel
+  - pip install .[all]
+  - pip install open3d
+
+script:
+  - pip install pytest
+  - pytest -v tests
+
+sudo: false
+
+branches:
+  only:
+    - master

@@ -221,8 +221,6 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
     --------------
     input_dir : str
       Input directry which include color{:03}.png and depth{:03}.png.
-    output_dir : str
-      Ouput directry where output mesh saved.
     scences : int
       How many scenes were shot.
 

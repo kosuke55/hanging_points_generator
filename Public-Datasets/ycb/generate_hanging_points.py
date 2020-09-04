@@ -21,7 +21,7 @@ hanging_object_dict = {
     10: "052_extra_large_clamp"
 }
 
-urdf_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf_cp'
+urdf_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf2'
 files = glob.glob(osp.join(urdf_dir, '*/*'))
 
 for file in files:
