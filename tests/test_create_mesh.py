@@ -1,5 +1,6 @@
 import os
 import os.path as osp
+import sys
 import unittest
 import shutil
 
@@ -9,8 +10,10 @@ from hanging_points_generator.create_mesh import create_mesh_tsdf
 from hanging_points_generator.create_mesh import icp_registration
 from hanging_points_generator.create_mesh import create_mesh_voxelize_marcing_cubes
 from hanging_points_generator.create_mesh import create_urdf
+from hanging_points_generator.donwloader import download_sample_data
 
-data_dir = osp.join(osp.abspath(osp.dirname(__file__)), 'data')
+download_sample_data()
+data_dir = osp.join(osp.abspath(osp.dirname(__file__)), 'sample_data')
 test_data_dir = osp.join(osp.abspath(osp.dirname(__file__)), 'test_data')
 output_dir = osp.join(test_data_dir, 'output')
 shutil.copytree(data_dir, test_data_dir)
