@@ -205,6 +205,33 @@ def create_urdf(mesh, output_dir):
                encoding='utf-8', xml_declaration=True)
 
 
+def create_point_cloud(
+        color, depth, intrinsic, voxel_size=0.002,
+        estimate_normals=True, remove_normals=True,
+        remove_outlier='statistical'):
+
+    rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
+        color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
+    pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
+        rgbd, intrinsic)
+
+    if voxel_size > 0:
+        pcd = pcd.voxel_down_sample(voxel_size)
+
+    if estimate_normals:
+        pcd.estimate_normals(
+            search_param=o3d.geometry.KDTreeSearchParamHybrid(
+                radius=0.1, max_nn=30))
+
+    if remove_outlier == 'statistical':
+        pcd.remove_statistical_outlier(
+            nb_neighbors=100, std_ratio=0.001)
+    elif remove_outlier == 'radius':
+        pcd.remove_radius_outlier(nb_points=100, radius=0.002)
+
+    return pcd
+
+
 def icp_registration(input_dir, scenes, voxel_size=0.002):
     """Estimate camera pose and create integrated point cloud
 
@@ -259,20 +286,7 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
             os.path.join(input_dir,
                          'depth{:03}.png'.format(i)))
 
-        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
-            color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
-        pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-            rgbd, intrinsic)
-        if voxel_size > 0:
-            pcd = pcd.voxel_down_sample(voxel_size)
-        pcd.estimate_normals(
-            search_param=o3d.geometry.KDTreeSearchParamHybrid(
-                radius=0.1, max_nn=30))
-
-        # pcd.remove_radius_outlier(nb_points=100, radius=0.002)
-        pcd.remove_statistical_outlier(nb_neighbors=100,
-                                       std_ratio=0.001)
-
+        pcd = create_point_cloud(color, depth, intrinsic)
         # o3d.visualization.draw_geometries([pcd])
 
         c = skrobot.coordinates.Coordinates(
@@ -292,7 +306,7 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
     print('ICP registration start.')
     target = pcds[0]
     for i in range(scenes - 1):
-        print('ICP registration {:d}-th point cloud.'.format(i+1))
+        print('ICP registration {:d}-th point cloud.'.format(i + 1))
         trans_init = camera_poses[0].copy_worldcoords().inverse_transformation(
         ).transform(camera_poses[i + 1])
 
@@ -317,17 +331,17 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
         np.savetxt(
             os.path.join(
                 input_dir,
-                'camera_pose/camera_pose_icp{:03}.txt'.format(i+1)),
+                'camera_pose/camera_pose_icp{:03}.txt'.format(i + 1)),
             camera_pose_icp.T())
         np.savetxt(
             os.path.join(
                 input_dir,
-                'camera_pose/obj_coords{:03}.txt'.format(i+1)),
+                'camera_pose/obj_coords{:03}.txt'.format(i + 1)),
             obj_transformation.T())
 
         # Save camera pose and intrinsic for texture-mapping
         with open(os.path.join(input_dir,
-                               'color{:03}.txt'.format(i+1)), 'w') as f:
+                               'color{:03}.txt'.format(i + 1)), 'w') as f:
             np.savetxt(f, np.concatenate(
                 [camera_pose_icp.T()[:3, 3][None, :],
                  camera_pose_icp.T()[:3, :3]],
