@@ -207,8 +207,29 @@ def create_urdf(mesh, output_dir):
 
 def create_point_cloud(
         color, depth, intrinsic, voxel_size=0.002,
-        estimate_normals=True, remove_normals=True,
-        remove_outlier='statistical'):
+        estimate_normals=True, remove_outlier='statistical'):
+    """Create point cloud
+
+    Parameters
+    ----------
+    color : open3d.open3d.geometry.Image
+        [description]
+    depth : open3d.open3d.geometry.Image
+        [description]
+    intrinsic : open3d.open3d.camera.PinholeCameraIntrinsic
+        [description]
+    voxel_size : float, optional
+        down sample voxel size, by default 0.002
+    estimate_normals : bool, optional
+        If True, estimate normals, by default True
+    remove_outlier : str, optional
+        remove_outlier method 'statistical' ot 'radius',
+        by default 'statistical'
+
+    Returns
+    -------
+    pcd : open3d.open3d.geometry.PointCloud
+    """
 
     rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
         color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
