@@ -253,6 +253,87 @@ def create_point_cloud(
     return pcd
 
 
+def get_intrinsic_element(intrinsic):
+    """Get fx, fy, cx, cy from intrinsic matrix
+
+    Parameters
+    ----------
+    intrinsic : numpy.ndarray
+
+    Returns
+    -------
+    fx, fy, cx, cy : float
+    """
+
+    fx = intrinsic[0, 0]
+    fy = intrinsic[1, 1]
+    cx = intrinsic[0, 2]
+    cy = intrinsic[1, 2]
+
+    return fx, fy, cx, cy
+
+
+def load_intrinsic(width, height, intrinsic_path):
+    """Load intrinsic
+
+    intrinsic_matrix shape must be
+    fx  0 cx
+    0  fy cy
+    0   0  1
+
+    Parameters
+    ----------
+    width : int
+        image width
+    height : int
+        image height
+    intrinsic_path : str
+        .txt format
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
+
+    intrinsic = np.loadtxt(intrinsic_path)
+    fx, fy, cx, cy = get_intrinsic_element(intrinsic)
+
+    intrinsic = o3d.camera.PinholeCameraIntrinsic()
+    intrinsic.set_intrinsics(
+        width, height, fx, fy, cx, cy)
+
+    return intrinsic
+
+
+def save_camera_pose_and_intrinsic(camera_pose, intrinsic, output):
+    """Save camera pose and intrinsic into one txt file
+
+    Parameters
+    ----------
+    camera_pose : skrobot.coordinates.base.Coordinates
+    intrinsic : open3d.open3d.camera.PinholeCameraIntrinsic
+    output : str
+        .txt format output file name.
+    """
+
+    fx, fy, cx, cy = get_intrinsic_element(
+        intrinsic.intrinsic_matrix)
+    height = intrinsic.width
+    width = intrinsic.height
+
+    with open(output, 'w') as f:
+        np.savetxt(f, np.concatenate(
+            [camera_pose.T()[:3, 3][None, :],
+             camera_pose.T()[:3, :3]], axis=0))
+        np.savetxt(f, [fx])
+        np.savetxt(f, [fy])
+        np.savetxt(f, [cx])
+        np.savetxt(f, [cy])
+        np.savetxt(f, [height])
+        np.savetxt(f, [width])
+
+
 def icp_registration(input_dir, scenes, voxel_size=0.002):
     """Estimate camera pose and create integrated point cloud
 
@@ -278,16 +359,9 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
         os.path.join(input_dir, "color000.png"))).shape
     width = image_shape[1]
     height = image_shape[0]
-    intrinsic_np = np.loadtxt(os.path.join(
-        input_dir, 'camera_pose/intrinsic.txt'))
-    fx = intrinsic_np[0, 0]
-    fy = intrinsic_np[1, 1]
-    cx = intrinsic_np[0, 2]
-    cy = intrinsic_np[1, 2]
-
-    intrinsic = o3d.camera.PinholeCameraIntrinsic()
-    intrinsic.set_intrinsics(
-        width, height, fx, fy, cx, cy)
+    intrinsic = load_intrinsic(
+        width, height,
+        os.path.join(input_dir, 'camera_pose/intrinsic.txt'))
 
     camera_poses = []
     camera_poses_icp = []
@@ -361,21 +435,9 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
             obj_transformation.T())
 
         # Save camera pose and intrinsic for texture-mapping
-        with open(os.path.join(input_dir,
-                               'color{:03}.txt'.format(i + 1)), 'w') as f:
-            np.savetxt(f, np.concatenate(
-                [camera_pose_icp.T()[:3, 3][None, :],
-                 camera_pose_icp.T()[:3, :3]],
-                axis=0))
-            np.savetxt(f, [fx])
-            np.savetxt(f, [fy])
-            np.savetxt(f, [cx])
-            np.savetxt(f, [cy])
-            np.savetxt(f, [height])
-            np.savetxt(f, [width])
-
-        # draw_registration_result_original_color(source, target,
-        #                                         result_icp.transformation)
+        output_file = os.path.join(input_dir,
+                                   'color{:03}.txt'.format(i + 1))
+        save_camera_pose_and_intrinsic(camera_pose_icp, intrinsic, output_file)
 
         source.transform(result_icp.transformation)
 
