@@ -459,9 +459,7 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
         width, height,
         os.path.join(input_dir, 'camera_pose/intrinsic.txt'))
 
-    camera_poses = []
     camera_poses_icp = []
-    pcds = []
 
     print('Create point cloud from rgb and depth.')
     color_list = get_images_from_dir(input_dir, 'color', 'png')
