@@ -1,6 +1,4 @@
-import os
 import os.path as osp
-import sys
 import unittest
 import shutil
 
@@ -18,12 +16,8 @@ class TestCreateMesh(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         download_sample_data(osp.abspath(osp.dirname(__file__)))
-        data_dir = osp.join(osp.abspath(osp.dirname(__file__)), 'sample_data')
         cls.test_data_dir = osp.join(
-            osp.abspath(osp.dirname(__file__)), 'test_data')
-        shutil.copytree(data_dir, cls.test_data_dir)
-        output_dir = osp.join(cls.test_data_dir, 'output')
-        os.makedirs(output_dir)
+            osp.abspath(osp.dirname(__file__)), 'sample_data')
         cls.scenes = 2
 
     def test_0_icp(self):
