@@ -17,7 +17,7 @@ class TestCreateMesh(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        download_sample_data()
+        download_sample_data(osp.abspath(osp.dirname(__file__)))
         data_dir = osp.join(osp.abspath(osp.dirname(__file__)), 'sample_data')
         cls.test_data_dir = osp.join(
             osp.abspath(osp.dirname(__file__)), 'test_data')
