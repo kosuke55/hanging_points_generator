@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
-import open3d as o3d
 import os
 import pathlib2
+
+import numpy as np
+import open3d as o3d
 import skrobot
 import trimesh
 import xml.etree.ElementTree as ET
