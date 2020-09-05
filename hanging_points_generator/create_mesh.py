@@ -12,12 +12,12 @@ import xml.etree.ElementTree as ET
 
 def create_mesh_tsdf(input_dir, scenes,
                      voxel_length=0.002, sdf_trunc=0.005):
-    """
-    Create mesh using tsdf.
+    """Create mesh using tsdf.
+
     TODO: Making input image list is better.
 
     Parameters
-    --------------
+    ----------
     input_dir : str
       Input directry which include color{:03}.png and depth{:03}.png.
     output_dir : str
@@ -26,7 +26,7 @@ def create_mesh_tsdf(input_dir, scenes,
       How many scenes were shot.
 
     Returns
-    -------------
+    -------
     mesh : open3d.open3d.geometry.TriangleMesh
       Mesh created by tsdf
     """
@@ -82,17 +82,16 @@ def create_mesh_tsdf(input_dir, scenes,
 
 
 def create_mesh_voxelize(pcd, voxel_size=0.002):
-    """
-    Create voxelized mesh from pcd
+    """Create voxelized mesh from pcd
 
     Parameters
-    --------------
+    ----------
     pcd : open3d.open3d.geometry.PointCloud
       Input pcd data
     voxel_size : float
 
     Returns
-    -------------
+    -------
     mesh : trimesh.base.Trimesh
       Voxelized mesh
     """
@@ -139,20 +138,18 @@ def create_mesh_voxelize(pcd, voxel_size=0.002):
 
 
 def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
-    """
-    Voxelize point cloud and apply marching cubes
+    """Voxelize point cloud and apply marching cubes
 
     Parameters
-    -------------
+    ----------
     pcd : open3d.open3d.geometry.PointCloud
       Input pcd data
     voxel_size : float
 
     Returns
-    -------------
+    -------
     mesh : trimesh.base.Trimesh
     Mesh with voxelization and marching cubes applied
-
     """
 
     voxel_grid \
@@ -185,18 +182,14 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
 
 
 def create_urdf(mesh, output_dir):
-    """
-    Create urdf from mesh
+    """Create urdf from mesh
 
     Parameters
-    --------------
+    ----------
     mesh : trimesh.base.Trimesh
-       mesh
+        input mesh
     output_dir : str
-      Ouput directry where output mesh saved
-
-    Returns
-    -------------
+        Ouput directry where output mesh saved
     """
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -213,19 +206,22 @@ def create_urdf(mesh, output_dir):
 
 
 def icp_registration(input_dir, scenes, voxel_size=0.002):
-    """
-    Estimate camera pose and create integrated point cloud
+    """Estimate camera pose and create integrated point cloud
+
     TODO: Making input point cloud list is better.
 
     Parameters
-    --------------
+    ----------
     input_dir : str
-      Input directry which include color{:03}.png and depth{:03}.png.
-    scences : int
-      How many scenes were shot.
+        Input directry which include color{:03}.png and depth{:03}.png.
+        [description]
+    scenes : int
+        How many scenes were shot.
+    voxel_size : float, optional
+        voxel size, by default 0.002
 
     Returns
-    -------------
+    -------
     camera_poses_icp : List of skrobot.coordinates.base.Coordinates
     pcd : open3d.open3d.geometry.PointCloud
     """
