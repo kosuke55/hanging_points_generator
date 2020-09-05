@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+import os.path as osp
 import pathlib2
+from pathlib import Path
 
 import numpy as np
 import open3d as o3d
@@ -355,6 +357,79 @@ def load_camera_pose(camera_pose_path):
     return coordinates
 
 
+def get_images_from_dir(input_dir, prefix, ext):
+    """Get image list from dir
+
+    file name must is prefix[0-9]ext
+
+    Parameters
+    ----------
+    input_dir : str
+    prefix : str
+    ext : str
+
+    Returns
+    -------
+    images : list of open3d.open3d.geometry.Image
+    """
+
+    paths = list(
+        sorted(Path(input_dir).glob('{}[0-9]*{}'.format(prefix, ext))))
+    images = []
+    for path in paths:
+
+        image = o3d.io.read_image(str(path))
+        images.append(image)
+
+    return images
+
+
+def get_camera_poses_from_dir(input_dir, prefix):
+    """Get camera_pose list from dir
+
+    file name must is prefix[0-9]ext
+
+    Parameters
+    ----------
+    input_dir : str
+    prefix : str
+
+    Returns
+    -------
+    camera_poses : list of skrobot.coordinates.base.Coordinates
+    """
+
+    paths = list(sorted(Path(input_dir).glob('{}[0-9]*'.format(prefix))))
+    camera_poses = []
+    for path in paths:
+        camera_pose = load_camera_pose(str(path))
+        camera_poses.append(camera_pose)
+
+    return camera_poses
+
+
+def get_pcds(colors, depths, intrinsics):
+    """Get pcd list
+
+    Parameters
+    ----------
+    colors : open3d.open3d.geometry.Image
+    depths : open3d.open3d.geometry.Image
+    intrinsics : open3d.open3d.camera.PinholeCameraIntrinsic
+
+    Returns
+    -------
+    pcd : list of open3d.open3d.geometry.PointCloud
+    """
+
+    pcds = []
+    for color, depth, intrinsic in zip(
+            colors, depths, intrinsics):
+        pcd = create_point_cloud(color, depth, intrinsic)
+        pcds.append(pcd)
+    return pcds
+
+
 def icp_registration(input_dir, scenes, voxel_size=0.002):
     """Estimate camera pose and create integrated point cloud
 
@@ -389,27 +464,13 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
     pcds = []
 
     print('Create point cloud from rgb and depth.')
-    for i in range(scenes):
-        print('Create {:d}-th point cloud.'.format(i))
-        camera_pose = load_camera_pose(
-            os.path.join(
-                input_dir,
-                'camera_pose/camera_pose{:03}.txt'.format(i)))
-        camera_poses.append(camera_pose)
+    color_list = get_images_from_dir(input_dir, 'color', 'png')
+    depth_list = get_images_from_dir(input_dir, 'depth', 'png')
+    intrinsic_list = [intrinsic] * len(color_list)  # all intrinsic is same
+    camera_poses = get_camera_poses_from_dir(
+        osp.join(input_dir, 'camera_pose'), 'camera_pose')
 
-        color = o3d.io.read_image(
-            os.path.join(input_dir,
-                         'color{:03}.png'.format(i)))
-        depth = o3d.io.read_image(
-            os.path.join(input_dir,
-                         'depth{:03}.png'.format(i)))
-        pcd = create_point_cloud(color, depth, intrinsic)
-        # o3d.visualization.draw_geometries([pcd])
-
-        pcds.append(pcd)
-        # mesh = o3d.geometry.TriangleMesh()
-        # mesh.create_from_point_cloud_poisson(pcd)
-        # o3d.visualization.draw_geometries([mesh])
+    pcds = get_pcds(color_list, depth_list, intrinsic_list)
 
     np.savetxt(
         os.path.join(input_dir,
