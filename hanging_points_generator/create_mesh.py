@@ -334,6 +334,26 @@ def save_camera_pose_and_intrinsic(camera_pose, intrinsic, output):
         np.savetxt(f, [width])
 
 
+def load_camera_pose(camera_pose_path):
+    """Load camera pose
+
+    Parameters
+    ----------
+    camera_pose_path : str
+        camera_pose file path
+
+    Returns
+    -------
+    coordinates :skrobot.coordinates.base.Coordinates
+    """
+
+    camera_pose = np.loadtxt(camera_pose_path)
+    coordinates = skrobot.coordinates.Coordinates(
+        pos=camera_pose[:3, 3],
+        rot=camera_pose[:3, :3])
+    return coordinates
+
+
 def icp_registration(input_dir, scenes, voxel_size=0.002):
     """Estimate camera pose and create integrated point cloud
 
@@ -370,9 +390,11 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
     print('Create point cloud from rgb and depth.')
     for i in range(scenes):
         print('Create {:d}-th point cloud.'.format(i))
-        camera_pose = np.loadtxt(
-            os.path.join(input_dir,
-                         'camera_pose/camera_pose{:03}.txt'.format(i)))
+        camera_pose = load_camera_pose(
+            os.path.join(
+                input_dir,
+                'camera_pose/camera_pose{:03}.txt'.format(i)))
+        camera_poses.append(camera_pose)
 
         color = o3d.io.read_image(
             os.path.join(input_dir,
@@ -380,14 +402,9 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
         depth = o3d.io.read_image(
             os.path.join(input_dir,
                          'depth{:03}.png'.format(i)))
-
         pcd = create_point_cloud(color, depth, intrinsic)
         # o3d.visualization.draw_geometries([pcd])
 
-        c = skrobot.coordinates.Coordinates(
-            pos=camera_pose[:3, 3],
-            rot=camera_pose[:3, :3])
-        camera_poses.append(c)
         pcds.append(pcd)
         # mesh = o3d.geometry.TriangleMesh()
         # mesh.create_from_point_cloud_poisson(pcd)
