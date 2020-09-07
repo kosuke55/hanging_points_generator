@@ -15,7 +15,7 @@ import sys
 import tf
 
 from cv_bridge import CvBridge
-from hanging_points_generator import hanging_points_generator
+from hanging_points_generator import hp_generator
 from hanging_points_generator import create_mesh
 from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import SetBool, SetBoolResponse
@@ -296,7 +296,7 @@ class CreateMesh():
         return SetBoolResponse(True, 'reset volume')
 
     def generate_hanging_points(self, req):
-        hanging_points_generator.generate(
+        hp_generator.generate(
             urdf_file=os.path.join(self.save_dir, 'base.urdf'),
             required_points_num=1,
             enable_gui='False',
