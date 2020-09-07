@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 import unittest
 import shutil
@@ -16,6 +17,8 @@ class TestCreateMesh(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         download_sample_data(osp.abspath(osp.dirname(__file__)), rosbag=False)
+        cls.test_data_tgz = osp.join(
+            osp.abspath(osp.dirname(__file__)), 'sample_data.tgz')
         cls.test_data_dir = osp.join(
             osp.abspath(osp.dirname(__file__)), 'sample_data')
         cls.scenes = 2
@@ -37,4 +40,5 @@ class TestCreateMesh(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        os.remove(cls.test_data_tgz)
         shutil.rmtree(cls.test_data_dir)
