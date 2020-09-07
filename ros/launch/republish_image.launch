@@ -1,0 +1,22 @@
+<launch>
+
+  <arg name="queue_size" default="100" />
+
+  <group ns="/head_mount_kinect/hd">
+    <node name="rgb_republish" pkg="image_transport" type="republish" args="compressed raw">
+      <remap from="in" to="image_color_rect" />
+      <remap from="out" to="image_color_rect_repub" />
+    </node>
+
+    <node name="depth_republish" pkg="image_transport" type="republish" args="compressed raw">
+      <remap from="in" to="image_depth_rect" />
+      <remap from="out" to="image_depth_rect_repub" />
+    </node>
+  </group>
+
+  <node name="depth_republish" pkg="image_transport" type="republish" args="compressed raw">
+    <remap from="in" to="/point_indices_to_mask_image_gripper/output" />
+    <remap from="out" to="/point_indices_to_mask_image_gripper/output" />
+  </node>
+
+</launch>
