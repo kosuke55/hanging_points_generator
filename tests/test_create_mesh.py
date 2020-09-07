@@ -4,7 +4,7 @@ import shutil
 
 import open3d as o3d
 
-from hanging_points_generator.create_mesh import create_mesh_tsdf
+from hanging_points_generator.create_mesh import create_mesh_tsdf_from_dir
 from hanging_points_generator.create_mesh import icp_registration_from_dir
 from hanging_points_generator.create_mesh \
     import create_mesh_voxelize_marcing_cubes
@@ -27,7 +27,7 @@ class TestCreateMesh(unittest.TestCase):
             osp.join(self.test_data_dir, 'icp_result.pcd'), pcd)
 
     def test_tsdf(self):
-        create_mesh_tsdf(self.test_data_dir, self.scenes)
+        create_mesh_tsdf_from_dir(self.test_data_dir, self.scenes)
 
     def test_voxelize_marching_cubes(self):
         pcd = o3d.io.read_point_cloud(

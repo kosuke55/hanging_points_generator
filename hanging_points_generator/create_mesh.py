@@ -13,11 +13,54 @@ import trimesh
 import xml.etree.ElementTree as ET
 
 
-def create_mesh_tsdf(input_dir, scenes,
-                     voxel_length=0.002, sdf_trunc=0.005):
-    """Create mesh using tsdf.
+def create_mesh_tsdf(
+        colors, depths, intrinsics, camera_poses,
+        voxel_length=0.002, sdf_trunc=0.005, compute_normal=True):
+    """
 
-    TODO: Making input image list is better.
+    Parameters
+    ----------
+    colors : list of open3d.open3d.geometry.Image
+    depths : list of open3d.open3d.geometry.Image
+    intrinsics : list of open3d.open3d.camera.PinholeCameraIntrinsic
+    camera_poses : list of skrobot.coordinates.base.Coordinates
+    voxel_length : float
+        same as voxel_size, by default 0.002
+    sdf_trunc : float, optional
+        by default 0.005
+    compute_normal : bool, optional
+        If true, compute normal, by default True
+
+    Returns
+    -------
+    mesh: open3d.open3d.geometry.TriangleMesh
+        Mesh created by tsdf
+    """
+    volume = o3d.integration.ScalableTSDFVolume(
+        voxel_length=voxel_length,
+        sdf_trunc=sdf_trunc,
+        color_type=o3d.integration.TSDFVolumeColorType.RGB8,
+        volume_unit_resolution=16,
+        depth_sampling_stride=1)
+    for color, depth, intrinsic, camera_pose in zip(
+            colors, depths, intrinsics, camera_poses):
+        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
+            color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
+        volume.integrate(
+            rgbd,
+            intrinsic,
+            np.linalg.inv(camera_pose.T()))
+
+    mesh = volume.extract_triangle_mesh()
+    if compute_normal:
+        mesh.compute_vertex_normals()
+
+    return mesh
+
+
+def create_mesh_tsdf_from_dir(input_dir, scenes,
+                              voxel_length=0.002, sdf_trunc=0.005):
+    """Create mesh using tsdf from dir
 
     Parameters
     ----------
@@ -33,53 +76,23 @@ def create_mesh_tsdf(input_dir, scenes,
     mesh : open3d.open3d.geometry.TriangleMesh
       Mesh created by tsdf
     """
-
-    intrinsic_np = np.loadtxt(os.path.join(input_dir,
-                                           "camera_pose/intrinsic.txt"))
-    intrinsic = o3d.camera.PinholeCameraIntrinsic()
     image_shape = np.array(o3d.io.read_image(
         os.path.join(input_dir, "color000.png"))).shape
     width = image_shape[1]
     height = image_shape[0]
-    intrinsic.set_intrinsics(
-        width,
-        height,
-        intrinsic_np[0, 0],
-        intrinsic_np[1, 1],
-        intrinsic_np[0, 2],
-        intrinsic_np[1, 2])
+    intrinsic = load_intrinsic(
+        width, height,
+        os.path.join(input_dir, 'camera_pose/intrinsic.txt'))
 
-    volume = o3d.integration.ScalableTSDFVolume(
-        voxel_length=voxel_length,
-        sdf_trunc=sdf_trunc,
-        color_type=o3d.integration.TSDFVolumeColorType.RGB8,
-        volume_unit_resolution=16,
-        depth_sampling_stride=1)
+    color_list = get_images_from_dir(input_dir, 'color', 'png')
+    depth_list = get_images_from_dir(input_dir, 'depth', 'png')
+    intrinsic_list = [intrinsic] * len(color_list)  # all intrinsic is same
+    camera_poses = get_camera_poses_from_dir(
+        osp.join(input_dir, 'camera_pose'), 'camera_pose_icp')
 
-    for i in range(scenes):
-        print("Integrate {:d}-th image into the volume.".format(i))
-
-        camera_pose = np.loadtxt(
-            os.path.join(input_dir,
-                         "camera_pose/camera_pose_icp{:03}.txt".format(i)))
-        color = o3d.io.read_image(
-            os.path.join(input_dir, "color{:03}.png".format(i)))
-        depth = o3d.io.read_image(
-            os.path.join(input_dir, "depth{:03}.png".format(i)))
-
-        rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
-            color, depth, depth_trunc=4.0, convert_rgb_to_intensity=False)
-        # pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-        #     rgbd, intrinsic)
-        # o3d.visualization.draw_geometries([pcd])
-
-        volume.integrate(
-            rgbd,
-            intrinsic,
-            np.linalg.inv(camera_pose))
-
-    mesh = volume.extract_triangle_mesh()
-    mesh.compute_vertex_normals()
+    mesh = create_mesh_tsdf(
+        color_list, depth_list, intrinsic_list, camera_poses,
+        voxel_length=voxel_length, sdf_trunc=sdf_trunc)
 
     return mesh
 
@@ -413,9 +426,9 @@ def get_pcds(colors, depths, intrinsics):
 
     Parameters
     ----------
-    colors : open3d.open3d.geometry.Image
-    depths : open3d.open3d.geometry.Image
-    intrinsics : open3d.open3d.camera.PinholeCameraIntrinsic
+    colors : list of open3d.open3d.geometry.Image
+    depths : list of open3d.open3d.geometry.Image
+    intrinsics : list of open3d.open3d.camera.PinholeCameraIntrinsic
 
     Returns
     -------

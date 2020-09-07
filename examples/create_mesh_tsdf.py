@@ -5,7 +5,7 @@ import argparse
 import open3d as o3d
 import os
 
-from hanging_points_generator.create_mesh import create_mesh_tsdf
+from hanging_points_generator.create_mesh import create_mesh_tsdf_from_dir
 
 
 if __name__ == "__main__":
@@ -32,8 +32,8 @@ if __name__ == "__main__":
                         default=0.002)
     args = parser.parse_args()
 
-    mesh = create_mesh_tsdf(args.input,
-                            args.scenes,
-                            args.voxel_length)
+    mesh = create_mesh_tsdf_from_dir(args.input,
+                                     args.scenes,
+                                     args.voxel_length)
     o3d.visualization.draw_geometries([mesh])
     o3d.io.write_triangle_mesh(args.output, mesh)
