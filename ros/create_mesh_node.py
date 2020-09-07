@@ -18,7 +18,7 @@ from cv_bridge import CvBridge
 from hanging_points_generator import hp_generator
 from hanging_points_generator import create_mesh
 from sensor_msgs.msg import CameraInfo, Image
-from std_srvs.srv import SetBool, SetBoolResponse
+from std_srvs.srv import Trigger, TriggerResponse
 
 
 class CreateMesh():
@@ -104,23 +104,23 @@ class CreateMesh():
 
     def service(self):
         self.integrate_service = rospy.Service('integrate_point_cloud',
-                                               SetBool,
+                                               Trigger,
                                                self.integrate_point_cloud)
         self.create_mesh_service = rospy.Service('create_mesh',
-                                                 SetBool,
+                                                 Trigger,
                                                  self.create_mesh)
         self.create_mesh_service = rospy.Service('create_voxelized_mesh',
-                                                 SetBool,
+                                                 Trigger,
                                                  self.create_voxelized_mesh)
         self.meshfix_service = rospy.Service('meshfix',
-                                             SetBool,
+                                             Trigger,
                                              self.meshfix)
         self.reset_volume_service = rospy.Service('reset_volume',
-                                                  SetBool,
+                                                  Trigger,
                                                   self.reset_volume)
         self.generate_hanging_points = rospy.Service(
             'generate_hanging_points',
-            SetBool,
+            Trigger,
             self.generate_hanging_points)
 
     def integrate_point_cloud(self, req):
@@ -253,13 +253,13 @@ class CreateMesh():
 
             self.integrate_count += 1
             self.callback_lock = False
-            return SetBoolResponse(True, 'success integrate point cloud')
+            return TriggerResponse(True, 'success integrate point cloud')
 
         except Exception:
             self.callback_lock = False
             rospy.logwarn(
                 'failed listen transform')
-            return SetBoolResponse(False, 'failed listen transform')
+            return TriggerResponse(False, 'failed listen transform')
 
     def create_mesh(self, req):
         o3d.io.write_point_cloud(
@@ -269,14 +269,14 @@ class CreateMesh():
         o3d.visualization.draw_geometries([mesh])
         o3d.io.write_triangle_mesh(
             os.path.join(self.save_dir, 'obj.ply'), mesh)
-        return SetBoolResponse(True, 'success create mesh')
+        return TriggerResponse(True, 'success create mesh')
 
     def create_voxelized_mesh(self, req):
         mesh = create_mesh.create_voxelized_mesh(self.target_pcd,
                                                  voxel_size=0.002)
         mesh.show()
         mesh.export(os.path.join(self.save_dir, 'obj.ply'))
-        return SetBoolResponse(True, 'success create voxelized_mesh')
+        return TriggerResponse(True, 'success create voxelized_mesh')
 
     def meshfix(self, req):
         subprocess.call(
@@ -288,12 +288,12 @@ class CreateMesh():
              os.path.join(self.save_dir, 'obj.ply'),
              '-o',
              self.save_dir])
-        return SetBoolResponse(True, 'meshfix')
+        return TriggerResponse(True, 'meshfix')
 
     def reset_volume(self, req):
         self.volume.reset()
         self.integrate_count = 0
-        return SetBoolResponse(True, 'reset volume')
+        return TriggerResponse(True, 'reset volume')
 
     def generate_hanging_points(self, req):
         hp_generator.generate(
@@ -302,7 +302,7 @@ class CreateMesh():
             enable_gui='False',
             viz_obj='False',
             save_dir=self.save_dir)
-        return SetBoolResponse(True, 'success create mesh')
+        return TriggerResponse(True, 'success create mesh')
 
     def run(self):
         try:

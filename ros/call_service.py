@@ -1,11 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import rospy
-import datetime
-from std_srvs.srv import SetBool
+from std_srvs.srv import Trigger
 
 
 class RosbagCallService():
     def __init__(self):
-        self.file = 'service_time_list.txt'
+        self.file = '../create_mesh_sample_rosbag/service_time_list.txt'
         self.read_time()
         self.index = 0
         self.next_time = self.service_times[self.index]
@@ -23,11 +25,11 @@ class RosbagCallService():
     def get_current_time(self):
         self.current_time = rospy.Time.now().to_time()
 
-    def setbool_service_call(self, service_name):
+    def service_call(self, service_name):
         rospy.wait_for_service(service_name, timeout=3)
         try:
-            client = rospy.ServiceProxy(service_name, SetBool)
-            print(client(True))
+            client = rospy.ServiceProxy(service_name, Trigger)
+            print(client())
         except rospy.ServiceException as e:
             print('Service call failed: %s' % e)
 
@@ -35,21 +37,25 @@ class RosbagCallService():
         if self.next_time < self.current_time:
             rospy.sleep(5)
             for _ in range(3):
-                self.setbool_service_call('/integrate_point_cloud')
+                self.service_call('/integrate_point_cloud')
                 rospy.sleep(0.1)
             self.elapsed[self.index] = True
             if self.index != len(self.service_times) - 1:
                 self.index += 1
                 self.next_time = self.service_times[self.index]
             else:
-                self.setbool_service_call('/create_mesh')
+                self.service_call('/create_mesh')
                 rospy.sleep(5)
                 rospy.signal_shutdown('rosbag finished')
 
     def timer_callback(self, event):
         self.get_current_time()
         self.check_elapsed()
-        print(self.current_time, self.next_time, self.next_time - self.current_time, self.elapsed)
+        print(
+            self.current_time,
+            self.next_time,
+            self.next_time - self.current_time,
+            self.elapsed)
 
 
 if __name__ == '__main__':
