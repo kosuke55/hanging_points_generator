@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 def create_mesh_tsdf(
         colors, depths, intrinsics, camera_poses,
         voxel_length=0.002, sdf_trunc=0.005, compute_normal=True):
-    """
+    """Create mesh using tsdf
 
     Parameters
     ----------
@@ -308,8 +308,8 @@ def load_intrinsic(width, height, intrinsic_path):
 
     Returns
     -------
-    [type]
-        [description]
+    intrinsic : open3d.open3d.camera.PinholeCameraIntrinsic
+        intrinsic matrix
     """
 
     intrinsic = np.loadtxt(intrinsic_path)
