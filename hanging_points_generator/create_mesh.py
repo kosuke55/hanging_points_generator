@@ -430,10 +430,61 @@ def get_pcds(colors, depths, intrinsics):
     return pcds
 
 
-def icp_registration(input_dir, scenes, voxel_size=0.002):
-    """Estimate camera pose and create integrated point cloud
+def save_camera_poses(camera_poses, output_dir, prefix='camera_pose'):
+    for i, camera_pose in enumerate(camera_poses):
+        print(osp.join(
+            output_dir, prefix + '{:03}.txt'.format(i)))
+        np.savetxt(osp.join(
+            output_dir, prefix + '{:03}.txt'.format(i)),
+            camera_pose.T())
 
-    TODO: Making input point cloud list is better.
+
+def icp_registration(pcds, camera_poses, voxel_size=0.002):
+    camera_poses_icp = []
+    camera_poses_icp.append(camera_poses[0])
+    obj_poses = []
+    obj_poses.append(skrobot.coordinates.Coordinates())
+    target = pcds[0]
+    if len(pcds) != len(camera_poses):
+        raise ValueError('lenght of pcds and camera_poses must be same')
+
+    for i in range(len(pcds) - 1):
+        trans_init = camera_poses[0].copy_worldcoords().inverse_transformation(
+        ).transform(camera_poses[i + 1])
+
+        source = pcds[i + 1]
+
+        result_icp = o3d.registration.registration_icp(
+            source, target, 0.02, trans_init.T(),
+            o3d.registration.TransformationEstimationPointToPoint())
+
+        icp_coords = skrobot.coordinates.Coordinates(
+            pos=result_icp.transformation[:3, 3],
+            rot=result_icp.transformation[:3, :3])
+
+        camera_pose_icp = camera_poses[0].copy_worldcoords(
+        ).transform(icp_coords)
+        camera_poses_icp.append(camera_pose_icp)
+
+        obj_pose = camera_poses[0].copy_worldcoords().transform(
+            camera_pose_icp.inverse_transformation())
+        obj_poses.append(obj_pose)
+
+        source.transform(result_icp.transformation)
+
+        target = target + source
+        if voxel_size > 0:
+            target = target.voxel_down_sample(voxel_size)
+        target.remove_statistical_outlier(nb_neighbors=100,
+                                          std_ratio=0.001)
+        # pcd.remove_radius_outlier(nb_points=100, radius=0.002)
+        # o3d.visualization.draw_geometries([target])
+
+    return target, camera_poses_icp, obj_poses
+
+
+def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
+    """Estimate camera pose and create integrated point cloud
 
     Parameters
     ----------
@@ -459,8 +510,6 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
         width, height,
         os.path.join(input_dir, 'camera_pose/intrinsic.txt'))
 
-    camera_poses_icp = []
-
     print('Create point cloud from rgb and depth.')
     color_list = get_images_from_dir(input_dir, 'color', 'png')
     depth_list = get_images_from_dir(input_dir, 'depth', 'png')
@@ -470,68 +519,14 @@ def icp_registration(input_dir, scenes, voxel_size=0.002):
 
     pcds = get_pcds(color_list, depth_list, intrinsic_list)
 
-    np.savetxt(
-        os.path.join(input_dir,
-                     'camera_pose/camera_pose_icp000.txt'),
-        camera_poses[0].T())
+    pcd_icp, camera_poses_icp, obj_poses \
+        = icp_registration(pcds, camera_poses)
 
-    print('ICP registration start.')
-    target = pcds[0]
-    for i in range(scenes - 1):
-        print('ICP registration {:d}-th point cloud.'.format(i + 1))
-        trans_init = camera_poses[0].copy_worldcoords().inverse_transformation(
-        ).transform(camera_poses[i + 1])
+    camera_pose_dir = osp.join(input_dir, 'camera_pose')
+    save_camera_poses(camera_poses_icp, camera_pose_dir, 'camera_pose_icp')
+    save_camera_poses(obj_poses, camera_pose_dir, 'obj_pose')
 
-        source = pcds[i + 1]
-
-        result_icp = o3d.registration.registration_icp(
-            source, target, 0.02, trans_init.T(),
-            o3d.registration.TransformationEstimationPointToPoint())
-
-        icp_coords = skrobot.coordinates.Coordinates(
-            pos=result_icp.transformation[:3, 3],
-            rot=result_icp.transformation[:3, :3])
-
-        camera_pose_icp = camera_poses[0].copy_worldcoords(
-        ).transform(icp_coords)
-        camera_poses_icp.append(camera_pose_icp)
-
-        obj_transformation = camera_poses[0].copy_worldcoords().transform(
-            camera_pose_icp.inverse_transformation())
-        print('{}   {} '.format(obj_transformation.rpy_angle(),
-                                obj_transformation.translation))
-        np.savetxt(
-            os.path.join(
-                input_dir,
-                'camera_pose/camera_pose_icp{:03}.txt'.format(i + 1)),
-            camera_pose_icp.T())
-        np.savetxt(
-            os.path.join(
-                input_dir,
-                'camera_pose/obj_coords{:03}.txt'.format(i + 1)),
-            obj_transformation.T())
-
-        # Save camera pose and intrinsic for texture-mapping
-        output_file = os.path.join(input_dir,
-                                   'color{:03}.txt'.format(i + 1))
-        save_camera_pose_and_intrinsic(camera_pose_icp, intrinsic, output_file)
-
-        source.transform(result_icp.transformation)
-
-        target = target + source
-        if voxel_size > 0:
-            target = target.voxel_down_sample(voxel_size)
-        target.remove_statistical_outlier(nb_neighbors=100,
-                                          std_ratio=0.001)
-        # pcd.remove_radius_outlier(nb_points=100, radius=0.002)
-        # o3d.visualization.draw_geometries([target])
-
-    target.remove_radius_outlier(nb_points=100, radius=0.002)
-    # o3d.visualization.draw_geometries([target])
-    # o3d.io.write_point_cloud(os.path.join(
-    #     input_dir, 'icp_result.pcd'), target)
-
-    return camera_poses_icp, target
+    return camera_poses_icp, pcd_icp
 
 
 def smoothing_mesh(mesh, method='humphrey'):

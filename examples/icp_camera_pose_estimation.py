@@ -6,7 +6,7 @@ import open3d as o3d
 import os
 
 
-from hanging_points_generator.create_mesh import icp_registration
+from hanging_points_generator.create_mesh import icp_registration_from_dir
 
 
 if __name__ == '__main__':
@@ -30,8 +30,9 @@ if __name__ == '__main__':
                             '../sample_data/icp_result.pcd'))
     args = parser.parse_args()
 
-    camera_poses_icp, pcd = icp_registration(args.input,
-                                             args.scenes,
-                                             args.voxel_size)
+    camera_poses_icp, pcd = icp_registration_from_dir(
+        args.input,
+        args.scenes,
+        args.voxel_size)
     o3d.visualization.draw_geometries([pcd])
     o3d.io.write_point_cloud(args.output, pcd)

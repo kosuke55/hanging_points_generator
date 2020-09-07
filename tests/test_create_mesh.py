@@ -5,7 +5,7 @@ import shutil
 import open3d as o3d
 
 from hanging_points_generator.create_mesh import create_mesh_tsdf
-from hanging_points_generator.create_mesh import icp_registration
+from hanging_points_generator.create_mesh import icp_registration_from_dir
 from hanging_points_generator.create_mesh \
     import create_mesh_voxelize_marcing_cubes
 from hanging_points_generator.donwloader import download_sample_data
@@ -21,7 +21,7 @@ class TestCreateMesh(unittest.TestCase):
         cls.scenes = 2
 
     def test_0_icp(self):
-        camera_poses_icp, pcd = icp_registration(
+        camera_poses_icp, pcd = icp_registration_from_dir(
             self.test_data_dir, self.scenes)
         o3d.io.write_point_cloud(
             osp.join(self.test_data_dir, 'icp_result.pcd'), pcd)
