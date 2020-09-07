@@ -30,7 +30,7 @@ if __name__ == '__main__':
                             '../sample_data/icp_result.pcd'))
     args = parser.parse_args()
 
-    camera_poses_icp, pcd = icp_registration_from_dir(
+    pcd, _, _ = icp_registration_from_dir(
         args.input,
         args.scenes,
         args.voxel_size)

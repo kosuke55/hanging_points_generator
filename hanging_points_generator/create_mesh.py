@@ -440,6 +440,30 @@ def save_camera_poses(camera_poses, output_dir, prefix='camera_pose'):
 
 
 def icp_registration(pcds, camera_poses, voxel_size=0.002):
+    """Estimate camera pose and create integrated point cloud
+
+    Parameters
+    ----------
+    pcds : list of open3d.open3d.geometry.PointCloud
+        input pcd list
+    camera_poses : list of skrobot.coordinates.base.Coordinates
+        input camera pose list
+    voxel_size : float, optional
+
+    Returns
+    -------
+    target : open3d.open3d.geometry.PointCloud
+        icp registered point cloud
+    camera_poses_icp : list of skrobot.coordinates.base.Coordinates
+        icp registered camera pose list
+    obj_poses : skrobot.coordinates.base.Coordinates
+        icp registered object pose list
+
+    Raises
+    ------
+    ValueError
+        Legth of pcd list and camera pose list must be same
+    """
     camera_poses_icp = []
     camera_poses_icp.append(camera_poses[0])
     obj_poses = []
@@ -484,7 +508,7 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002):
 
 
 def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
-    """Estimate camera pose and create integrated point cloud
+    """Estimate camera pose and create integrated point cloud from dir
 
     Parameters
     ----------
@@ -526,7 +550,7 @@ def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
     save_camera_poses(camera_poses_icp, camera_pose_dir, 'camera_pose_icp')
     save_camera_poses(obj_poses, camera_pose_dir, 'obj_pose')
 
-    return camera_poses_icp, pcd_icp
+    return pcd_icp, camera_poses_icp, obj_poses
 
 
 def smoothing_mesh(mesh, method='humphrey'):

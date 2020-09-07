@@ -21,7 +21,7 @@ class TestCreateMesh(unittest.TestCase):
         cls.scenes = 2
 
     def test_0_icp(self):
-        camera_poses_icp, pcd = icp_registration_from_dir(
+        pcd, _, _ = icp_registration_from_dir(
             self.test_data_dir, self.scenes)
         o3d.io.write_point_cloud(
             osp.join(self.test_data_dir, 'icp_result.pcd'), pcd)
