@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="input_color" value="/head_mount_kinect/hd/image_color_rect_repub" />
+  <arg name="input_depth" value="/head_mount_kinect/hd/image_depth_rect_repub" />
+  <arg name="input_mask" value="/point_indices_to_mask_image_gripper/output" />
+  <arg name="camera_info" value="/head_mount_kinect/hd/camera_info" />
+  <arg name="camera_frame" value="head_mount_kinect_rgb_link" />
+  <arg name="gripper_frame" value="l_gripper_tool_frame" />
+  <arg name="save_raw_image" value="true" />
+  <arg name="save_dir" value="save_dir_rosabg/" />
+  <arg name="gui" default="true" />
+
+  <param name="/use_sim_time" value="true" />
+
+  <node name="rosbag_play"
+        pkg="rosbag" type="play"
+        args="$(find hanging_points_generator)/create_mesh_sample_rosbag/create_mesh.bag --clock" >
+  </node>
+
+  <include file="$(find hanging_points_generator)/ros/launch/republish_image.launch" />
+
+  <node name="call_service"
+        pkg="hanging_points_generator" type="call_service.py"
+        output="screen" respawn="true">
+      </node>
+
+  <node name="create_mesh"
+        pkg="hanging_points_generator" type="create_mesh_node.py"
+        output="screen" respawn="true">
+
+    <remap from="~input_color" to="$(arg input_color)" />
+    <remap from="~input_depth" to="$(arg input_depth)" />
+    <remap from="~input_mask" to="$(arg input_mask)" />
+    <remap from="~camera_info" to="$(arg camera_info)" />
+
+    <rosparam subst_value="true">
+      camera_frame: $(arg camera_frame)
+      gripper_frame: $(arg gripper_frame)
+      save_raw_img: $(arg save_raw_image)
+      save_dir: $(arg save_dir)
+    </rosparam>
+  </node>
+
+  <node name="pub_contact_points"
+        pkg="hanging_points_generator" type="pub_contact_points.py"
+        output="screen" respawn="true">
+    <rosparam subst_value="true">
+      contact_points_json: $(arg save_dir)contact_points.json
+      gripper_frame: $(arg gripper_frame)
+    </rosparam>
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="image_viewer"
+          pkg="image_view" type="image_view">
+      <remap from="image" to="$(arg input_color)" />
+    </node>
+  </group>
+
+</launch>

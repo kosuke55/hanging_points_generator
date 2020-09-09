@@ -7,14 +7,11 @@ import os.path as osp
 import pathlib2
 import sys
 
-import cv2
-import image_geometry
+import cameramodels
 import message_filters
 import numpy as np
 import open3d as o3d
 import rospy
-import skrobot
-import tf
 from skrobot.interfaces.ros.transform_listener import TransformListener
 from skrobot.interfaces.ros.tf_utils import tf_pose_to_coords
 
@@ -56,7 +53,10 @@ class CreateMesh():
             parents=True, exist_ok=True)
 
         self.camera_info = None
-        self.camera_model = image_geometry.cameramodels.PinholeCameraModel()
+        # self.camera_model = image_geometry.cameramodels.PinholeCameraModel()
+        self.camera_model = None
+        # self.camera_model = cameramodels.PinholeCameraModel()
+        # self.camera_model = cameramodels.PinholeCameraModel()
         self.color = None
         self.depth = None
         self.mask = None
@@ -81,15 +81,10 @@ class CreateMesh():
     def load_camera_info(self):
         self.camera_info = rospy.wait_for_message(
             '~camera_info', CameraInfo)
-        self.camera_model.fromCameraInfo(self.camera_info)
-        self.intrinsic = o3d.camera.PinholeCameraIntrinsic()
-        self.intrinsic.set_intrinsics(
-            self.camera_model.width,
-            self.camera_model.height,
-            self.camera_model.fx(),
-            self.camera_model.fy(),
-            self.camera_model.cx(),
-            self.camera_model.cy())
+        self.camera_model \
+            = cameramodels.PinholeCameraModel.from_camera_info(
+                self.camera_info)
+        self.intrinsic = self.camera_model.open3d_intrinsic
         print('load camera model')
         np.savetxt(os.path.join(self.save_dir, 'camera_pose/intrinsic.txt'),
                    self.intrinsic.intrinsic_matrix)
