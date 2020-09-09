@@ -21,7 +21,7 @@ def download_sample_data(output_dir=None, rosbag=True):
         else:
             output = osp.join(output_dir, 'create_mesh_sample_rosbag.tgz')
         gdown.cached_download(
-            'https://drive.google.com/uc?export=download&id=1uacdgaBiNqkfbxe5NwvzpBO3hi7w-MVl',
+            'https://drive.google.com/uc?export=download&id=1BCEXPPJJ6FyaB7Fp7xbxjXMiHmjFDIE-',
             output,
-            md5='ec2ff6bc03b8a4643d23528e1107e01d',
+            md5='ed15a7cea9e21782569c02e08c520cfe',
             postprocess=gdown.extractall)
