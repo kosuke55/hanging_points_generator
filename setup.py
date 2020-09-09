@@ -40,6 +40,7 @@ install_requires = [
     'pathlib2',
     'pybullet',
     'pymesh',
+    'opencv-python',
     'scikit-robot',
     'scikit-image',
     'trimesh'

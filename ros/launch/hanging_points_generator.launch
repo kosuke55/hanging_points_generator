@@ -4,8 +4,8 @@
   <arg name="input_depth" value="/head_mount_kinect/hd/image_depth_rect_repub" />
   <arg name="input_mask" value="/point_indices_to_mask_image_gripper/output" />
   <arg name="camera_info" value="/head_mount_kinect/hd/camera_info" />
-  <arg name="camera_frame" value="/head_mount_kinect_rgb_link" />
-  <arg name="gripper_frame" value="/l_gripper_tool_frame" />
+  <arg name="camera_frame" value="head_mount_kinect_rgb_link" />
+  <arg name="gripper_frame" value="l_gripper_tool_frame" />
   <arg name="save_raw_image" value="true" />
   <arg name="save_dir" value="save_dir/" />
 

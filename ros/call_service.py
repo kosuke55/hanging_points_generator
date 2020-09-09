@@ -35,16 +35,19 @@ class RosbagCallService():
 
     def check_elapsed(self):
         if self.next_time < self.current_time:
-            rospy.sleep(5)
+            rospy.sleep(1)
+            # self.service_call('/store_images')
             for _ in range(3):
-                self.service_call('/integrate_point_cloud')
-                rospy.sleep(0.1)
+                self.service_call('/store_images')
+                rospy.sleep(0.2)
             self.elapsed[self.index] = True
             if self.index != len(self.service_times) - 1:
                 self.index += 1
                 self.next_time = self.service_times[self.index]
             else:
-                self.service_call('/create_mesh')
+                self.service_call('/icp_registration')
+                self.service_call('/create_mesh_tsdf')
+                self.service_call('/save_images')
                 rospy.sleep(5)
                 rospy.signal_shutdown('rosbag finished')
 

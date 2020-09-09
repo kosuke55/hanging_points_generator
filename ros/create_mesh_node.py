@@ -1,22 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import subprocess
+import os
+import os.path as osp
+import pathlib2
+import sys
+
 import cv2
 import image_geometry
 import message_filters
 import numpy as np
 import open3d as o3d
-import os
-import pathlib2
 import rospy
 import skrobot
-import subprocess
-import sys
 import tf
+from skrobot.interfaces.ros.transform_listener import TransformListener
+from skrobot.interfaces.ros.tf_utils import tf_pose_to_coords
 
 from cv_bridge import CvBridge
 from hanging_points_generator import hp_generator
-from hanging_points_generator import create_mesh
+from hanging_points_generator.create_mesh import create_mesh_tsdf
+from hanging_points_generator.create_mesh import crop_images
+from hanging_points_generator.create_mesh import depths_mean_filter
+from hanging_points_generator.create_mesh import get_pcds
+from hanging_points_generator.create_mesh import icp_registration
+from hanging_points_generator.create_mesh import np_to_o3d_images
+from hanging_points_generator.create_mesh import preprocess_masks
+from hanging_points_generator.create_mesh import save_camera_poses
+from hanging_points_generator.create_mesh import save_images
 from sensor_msgs.msg import CameraInfo, Image
 from std_srvs.srv import Trigger, TriggerResponse
 
@@ -26,14 +38,16 @@ class CreateMesh():
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
 
         self.camera_frame = rospy.get_param(
-            '~camera_frame', '/head_mount_kinect_rgb_link')
+            '~camera_frame', 'head_mount_kinect_rgb_link')
         self.gripper_frame = rospy.get_param(
-            '~gripper_frame', '/l_gripper_tool_frame')
+            '~gripper_frame', 'l_gripper_tool_frame')
 
         self.save_raw_img = rospy.get_param(
             '~save_raw_img', True)
         self.save_dir = rospy.get_param(
             '~save_dir', 'save_dir/')
+        self.use_tf2 = rospy.get_param(
+            '~use_tf2', False)
 
         self.save_dir = os.path.join(self.current_dir, '..', self.save_dir)
         pathlib2.Path(os.path.join(self.save_dir, 'raw')).mkdir(
@@ -45,6 +59,12 @@ class CreateMesh():
         self.camera_model = image_geometry.cameramodels.PinholeCameraModel()
         self.color = None
         self.depth = None
+        self.mask = None
+        self.camera_pose = None
+        self.color_list = []
+        self.depth_list = []
+        self.mask_list = []
+        self.camera_pose_list = []
         self.header = None
         self.stanby = False
         self.callback_lock = False
@@ -53,13 +73,9 @@ class CreateMesh():
         self.subscribe()
         self.bridge = CvBridge()
 
-        self.lis = tf.TransformListener()
+        self.lis = TransformListener(self.use_tf2)
         self.integrate_count = 0
         self.voxel_length = 0.002
-        self.volume = o3d.integration.ScalableTSDFVolume(
-            voxel_length=0.0025,
-            sdf_trunc=0.01,
-            color_type=o3d.integration.TSDFVolumeColorType.RGB8)
         self.service()
 
     def load_camera_info(self):
@@ -92,191 +108,128 @@ class CreateMesh():
 
     def callback(self, rgb_msg, depth_msg, mask_msg):
         if self.callback_lock:
+            print('callback is locked')
             return
+        self.header = rgb_msg.header
         self.mask = self.bridge.imgmsg_to_cv2(mask_msg, 'mono8')
         self.color = self.bridge.imgmsg_to_cv2(rgb_msg, 'rgb8')
-        self.depth = self.bridge.imgmsg_to_cv2(depth_msg, 'passthrough')
-        self.header = rgb_msg.header
+        self.depth = self.bridge.imgmsg_to_cv2(depth_msg, '16UC1')
 
         if not self.stanby:
             rospy.loginfo('Stanby!')
             self.stanby = True
 
     def service(self):
-        self.integrate_service = rospy.Service('integrate_point_cloud',
-                                               Trigger,
-                                               self.integrate_point_cloud)
-        self.create_mesh_service = rospy.Service('create_mesh',
-                                                 Trigger,
-                                                 self.create_mesh)
-        self.create_mesh_service = rospy.Service('create_voxelized_mesh',
-                                                 Trigger,
-                                                 self.create_voxelized_mesh)
-        self.meshfix_service = rospy.Service('meshfix',
-                                             Trigger,
-                                             self.meshfix)
-        self.reset_volume_service = rospy.Service('reset_volume',
-                                                  Trigger,
-                                                  self.reset_volume)
+        self.integrate_service = rospy.Service(
+            'store_images',
+            Trigger,
+            self.store_images)
+        self.icp_registration_service = rospy.Service(
+            'icp_registration',
+            Trigger,
+            self.icp_registration)
+        self.create_mesh_tsdf_service = rospy.Service(
+            'create_mesh_tsdf',
+            Trigger,
+            self.create_mesh_tsdf)
+        self.save_images_service = rospy.Service(
+            'save_images',
+            Trigger,
+            self.save_images)
+        self.meshfix_service = rospy.Service(
+            'meshfix',
+            Trigger,
+            self.meshfix)
+        self.reset_volume_service = rospy.Service(
+            'reset_volume',
+            Trigger,
+            self.reset_volume)
         self.generate_hanging_points = rospy.Service(
             'generate_hanging_points',
             Trigger,
             self.generate_hanging_points)
 
-    def integrate_point_cloud(self, req):
+    def preprocess_masks(self):
+        self.color_mask_list = preprocess_masks(self.mask_list)
+        self.depth_mask_list = preprocess_masks(
+            self.mask_list, morph_close=False)
+
+    def crop_images(self, preprocess_mask=True):
+        if preprocess_mask:
+            self.preprocess_masks()
+        self.cropped_color_list = crop_images(self.color_list, self.mask_list)
+        self.cropped_depth_list = depths_mean_filter(
+            crop_images(self.depth_list, self.mask_list))
+
+    def store_images(self, req):
+        rospy.loginfo('Store {} images'.format(len(self.color_list)))
         if self.header is None:
             rospy.logwarn('No callback')
             return
-        self.callback_lock = True
-
-        self.color_clip = self.color.copy()
-        self.depth_clip = self.depth.copy()
-
-        mask_morph_open = cv2.morphologyEx(
-            self.mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
-        mask_morph_close = cv2.morphologyEx(
-            mask_morph_open, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
-
-        self.color_clip[mask_morph_close == 0] = [0, 0, 0]
-        self.depth_clip[mask_morph_open == 0] = 0
-
-        rospy.loginfo('integrate count: %d', self.integrate_count)
-
         try:
-            self.lis.waitForTransform(
+            tf_pose = self.lis.lookup_transform(
                 self.gripper_frame, self.header.frame_id,
-                self.header.stamp, rospy.Duration(5))
-            trans, rot = self.lis.lookupTransform(
-                self.gripper_frame, self.header.frame_id,
-                self.header.stamp)
-
-            camera_pose = skrobot.coordinates.Coordinates(
-                pos=trans,
-                rot=skrobot.coordinates.math.xyzw2wxyz(rot))
-
-            np.savetxt(
-                os.path.join(self.save_dir,
-                             'camera_pose/camera_pose{:03}.txt'.format(
-                                 self.integrate_count)),
-                camera_pose.T())
-
-            cv2.imwrite(os.path.join(self.save_dir, 'color{:03}.png'.format(
-                self.integrate_count)), cv2.cvtColor(
-                    self.color_clip.astype(np.uint8), cv2.COLOR_BGR2RGB))
-
-            cv2.imwrite(os.path.join(self.save_dir, 'depth{:03}.png'.format(
-                self.integrate_count)), self.depth_clip.astype(np.uint16))
-
-            if self.save_raw_img:
-                cv2.imwrite(os.path.join(
-                    self.save_dir,
-                    'raw/color_raw{:03}.png'.format(
-                        self.integrate_count)),
-                    cv2.cvtColor(
-                    self.color.astype(np.uint8),
-                    cv2.COLOR_BGR2RGB))
-                cv2.imwrite(os.path.join(
-                    self.save_dir,
-                    'raw/depth_raw{:03}.png'.format(
-                        self.integrate_count)), self.depth.astype(np.uint16))
-
-            cv2.imwrite(os.path.join(
-                self.save_dir,
-                'mask{:03}.png'.format(
-                    self.integrate_count)),
-                mask_morph_close.astype(np.uint8))
-
-            color = o3d.geometry.Image(self.color_clip.astype(np.uint8))
-            depth = o3d.geometry.Image(self.depth_clip.astype(np.uint16))
-            rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(
-                color, depth, depth_trunc=4.0,
-                convert_rgb_to_intensity=False)
-            pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
-                rgbd, self.intrinsic)
-            pcd = pcd.voxel_down_sample(self.voxel_length)
-            pcd.estimate_normals(
-                search_param=o3d.geometry.KDTreeSearchParamHybrid(
-                    radius=0.1, max_nn=30))
-            # o3d.visualization.draw_geometries([pcd])
-
-            if self.integrate_count == 0:
-                self.target_pcd = pcd
-                self.target_camera_pose = camera_pose
-                camera_pose_icp = camera_pose
-
-            else:
-                trans_init = self.target_camera_pose.copy_worldcoords(
-                ).inverse_transformation().transform(camera_pose)
-                result_icp = o3d.registration.registration_icp(
-                    pcd, self.target_pcd, 0.02, trans_init.T(),
-                    o3d.registration.TransformationEstimationPointToPoint())
-                print(result_icp.fitness)
-                if result_icp.fitness < 0.4:
-                    print("ICP score is too low. Not integrate.")
-                    return
-                icp_coords = skrobot.coordinates.Coordinates(
-                    pos=result_icp.transformation[:3, 3],
-                    rot=result_icp.transformation[:3, :3])
-                camera_pose_icp = self.target_camera_pose.copy_worldcoords(
-                ).transform(icp_coords)
-                pcd.transform(result_icp.transformation)
-                self.target_pcd += pcd
-                self.target_pcd.remove_statistical_outlier(nb_neighbors=100,
-                                                           std_ratio=0.001)
-                # o3d.visualization.draw_geometries([self.target_pcd])
-
-            np.savetxt(
-                os.path.join(
-                    self.save_dir,
-                    'camera_pose/camera_pose_icp{:03}.txt'.format(
-                        self.integrate_count)), camera_pose_icp.T())
-
-            # Save camera pose and intrinsic for texture-mapping
-            with open(os.path.join(
-                    self.save_dir,
-                    'color{:03}.txt'.format(self.integrate_count)), 'w') as f:
-                np.savetxt(f, np.concatenate(
-                    [camera_pose_icp.T()[:3, 3][None, :],
-                     camera_pose_icp.T()[:3, :3]],
-                    axis=0))
-                np.savetxt(f, [self.camera_model.fx()])
-                np.savetxt(f, [self.camera_model.fy()])
-                np.savetxt(f, [self.camera_model.cx()])
-                np.savetxt(f, [self.camera_model.cy()])
-                np.savetxt(f, [self.camera_model.height])
-                np.savetxt(f, [self.camera_model.width])
-
-            self.volume.integrate(
-                rgbd,
-                self.intrinsic,
-                np.linalg.inv(camera_pose_icp.T()))
-
-            self.integrate_count += 1
-            self.callback_lock = False
-            return TriggerResponse(True, 'success integrate point cloud')
-
+                self.header.stamp, rospy.Duration(1))
         except Exception:
-            self.callback_lock = False
-            rospy.logwarn(
-                'failed listen transform')
-            return TriggerResponse(False, 'failed listen transform')
+            rospy.logwarn('Fail to listeen transform')
+            return TriggerResponse(False, 'fail to store image')
 
-    def create_mesh(self, req):
-        o3d.io.write_point_cloud(
-            os.path.join(self.save_dir, 'obj.pcd'), self.target_pcd)
-        mesh = self.volume.extract_triangle_mesh()
-        mesh.compute_vertex_normals()
+        self.camera_pose = None
+        if tf_pose:
+            self.camera_pose = tf_pose_to_coords(tf_pose)
+
+        if not self.camera_pose:
+            rospy.logwarn('No tf')
+            return TriggerResponse(False, 'fail to srore image')
+
+        self.callback_lock = True
+        self.color_list.append(self.color.copy())
+        self.depth_list.append(self.depth.copy())
+        self.mask_list.append(self.mask.copy())
+
+        self.camera_pose_list.append(self.camera_pose.copy_worldcoords())
+
+        self.callback_lock = False
+        self.header = None
+
+        return TriggerResponse(True, 'success integrate point cloud')
+
+    def get_pcds(self):
+        self.intrinsic_list = [self.intrinsic] * len(self.color_list)
+        self.cropped_color_list = np_to_o3d_images(self.cropped_color_list)
+        self.cropped_depth_list = np_to_o3d_images(self.cropped_depth_list)
+        self.pcds = get_pcds(
+            self.cropped_color_list,
+            self.cropped_depth_list,
+            self.intrinsic_list)
+
+    def save_images(self, req):
+        save_images(self.save_dir, 'color_raw', self.color_list, 'bgr')
+        save_images(self.save_dir, 'color', self.cropped_color_list)
+        save_images(self.save_dir, 'depth_raw', self.depth_list)
+        save_images(self.save_dir, 'depth', self.cropped_depth_list)
+        save_images(self.save_dir, 'mask', self.mask_list)
+        save_camera_poses(
+            self.camera_pose_list, osp.join(
+                self.save_dir, 'camera_pose'))
+
+    def icp_registration(self, req):
+        self.crop_images()
+        self.get_pcds()
+
+        self.pcd, self.camera_pose_icp_list, self.obj_poses \
+            = icp_registration(self.pcds, self.camera_pose_list)
+        o3d.visualization.draw_geometries([self.pcd])
+
+    def create_mesh_tsdf(self, req):
+        rospy.loginfo('create_mesh_tsdf')
+        mesh = create_mesh_tsdf(
+            self.cropped_color_list, self.cropped_depth_list,
+            self.intrinsic_list, self.camera_pose_icp_list,
+            compute_normal=True)
         o3d.visualization.draw_geometries([mesh])
-        o3d.io.write_triangle_mesh(
-            os.path.join(self.save_dir, 'obj.ply'), mesh)
-        return TriggerResponse(True, 'success create mesh')
 
-    def create_voxelized_mesh(self, req):
-        mesh = create_mesh.create_voxelized_mesh(self.target_pcd,
-                                                 voxel_size=0.002)
-        mesh.show()
-        mesh.export(os.path.join(self.save_dir, 'obj.ply'))
-        return TriggerResponse(True, 'success create voxelized_mesh')
+        return TriggerResponse(True, 'success create mesh')
 
     def meshfix(self, req):
         subprocess.call(

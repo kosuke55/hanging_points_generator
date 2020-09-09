@@ -6,6 +6,7 @@ import os.path as osp
 import pathlib2
 from pathlib import Path
 
+import cv2
 import numpy as np
 import open3d as o3d
 import skrobot
@@ -452,7 +453,24 @@ def save_camera_poses(camera_poses, output_dir, prefix='camera_pose'):
             camera_pose.T())
 
 
-def icp_registration(pcds, camera_poses, voxel_size=0.002):
+def save_image(output_file, image, format='rgb'):
+    if isinstance(image, np.ndarray):
+        if format == 'rgb':
+            cv2.imwrite(output_file, (image))
+        elif format == 'bgr':
+            cv2.imwrite(output_file, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+
+    elif isinstance(image, o3d.open3d.geometry.Image):
+        o3d.io.write_image(output_file, image)
+
+
+def save_images(output_dir, prefix, images, format='rgb'):
+    for i, image in enumerate(images):
+        save_image(osp.join(
+            output_dir, prefix + '{:03}.png'.format(i)), image, format)
+
+
+def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
     """Estimate camera pose and create integrated point cloud
 
     Parameters
@@ -490,9 +508,11 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002):
         ).transform(camera_poses[i + 1])
 
         source = pcds[i + 1]
+        source.remove_statistical_outlier(nb_neighbors=100,
+                                          std_ratio=0.001)
 
         result_icp = o3d.registration.registration_icp(
-            source, target, 0.02, trans_init.T(),
+            source, target, threshold, trans_init.T(),
             o3d.registration.TransformationEstimationPointToPoint())
 
         icp_coords = skrobot.coordinates.Coordinates(
@@ -583,3 +603,74 @@ def smoothing_mesh(mesh, method='humphrey'):
         trimesh.smoothing.laplacian_calculation(mesh, equal_weight=True)
 
     return mesh
+
+
+def preprocess_mask(
+        mask, kernel=(5, 5), morph_open=True, morph_close=True, copy=True):
+    if copy:
+        mask = mask.copy()
+    if morph_open:
+        mask = cv2.morphologyEx(
+            mask, cv2.MORPH_OPEN, np.ones(kernel, np.uint8))
+    if morph_close:
+        mask = cv2.morphologyEx(
+            mask, cv2.MORPH_CLOSE, np.ones(kernel, np.uint8))
+
+    return mask
+
+
+def preprocess_masks(masks, kernel=(5, 5), morph_open=True, morph_close=True):
+    preprocessed_masks = []
+    for mask in masks:
+        mask = preprocess_mask(mask, kernel, morph_open, morph_close)
+        preprocessed_masks.append(mask)
+
+    return preprocessed_masks
+
+
+def crop_images(images, masks):
+    cropped_images = []
+    for image, mask in zip(images, masks):
+        image = image.copy()
+        channels = image.shape[2] if image.ndim == 3 else 1
+
+        if channels == 3:
+            image[mask == 0] = [0, 0, 0]
+        elif channels == 1:
+            image[mask == 0] = 0
+        cropped_images.append(image)
+
+    return cropped_images
+
+
+def np_to_o3d_image(image, copy=True):
+    if copy:
+        image = image.copy()
+    image = o3d.geometry.Image(image)
+
+    return image
+
+
+def np_to_o3d_images(images):
+    o3d_images = []
+    for image in images:
+        image = np_to_o3d_image(image)
+        o3d_images.append(image)
+
+    return o3d_images
+
+
+def depth_mean_filter(depth, distance=300, copy=True):
+    if copy:
+        depth = depth.copy()
+    mean = depth[depth != 0].mean()
+    mask = np.abs(depth - mean) > distance
+    depth[mask] = 0
+    return depth
+
+
+def depths_mean_filter(depths, distance=300):
+    filtered_depths = []
+    for depth in depths:
+        filtered_depths.append(depth_mean_filter(depth))
+    return filtered_depths
