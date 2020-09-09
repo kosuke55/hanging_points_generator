@@ -210,8 +210,8 @@ class CreateMesh():
         save_images(self.save_dir, 'depth', self.cropped_depth_list)
         save_images(self.save_dir, 'mask', self.mask_list)
         save_camera_poses(
-            osp.join(self.save_dir, 'camera_pose'),
-            self.camera_pose_list, prefix='camera_pose')
+            osp.join(self.save_dir, 'camera_pose'), 'camera_pose',
+            self.camera_pose_list)
 
     def icp_registration(self, req):
         self.crop_images()

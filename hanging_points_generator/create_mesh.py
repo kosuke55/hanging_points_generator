@@ -444,7 +444,18 @@ def get_pcds(colors, depths, intrinsics):
     return pcds
 
 
-def save_camera_poses(output_dir, camera_poses, prefix='camera_pose'):
+def save_camera_poses(output_dir, prefix, camera_poses):
+    """Save camera pose list
+
+    Parameters
+    ----------
+    output_dir : str
+    prefix : str
+        save file prefix
+    camera_poses : list of skrobot.coordinates.base.Coordinates
+        [description]
+    """
+
     for i, camera_pose in enumerate(camera_poses):
         print(osp.join(
             output_dir, prefix + '{:03}.txt'.format(i)))
@@ -454,6 +465,15 @@ def save_camera_poses(output_dir, camera_poses, prefix='camera_pose'):
 
 
 def save_image(output_file, image, format='rgb'):
+    """Save image
+
+    Parameters
+    ----------
+    output_file : str
+    image : numpy.ndarray or open3d.open3d.geometry.Image
+    format : str, optional
+        for cv2. 'rgb' or 'bgr', by default 'rgb'
+    """
     if isinstance(image, np.ndarray):
         if format == 'rgb':
             cv2.imwrite(output_file, (image))
@@ -465,6 +485,17 @@ def save_image(output_file, image, format='rgb'):
 
 
 def save_images(output_dir, prefix, images, format='rgb'):
+    """Save image list
+
+    Parameters
+    ----------
+    output_dir : str
+    prefix : str
+        save file prefix
+    images : list of numpy.ndarray or open3d.open3d.geometry.Image
+    format : str, optional
+        for cv2. 'rgb' or 'bgr', by default 'rgb'
+    """
     for i, image in enumerate(images):
         save_image(osp.join(
             output_dir, prefix + '{:03}.png'.format(i)), image, format)
@@ -480,6 +511,9 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
     camera_poses : list of skrobot.coordinates.base.Coordinates
         input camera pose list
     voxel_size : float, optional
+        by default 0.002
+    thresh : float, optional
+        by default 0.01
 
     Returns
     -------
@@ -580,13 +614,27 @@ def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
         = icp_registration(pcds, camera_poses)
 
     camera_pose_dir = osp.join(input_dir, 'camera_pose')
-    save_camera_poses(camera_pose_dir, camera_poses_icp, 'camera_pose_icp')
-    save_camera_poses(camera_pose_dir, obj_poses, 'obj_pose')
+    save_camera_poses(camera_pose_dir, 'camera_pose_icp', camera_poses_icp)
+    save_camera_poses(camera_pose_dir, 'obj_pose', obj_poses)
 
     return pcd_icp, camera_poses_icp, obj_poses
 
 
 def smoothing_mesh(mesh, method='humphrey'):
+    """Smoothing mesh
+
+    Parameters
+    ----------
+    mesh : trimesh.base.Trimesh
+    method : str, optional
+        'humphrey', 'laplacian', 'taubin' or 'laplacian_calculation',
+        by default 'humphrey'
+
+    Returns
+    -------
+    mesh : trimesh.base.Trimesh
+        smoothed mesh
+    """
     if method == 'humphrey':
         trimesh.smoothing.filter_humphrey(mesh, alpha=0.1, beta=0.5,
                                           iterations=10,
@@ -607,6 +655,24 @@ def smoothing_mesh(mesh, method='humphrey'):
 
 def preprocess_mask(
         mask, kernel=(5, 5), morph_open=True, morph_close=True, copy=True):
+    """Morphology transformation preprocess mask
+
+    Parameters
+    ----------
+    mask : numpy.ndarray
+    kernel : tuple, optional
+        kernel size, by default (5, 5)
+    morph_open : bool, optional
+        If true, opening mask, by default True
+    morph_close : bool, optional
+        If true, closing mask, by default True
+    copy : bool, optional
+        copy image, by default True
+
+    Returns
+    -------
+    mask : numpy.ndarray
+    """
     if copy:
         mask = mask.copy()
     if morph_open:
@@ -620,6 +686,22 @@ def preprocess_mask(
 
 
 def preprocess_masks(masks, kernel=(5, 5), morph_open=True, morph_close=True):
+    """Morphology transformation preprocess mask list
+
+    Parameters
+    ----------
+    masks : list of numpy.ndarray
+    kernel : tuple, optional
+        kernel size, by default (5, 5)
+    morph_open : bool, optional
+        If true, opening mask, by default True
+    morph_close : bool, optional
+        If true, closing mask, by default True
+
+    Returns
+    -------
+    preprocessed_masks : list of numpy.ndarray
+    """
     preprocessed_masks = []
     for mask in masks:
         mask = preprocess_mask(mask, kernel, morph_open, morph_close)
@@ -629,6 +711,17 @@ def preprocess_masks(masks, kernel=(5, 5), morph_open=True, morph_close=True):
 
 
 def crop_images(images, masks):
+    """Crop image list
+
+    Parameters
+    ----------
+    images : list of numpy.ndarray
+    masks : list of numpy.ndarray
+
+    Returns
+    -------
+    cropped_images : list of numpy.ndarray
+    """
     cropped_images = []
     for image, mask in zip(images, masks):
         image = image.copy()
@@ -644,6 +737,17 @@ def crop_images(images, masks):
 
 
 def np_to_o3d_image(image, copy=True):
+    """Convert numpy image to open3d image
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+    copy : bool, optional
+        copy image, by default True
+
+    Returns
+    image : open3d.open3d.geometry.Image
+    """
     if copy:
         image = image.copy()
     image = o3d.geometry.Image(image)
@@ -652,6 +756,17 @@ def np_to_o3d_image(image, copy=True):
 
 
 def np_to_o3d_images(images):
+    """Convert numpy image list to open3d image list
+
+    Parameters
+    ----------
+    images : list of numpy.ndarray
+
+    Returns
+    o3d_images : list of open3d.open3d.geometry.Image
+    -------
+
+    """
     o3d_images = []
     for image in images:
         image = np_to_o3d_image(image)
@@ -660,7 +775,21 @@ def np_to_o3d_images(images):
     return o3d_images
 
 
-def depth_mean_filter(depth, distance=300, copy=True):
+def depth_mean_filter(depth, distance=300., copy=True):
+    """Filter depth close to the mean
+
+    Parameters
+    ----------
+    depth : numpy.ndarray
+    distance : float, optional
+        filtering threshold, by default 300.
+    copy : bool, optional
+        copy depth, by default True
+
+    Returns
+    -------
+    depth : numpy.ndarray
+    """
     if copy:
         depth = depth.copy()
     mean = depth[depth != 0].mean()
@@ -669,7 +798,19 @@ def depth_mean_filter(depth, distance=300, copy=True):
     return depth
 
 
-def depths_mean_filter(depths, distance=300):
+def depths_mean_filter(depths, distance=300.):
+    """Filter depth list close to the mean
+
+    Parameters
+    ----------
+    depths : list of numpy.ndarray
+    distance : float, optional
+        filtering threshold, by default 300
+
+    Returns
+    -------
+    filtered_depths : list of numpy.ndarray
+    """
     filtered_depths = []
     for depth in depths:
         filtered_depths.append(depth_mean_filter(depth))
