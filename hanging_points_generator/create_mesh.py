@@ -444,7 +444,7 @@ def get_pcds(colors, depths, intrinsics):
     return pcds
 
 
-def save_camera_poses(camera_poses, output_dir, prefix='camera_pose'):
+def save_camera_poses(output_dir, camera_poses, prefix='camera_pose'):
     for i, camera_pose in enumerate(camera_poses):
         print(osp.join(
             output_dir, prefix + '{:03}.txt'.format(i)))
@@ -580,8 +580,8 @@ def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
         = icp_registration(pcds, camera_poses)
 
     camera_pose_dir = osp.join(input_dir, 'camera_pose')
-    save_camera_poses(camera_poses_icp, camera_pose_dir, 'camera_pose_icp')
-    save_camera_poses(obj_poses, camera_pose_dir, 'obj_pose')
+    save_camera_poses(camera_pose_dir, camera_poses_icp, 'camera_pose_icp')
+    save_camera_poses(camera_pose_dir, obj_poses, 'obj_pose')
 
     return pcd_icp, camera_poses_icp, obj_poses
 
