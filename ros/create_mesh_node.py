@@ -56,7 +56,7 @@ class CreateMesh():
         self.voxel_length = rospy.get_param(
             '~voxel_length', 0.002)
         self.crop = rospy.get_param(
-            '~crop', False)
+            '~crop', True)
 
         self.save_dir = os.path.join(self.current_dir, '..', self.save_dir)
         pathlib2.Path(os.path.join(self.save_dir, 'raw')).mkdir(
