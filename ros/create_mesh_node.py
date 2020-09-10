@@ -64,8 +64,15 @@ class CreateMesh():
         pathlib2.Path(os.path.join(self.save_dir, 'camera_pose')).mkdir(
             parents=True, exist_ok=True)
 
-        self.camera_info = None
-        self.camera_model = None
+        self._reset()
+        self.load_camera_info()
+        self.subscribe()
+        self.bridge = CvBridge()
+
+        self.lis = TransformListener(self.use_tf2)
+        self.service()
+
+    def _reset(self):
         self.color = None
         self.depth = None
         self.pcd_icp = None
@@ -81,12 +88,9 @@ class CreateMesh():
         self.stanby = False
         self.callback_lock = False
 
-        self.load_camera_info()
-        self.subscribe()
-        self.bridge = CvBridge()
-
-        self.lis = TransformListener(self.use_tf2)
-        self.service()
+    def reset(self, req):
+        self._reset()
+        return TriggerResponse(True, 'reset')
 
     def load_camera_info(self):
         self.camera_info = rospy.wait_for_message(
@@ -146,9 +150,9 @@ class CreateMesh():
         self.meshfix_service = rospy.Service(
             'meshfix', Trigger,
             self.meshfix)
-        self.reset_volume_service = rospy.Service(
-            'reset_volume', Trigger,
-            self.reset_volume)
+        self.reset_service = rospy.Service(
+            'reset', Trigger,
+            self.reset)
         self.generate_hanging_points = rospy.Service(
             'generate_hanging_points', Trigger,
             self.generate_hanging_points)
@@ -260,10 +264,6 @@ class CreateMesh():
              '-o',
              self.save_dir])
         return TriggerResponse(True, 'meshfix')
-
-    def reset_volume(self, req):
-        self.volume.reset()
-        return TriggerResponse(True, 'reset volume')
 
     def generate_hanging_points(self, req):
         hp_generator.generate(
