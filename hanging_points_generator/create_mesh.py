@@ -884,9 +884,9 @@ def mask_to_roi(mask):
     foreground = np.where(mask == 255)
     if len(foreground[0]) > 0:
         top = np.min(foreground[0])
-        bottom = np.max(foreground[0])
+        bottom = np.max(foreground[0]) + 1
         left = np.min(foreground[1])
-        right = np.max(foreground[1])
+        right = np.max(foreground[1]) + 1
     else:
         top = 0
         bottom = 0
