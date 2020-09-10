@@ -1,0 +1,22 @@
+<launch>
+
+  <arg name="queue_size" default="100" />
+
+  <group ns="/camera">
+    <node name="rgb_republish" pkg="image_transport" type="republish" args="compressed raw">
+      <remap from="in" to="color/image_rect_color" />
+      <remap from="out" to="color/image_rect_color_repub" />
+    </node>
+
+    <node name="depth_republish" pkg="image_transport" type="republish" args="compressedDepth raw">
+      <remap from="in" to="aligned_depth_to_color/image_raw" />
+      <remap from="out" to="aligned_depth_to_color/image_raw_repub" />
+    </node>
+  </group>
+
+  <node name="mask_republish" pkg="image_transport" type="republish" args="compressed raw">
+    <remap from="in" to="/point_indices_to_mask_image/output" />
+    <remap from="out" to="/point_indices_to_mask_image/output" />
+  </node>
+
+</launch>

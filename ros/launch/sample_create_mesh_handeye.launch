@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="input_color" value="/camera/color/image_rect_color_repub" />
+  <arg name="input_depth" value="/camera/aligned_depth_to_color/image_raw_repub" />
+  <arg name="input_mask" value="/point_indices_to_mask_image/output" />
+  <arg name="camera_info" value="/camera/color/camera_info" />
+  <arg name="camera_frame" value="r_gripper_tool_frame" />
+  <arg name="base_frame" value="base_link" />
+  <arg name="save_raw_image" value="true" />
+  <arg name="save_dir" value="save_dir_rosabg_handeye/" />
+  <arg name="service_time_file" value="$(find hanging_points_generator)/create_mesh_handeye_sample_rosbag/service_time_list.txt" />
+  <arg name="gui" default="true" />
+  <arg name="autosize" default="true" />
+
+  <param name="/use_sim_time" value="true" />
+
+  <node name="rosbag_play" pkg="rosbag" type="play" args="$(find hanging_points_generator)/create_mesh_handeye_sample_rosbag/create_mesh_handeye.bag --clock "></node>
+
+  <include file="$(find hanging_points_generator)/ros/launch/republish_image_handeye.launch" />
+
+  <node name="call_service" pkg="hanging_points_generator" type="call_service.py" output="screen" respawn="true">
+    <rosparam subst_value="true">
+      service_time_file: $(arg service_time_file)
+      sleep : 3
+      sleep_2 : 1
+      num_per_pose : 2
+    </rosparam>
+  </node>
+
+  <node name="create_mesh" pkg="hanging_points_generator" type="create_mesh_node.py" output="screen" respawn="true">
+
+    <remap from="~input_color" to="$(arg input_color)" />
+    <remap from="~input_depth" to="$(arg input_depth)" />
+    <remap from="~input_mask" to="$(arg input_mask)" />
+    <remap from="~camera_info" to="$(arg camera_info)" />
+
+    <rosparam subst_value="true">
+      camera_frame: $(arg camera_frame)
+      base_frame: $(arg base_frame)
+      save_raw_img: $(arg save_raw_image)
+      save_dir: $(arg save_dir)
+    </rosparam>
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="image_viewer" pkg="image_view" type="image_view">
+      <remap from="image" to="$(arg input_color)" />
+      <rosparam subst_value="true">
+      autosize: $(arg autosize)
+    </rosparam>
+    </node>
+  </group>
+
+</launch>
