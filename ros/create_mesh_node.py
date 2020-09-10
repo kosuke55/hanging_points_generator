@@ -126,40 +126,31 @@ class CreateMesh():
 
     def service(self):
         self.integrate_service = rospy.Service(
-            'store_images',
-            Trigger,
+            'store_images', Trigger,
             self.store_images)
         self.icp_registration_service = rospy.Service(
-            'icp_registration',
-            Trigger,
+            'icp_registration', Trigger,
             self.icp_registration)
         self.create_mesh_tsdf_service = rospy.Service(
-            'create_mesh_tsdf',
-            Trigger,
+            'create_mesh_tsdf', Trigger,
             self.create_mesh_tsdf)
         self.create_mesh_voxelize_marcning_cubes_service = rospy.Service(
-            'create_mesh_voxelize_marcning_cubes',
-            Trigger,
+            'create_mesh_voxelize_marcning_cubes', Trigger,
             self.create_mesh_voxelize_marcing_cubes)
         self.dbscan_service = rospy.Service(
-            'dbscan',
-            Trigger,
+            'dbscan', Trigger,
             self.dbscan)
         self.save_images_service = rospy.Service(
-            'save_images',
-            Trigger,
+            'save_images', Trigger,
             self.save_images)
         self.meshfix_service = rospy.Service(
-            'meshfix',
-            Trigger,
+            'meshfix', Trigger,
             self.meshfix)
         self.reset_volume_service = rospy.Service(
-            'reset_volume',
-            Trigger,
+            'reset_volume', Trigger,
             self.reset_volume)
         self.generate_hanging_points = rospy.Service(
-            'generate_hanging_points',
-            Trigger,
+            'generate_hanging_points', Trigger,
             self.generate_hanging_points)
 
     def preprocess_masks(self):
