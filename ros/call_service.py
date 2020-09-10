@@ -50,6 +50,7 @@ class RosbagCallService():
                 self.next_time = self.service_times[self.index]
             else:
                 self.service_call('/icp_registration')
+                self.service_call('/dbscan')
                 self.service_call('/create_mesh_tsdf')
                 self.service_call('/create_mesh_voxelize_marcning_cubes')
                 self.service_call('/save_images')

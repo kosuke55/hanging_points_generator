@@ -501,6 +501,38 @@ def save_images(output_dir, prefix, images, format='rgb'):
             output_dir, prefix + '{:03}.png'.format(i)), image, format)
 
 
+def dbscan(pcd, eps=0.01, min_points=100,
+           print_progress=True):
+    """dbscan clustering
+
+    Parameters
+    ----------
+    pcd : open3d.open3d.geometry.PointCloud
+    eps : float, optional
+        Density parameter that is used to find neighbouring points,
+        by default 0.01
+    min_points : int, optional
+        Minimum number of points to form a cluster,
+        by default 100
+    print_progress : bool, optional
+        If true the progress is visualized in the console,
+        by default False
+
+    Returns
+    -------
+    pcd : open3d.open3d.geometry.PointCloud
+    """
+    labels = pcd.cluster_dbscan(eps, min_points, print_progress)
+    # print(labels)
+
+    pcd.points = o3d.utility.Vector3dVector(
+        np.array(pcd.points)[np.array(labels) == 0])
+    pcd.colors = o3d.utility.Vector3dVector(
+        np.array(pcd.colors)[np.array(labels) == 0])
+
+    return pcd
+
+
 def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
     """Estimate camera pose and create integrated point cloud
 

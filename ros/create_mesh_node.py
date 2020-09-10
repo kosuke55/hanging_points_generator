@@ -20,6 +20,7 @@ from hanging_points_generator import hp_generator
 from hanging_points_generator.create_mesh import create_mesh_tsdf
 from hanging_points_generator.create_mesh import create_mesh_voxelize_marcing_cubes
 from hanging_points_generator.create_mesh import crop_images
+from hanging_points_generator.create_mesh import dbscan
 from hanging_points_generator.create_mesh import depths_mean_filter
 from hanging_points_generator.create_mesh import get_pcds
 from hanging_points_generator.create_mesh import icp_registration
@@ -47,6 +48,13 @@ class CreateMesh():
         self.use_tf2 = rospy.get_param(
             '~use_tf2', False)
 
+        self.eps = rospy.get_param(
+            '~eps', 0.01)
+        self.min_points = rospy.get_param(
+            '~min_points', 100)
+        self.voxel_length = rospy.get_param(
+            '~voxel_length', 0.002)
+
         self.save_dir = os.path.join(self.current_dir, '..', self.save_dir)
         pathlib2.Path(os.path.join(self.save_dir, 'raw')).mkdir(
             parents=True, exist_ok=True)
@@ -54,14 +62,13 @@ class CreateMesh():
             parents=True, exist_ok=True)
 
         self.camera_info = None
-        # self.camera_model = image_geometry.cameramodels.PinholeCameraModel()
         self.camera_model = None
-        # self.camera_model = cameramodels.PinholeCameraModel()
-        # self.camera_model = cameramodels.PinholeCameraModel()
         self.color = None
         self.depth = None
-        self.mask = None
+        self.pcd_icp = None
+        self.pcds = None
         self.camera_pose = None
+
         self.color_list = []
         self.depth_list = []
         self.mask_list = []
@@ -75,8 +82,6 @@ class CreateMesh():
         self.bridge = CvBridge()
 
         self.lis = TransformListener(self.use_tf2)
-        self.integrate_count = 0
-        self.voxel_length = 0.002
         self.service()
 
     def load_camera_info(self):
@@ -132,6 +137,10 @@ class CreateMesh():
             'create_mesh_voxelize_marcning_cubes',
             Trigger,
             self.create_mesh_voxelize_marcing_cubes)
+        self.dbscan_service = rospy.Service(
+            'dbscan',
+            Trigger,
+            self.dbscan)
         self.save_images_service = rospy.Service(
             'save_images',
             Trigger,
@@ -218,7 +227,12 @@ class CreateMesh():
         self.get_pcds()
 
         self.pcd_icp, self.camera_pose_icp_list, self.obj_poses \
-            = icp_registration(self.pcds, self.camera_pose_list)
+            = icp_registration(self.pcds, self.camera_pose_list,
+                               voxel_size=self.voxel_length)
+        o3d.visualization.draw_geometries([self.pcd_icp])
+
+    def dbscan(self, req):
+        self.pcd_icp = dbscan(self.pcd_icp, self.eps, self.min_points)
         o3d.visualization.draw_geometries([self.pcd_icp])
 
     def create_mesh_tsdf(self, req):
@@ -250,7 +264,6 @@ class CreateMesh():
 
     def reset_volume(self, req):
         self.volume.reset()
-        self.integrate_count = 0
         return TriggerResponse(True, 'reset volume')
 
     def generate_hanging_points(self, req):
