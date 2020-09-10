@@ -847,3 +847,34 @@ def depths_mean_filter(depths, distance=300.):
     for depth in depths:
         filtered_depths.append(depth_mean_filter(depth))
     return filtered_depths
+
+
+def mask_to_roi(mask):
+    """Mask image to roi
+
+    Parameters
+    ----------
+    mask : numpy.ndarray
+
+    Returns
+    -------
+    roi : list[float]
+        [top, left, bottom, right] order
+    """
+    mask = mask.copy()
+    if np.max(mask) == 1:
+        mask *= 255
+
+    foreground = np.where(mask == 255)
+    if len(foreground[0]) > 0:
+        top = np.min(foreground[0])
+        bottom = np.max(foreground[0])
+        left = np.min(foreground[1])
+        right = np.max(foreground[1])
+    else:
+        top = 0
+        bottom = 0
+        left = 0
+        right = 0
+
+    return [top, left, bottom, right]
