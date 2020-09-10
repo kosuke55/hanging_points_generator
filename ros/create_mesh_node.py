@@ -17,13 +17,14 @@ from skrobot.interfaces.ros.transform_listener import TransformListener
 from skrobot.interfaces.ros.tf_utils import tf_pose_to_coords
 
 from hanging_points_generator import hp_generator
+from hanging_points_generator.create_mesh import apply_mask_images
 from hanging_points_generator.create_mesh import create_mesh_tsdf
 from hanging_points_generator.create_mesh import create_mesh_voxelize_marcing_cubes
-from hanging_points_generator.create_mesh import crop_images
 from hanging_points_generator.create_mesh import dbscan
 from hanging_points_generator.create_mesh import depths_mean_filter
 from hanging_points_generator.create_mesh import get_pcds
 from hanging_points_generator.create_mesh import icp_registration
+from hanging_points_generator.create_mesh import mask_to_roi
 from hanging_points_generator.create_mesh import np_to_o3d_images
 from hanging_points_generator.create_mesh import preprocess_masks
 from hanging_points_generator.create_mesh import save_camera_poses
@@ -166,9 +167,9 @@ class CreateMesh():
     def crop_images(self, preprocess_mask=True):
         if preprocess_mask:
             self.preprocess_masks()
-        self.cropped_color_list = crop_images(self.color_list, self.mask_list)
+        self.cropped_color_list = apply_mask_images(self.color_list, self.mask_list)
         self.cropped_depth_list = depths_mean_filter(
-            crop_images(self.depth_list, self.mask_list))
+            apply_mask_images(self.depth_list, self.mask_list))
 
     def store_images(self, req):
         rospy.loginfo('Store {} images'.format(len(self.color_list)))

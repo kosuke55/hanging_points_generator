@@ -742,8 +742,8 @@ def preprocess_masks(masks, kernel=(5, 5), morph_open=True, morph_close=True):
     return preprocessed_masks
 
 
-def crop_images(images, masks):
-    """Crop image list
+def apply_mask_images(images, masks):
+    """Apply mask image list
 
     Parameters
     ----------
