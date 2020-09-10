@@ -105,11 +105,11 @@ class CreateMesh():
 
     def subscribe(self):
         sub_color = message_filters.Subscriber(
-            '~input_color', Image, queue_size=10)
+            '~input_color', Image, queue_size=1, buff_size=2**24)
         sub_depth = message_filters.Subscriber(
-            '~input_depth', Image, queue_size=10)
+            '~input_depth', Image, queue_size=1, buff_size=2**24)
         sub_mask = message_filters.Subscriber(
-            '~input_mask', Image, queue_size=10)
+            '~input_mask', Image, queue_size=1, buff_size=2**24)
         self.subs = [sub_color, sub_depth, sub_mask]
         sync = message_filters.TimeSynchronizer(
             fs=self.subs, queue_size=100)
