@@ -742,13 +742,17 @@ def preprocess_masks(masks, kernel=(5, 5), morph_open=True, morph_close=True):
     return preprocessed_masks
 
 
-def apply_mask_image(image, mask, copy=True):
+def apply_mask_image(image, mask, crop=True, copy=True):
     """Apply mask image
 
     Parameters
     ----------
     image : numpy.ndarray
     mask : numpy.ndarray
+    crop: bool
+        if true crop image, by default True
+    copy : bool, optional
+        copy image, by default True
 
     Returns
     -------
@@ -759,19 +763,29 @@ def apply_mask_image(image, mask, copy=True):
     channels = image.shape[2] if image.ndim == 3 else 1
 
     if channels == 3:
-        image[mask == 0] = [0, 0, 0]
+        if crop:
+            roi = mask_to_roi(mask)
+            mask = mask[roi[0]:roi[2], roi[1]:roi[3], :]
+        else:
+            image[mask == 0] = [0, 0, 0]
     elif channels == 1:
-        image[mask == 0] = 0
+        if crop:
+            roi = mask_to_roi(mask)
+            mask = mask[roi[0]:roi[2], roi[1]:roi[3]]
+        else:
+            image[mask == 0] = 0
     return image
 
 
-def apply_mask_images(images, masks):
+def apply_mask_images(images, masks, crop=True):
     """Apply mask image list
 
     Parameters
     ----------
     images : list of numpy.ndarray
     masks : list of numpy.ndarray
+    crop: bool
+        if true crop image, by default True
 
     Returns
     -------
@@ -779,7 +793,7 @@ def apply_mask_images(images, masks):
     """
     cropped_images = []
     for image, mask in zip(images, masks):
-        cropped_images.append(apply_mask_image(image, mask))
+        cropped_images.append(apply_mask_image(image, mask, crop))
 
     return cropped_images
 
