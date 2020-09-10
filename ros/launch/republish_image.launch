@@ -14,7 +14,7 @@
     </node>
   </group>
 
-  <node name="depth_republish" pkg="image_transport" type="republish" args="compressed raw">
+  <node name="mask_republish" pkg="image_transport" type="republish" args="compressed raw">
     <remap from="in" to="/point_indices_to_mask_image_gripper/output" />
     <remap from="out" to="/point_indices_to_mask_image_gripper/output" />
   </node>
