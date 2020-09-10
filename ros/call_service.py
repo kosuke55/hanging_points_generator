@@ -9,6 +9,8 @@ from std_srvs.srv import Trigger
 class RosbagCallService():
     def __init__(self):
         self.file = rospy.get_param('~service_time_file')
+        self.sleep = rospy.get_param('~sleep', 0.2)
+        self.num_per_pose = rospy.get_param('~num_per_pose', 3)
         self.read_time()
         self.index = 0
         self.next_time = self.service_times[self.index]
@@ -36,11 +38,9 @@ class RosbagCallService():
 
     def check_elapsed(self):
         if self.next_time < self.current_time:
-            rospy.sleep(1)
-            # self.service_call('/store_images')
-            for _ in range(3):
+            for _ in range(self.num_per_pose):
                 self.service_call('/store_images')
-                rospy.sleep(0.2)
+                rospy.sleep(self.sleep)
             self.elapsed[self.index] = True
             if self.index != len(self.service_times) - 1:
                 self.index += 1
