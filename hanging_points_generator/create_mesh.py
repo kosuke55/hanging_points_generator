@@ -763,17 +763,15 @@ def apply_mask_image(image, mask, crop=True, copy=True):
     channels = image.shape[2] if image.ndim == 3 else 1
 
     if channels == 3:
+        image[mask == 0] = [0, 0, 0]
         if crop:
             roi = mask_to_roi(mask)
-            mask = mask[roi[0]:roi[2], roi[1]:roi[3], :]
-        else:
-            image[mask == 0] = [0, 0, 0]
+            image = image[roi[0]:roi[2], roi[1]:roi[3], :]
     elif channels == 1:
+        image[mask == 0] = 0
         if crop:
             roi = mask_to_roi(mask)
-            mask = mask[roi[0]:roi[2], roi[1]:roi[3]]
-        else:
-            image[mask == 0] = 0
+            image = image[roi[0]:roi[2], roi[1]:roi[3]]
     return image
 
 
