@@ -19,7 +19,8 @@ def download_sample_data(output_dir=None, rosbag=True):
         if output_dir is None:
             output = 'create_mesh_sample_rosbag.tgz'
         else:
-            output = osp.join(output_dir, 'create_mesh_sample_rosbag.tgz')
+            output = osp.join(
+                output_dir, 'create_mesh_sample_rosbag.tgz')
         gdown.cached_download(
             'https://drive.google.com/uc?export=download&id=1yui__4qBy2mh2E3EBwJIKFtcYoZUXHkZ',
             output,
@@ -29,7 +30,8 @@ def download_sample_data(output_dir=None, rosbag=True):
         if output_dir is None:
             output = 'create_mesh_handeye_sample_rosbag.tgz'
         else:
-            output = osp.join(output_dir, 'create_mesh_handeye_sample_rosbag.tgz')
+            output = osp.join(
+                output_dir, 'create_mesh_handeye_sample_rosbag.tgz')
         gdown.cached_download(
             'https://drive.google.com/uc?export=download&id=169jfyrdTAUmN35VEC61pUA0rJNOHVlnH',
             output,
