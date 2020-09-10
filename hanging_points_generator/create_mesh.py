@@ -501,7 +501,7 @@ def save_images(output_dir, prefix, images, format='rgb'):
             output_dir, prefix + '{:03}.png'.format(i)), image, format)
 
 
-def dbscan(pcd, eps=0.01, min_points=100,
+def dbscan(pcd, eps=0.01, min_points=30,
            print_progress=True):
     """dbscan clustering
 
@@ -526,9 +526,9 @@ def dbscan(pcd, eps=0.01, min_points=100,
     # print(labels)
 
     pcd.points = o3d.utility.Vector3dVector(
-        np.array(pcd.points)[np.array(labels) == 0])
+        np.array(pcd.points)[np.array(labels) >= 0])
     pcd.colors = o3d.utility.Vector3dVector(
-        np.array(pcd.colors)[np.array(labels) == 0])
+        np.array(pcd.colors)[np.array(labels) >= 0])
 
     return pcd
 

@@ -52,7 +52,7 @@ class CreateMesh():
         self.eps = rospy.get_param(
             '~eps', 0.01)
         self.min_points = rospy.get_param(
-            '~min_points', 100)
+            '~min_points', 30)
         self.voxel_length = rospy.get_param(
             '~voxel_length', 0.002)
         self.crop = rospy.get_param(
