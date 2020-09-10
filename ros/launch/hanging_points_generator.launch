@@ -5,7 +5,7 @@
   <arg name="input_mask" value="/point_indices_to_mask_image_gripper/output" />
   <arg name="camera_info" value="/head_mount_kinect/hd/camera_info" />
   <arg name="camera_frame" value="head_mount_kinect_rgb_link" />
-  <arg name="gripper_frame" value="l_gripper_tool_frame" />
+  <arg name="base_frame" value="l_gripper_tool_frame" />
   <arg name="save_raw_image" value="true" />
   <arg name="save_dir" value="save_dir/" />
 
@@ -20,7 +20,7 @@
 
     <rosparam subst_value="true">
       camera_frame: $(arg camera_frame)
-      gripper_frame: $(arg gripper_frame)
+      base_frame: $(arg base_frame)
       save_raw_img: $(arg save_raw_image)
       save_dir: $(arg save_dir)
     </rosparam>
@@ -31,7 +31,7 @@
         output="screen" respawn="true">
     <rosparam subst_value="true">
       contact_points_json: $(arg save_dir)contact_points.json
-      gripper_frame: $(arg gripper_frame)
+      base_frame: $(arg base_frame)
     </rosparam>
   </node>
 
