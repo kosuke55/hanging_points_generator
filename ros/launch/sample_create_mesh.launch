@@ -34,13 +34,6 @@
     </rosparam>
   </node>
 
-  <node name="pub_contact_points" pkg="hanging_points_generator" type="pub_contact_points.py" output="screen" respawn="true">
-    <rosparam subst_value="true">
-      contact_points_json: $(arg save_dir)contact_points.json
-      gripper_frame: $(arg gripper_frame)
-    </rosparam>
-  </node>
-
   <group if="$(arg gui)">
     <node name="image_viewer" pkg="image_view" type="image_view">
       <remap from="image" to="$(arg input_color)" />
