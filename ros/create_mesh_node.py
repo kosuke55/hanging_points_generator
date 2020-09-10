@@ -55,6 +55,8 @@ class CreateMesh():
             '~min_points', 100)
         self.voxel_length = rospy.get_param(
             '~voxel_length', 0.002)
+        self.crop = rospy.get_param(
+            '~crop', False)
 
         self.save_dir = os.path.join(self.current_dir, '..', self.save_dir)
         pathlib2.Path(os.path.join(self.save_dir, 'raw')).mkdir(
@@ -74,6 +76,7 @@ class CreateMesh():
         self.depth_list = []
         self.mask_list = []
         self.camera_pose_list = []
+        self.intrinsic_list = []
         self.header = None
         self.stanby = False
         self.callback_lock = False
@@ -167,9 +170,10 @@ class CreateMesh():
     def crop_images(self, preprocess_mask=True):
         if preprocess_mask:
             self.preprocess_masks()
-        self.cropped_color_list = apply_mask_images(self.color_list, self.mask_list)
+        self.cropped_color_list = apply_mask_images(
+            self.color_list, self.mask_list, self.crop)
         self.cropped_depth_list = depths_mean_filter(
-            apply_mask_images(self.depth_list, self.mask_list))
+            apply_mask_images(self.depth_list, self.mask_list, self.crop))
 
     def store_images(self, req):
         rospy.loginfo('Store {} images'.format(len(self.color_list)))
@@ -197,6 +201,10 @@ class CreateMesh():
         self.depth_list.append(self.depth.copy())
         self.mask_list.append(self.mask.copy())
 
+        if self.crop:
+            self.camera_model.roi = mask_to_roi(self.mask)
+        self.intrinsic_list.append(self.camera_model.open3d_intrinsic)
+
         self.camera_pose_list.append(self.camera_pose.copy_worldcoords())
 
         self.callback_lock = False
@@ -205,7 +213,6 @@ class CreateMesh():
         return TriggerResponse(True, 'success integrate point cloud')
 
     def get_pcds(self):
-        self.intrinsic_list = [self.intrinsic] * len(self.color_list)
         self.cropped_color_list = np_to_o3d_images(self.cropped_color_list)
         self.cropped_depth_list = np_to_o3d_images(self.cropped_depth_list)
         self.pcds = get_pcds(
