@@ -18,6 +18,7 @@ from skrobot.interfaces.ros.tf_utils import tf_pose_to_coords
 
 from hanging_points_generator import hp_generator
 from hanging_points_generator.create_mesh import create_mesh_tsdf
+from hanging_points_generator.create_mesh import create_mesh_voxelize_marcing_cubes
 from hanging_points_generator.create_mesh import crop_images
 from hanging_points_generator.create_mesh import depths_mean_filter
 from hanging_points_generator.create_mesh import get_pcds
@@ -127,6 +128,10 @@ class CreateMesh():
             'create_mesh_tsdf',
             Trigger,
             self.create_mesh_tsdf)
+        self.create_mesh_voxelize_marcning_cubes_service = rospy.Service(
+            'create_mesh_voxelize_marcning_cubes',
+            Trigger,
+            self.create_mesh_voxelize_marcing_cubes)
         self.save_images_service = rospy.Service(
             'save_images',
             Trigger,
@@ -212,19 +217,24 @@ class CreateMesh():
         self.crop_images()
         self.get_pcds()
 
-        self.pcd, self.camera_pose_icp_list, self.obj_poses \
+        self.pcd_icp, self.camera_pose_icp_list, self.obj_poses \
             = icp_registration(self.pcds, self.camera_pose_list)
-        o3d.visualization.draw_geometries([self.pcd])
+        o3d.visualization.draw_geometries([self.pcd_icp])
 
     def create_mesh_tsdf(self, req):
         rospy.loginfo('create_mesh_tsdf')
-        mesh = create_mesh_tsdf(
+        self.mesh_tsdf = create_mesh_tsdf(
             self.cropped_color_list, self.cropped_depth_list,
             self.intrinsic_list, self.camera_pose_icp_list,
             compute_normal=True)
-        o3d.visualization.draw_geometries([mesh])
+        o3d.visualization.draw_geometries([self.mesh_tsdf])
 
         return TriggerResponse(True, 'success create mesh')
+
+    def create_mesh_voxelize_marcing_cubes(self, req):
+        self.mesh_voxelize_marching_cubes \
+            = create_mesh_voxelize_marcing_cubes(self.pcd_icp)
+        self.mesh_voxelize_marching_cubes.show()
 
     def meshfix(self, req):
         subprocess.call(

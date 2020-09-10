@@ -51,6 +51,7 @@ class RosbagCallService():
             else:
                 self.service_call('/icp_registration')
                 self.service_call('/create_mesh_tsdf')
+                self.service_call('/create_mesh_voxelize_marcning_cubes')
                 self.service_call('/save_images')
                 rospy.sleep(5)
                 rospy.signal_shutdown('rosbag finished')
