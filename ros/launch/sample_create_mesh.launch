@@ -9,24 +9,17 @@
   <arg name="save_raw_image" value="true" />
   <arg name="save_dir" value="save_dir_rosabg/" />
   <arg name="gui" default="true" />
+  <arg name="autosize" default="true" />
 
   <param name="/use_sim_time" value="true" />
 
-  <node name="rosbag_play"
-        pkg="rosbag" type="play"
-        args="$(find hanging_points_generator)/create_mesh_sample_rosbag/create_mesh.bag --clock" >
-  </node>
+  <node name="rosbag_play" pkg="rosbag" type="play" args="$(find hanging_points_generator)/create_mesh_sample_rosbag/create_mesh.bag --clock -s 5"></node>
 
   <include file="$(find hanging_points_generator)/ros/launch/republish_image.launch" />
 
-  <node name="call_service"
-        pkg="hanging_points_generator" type="call_service.py"
-        output="screen" respawn="true">
-      </node>
+  <node name="call_service" pkg="hanging_points_generator" type="call_service.py" output="screen" respawn="true"></node>
 
-  <node name="create_mesh"
-        pkg="hanging_points_generator" type="create_mesh_node.py"
-        output="screen" respawn="true">
+  <node name="create_mesh" pkg="hanging_points_generator" type="create_mesh_node.py" output="screen" respawn="true">
 
     <remap from="~input_color" to="$(arg input_color)" />
     <remap from="~input_depth" to="$(arg input_depth)" />
@@ -41,9 +34,7 @@
     </rosparam>
   </node>
 
-  <node name="pub_contact_points"
-        pkg="hanging_points_generator" type="pub_contact_points.py"
-        output="screen" respawn="true">
+  <node name="pub_contact_points" pkg="hanging_points_generator" type="pub_contact_points.py" output="screen" respawn="true">
     <rosparam subst_value="true">
       contact_points_json: $(arg save_dir)contact_points.json
       gripper_frame: $(arg gripper_frame)
@@ -51,9 +42,11 @@
   </node>
 
   <group if="$(arg gui)">
-    <node name="image_viewer"
-          pkg="image_view" type="image_view">
+    <node name="image_viewer" pkg="image_view" type="image_view">
       <remap from="image" to="$(arg input_color)" />
+      <rosparam subst_value="true">
+      autosize: $(arg autosize)
+    </rosparam>
     </node>
   </group>
 
