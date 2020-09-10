@@ -8,10 +8,7 @@ from std_srvs.srv import Trigger
 
 class RosbagCallService():
     def __init__(self):
-        self.current_dir = osp.dirname(osp.abspath(__file__))
-        self.file = osp.join(
-            self.current_dir,
-            '../create_mesh_sample_rosbag/service_time_list.txt')
+        self.file = rospy.get_param('~service_time_file')
         self.read_time()
         self.index = 0
         self.next_time = self.service_times[self.index]

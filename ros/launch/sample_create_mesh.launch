@@ -8,6 +8,7 @@
   <arg name="base_frame" value="l_gripper_tool_frame" />
   <arg name="save_raw_image" value="true" />
   <arg name="save_dir" value="save_dir_rosabg/" />
+  <arg name="service_time_file" value="$(find hanging_points_generator)/create_mesh_sample_rosbag/service_time_list.txt" />
   <arg name="gui" default="true" />
   <arg name="autosize" default="true" />
 
@@ -17,7 +18,11 @@
 
   <include file="$(find hanging_points_generator)/ros/launch/republish_image.launch" />
 
-  <node name="call_service" pkg="hanging_points_generator" type="call_service.py" output="screen" respawn="true"></node>
+  <node name="call_service" pkg="hanging_points_generator" type="call_service.py" output="screen" respawn="true">
+    <rosparam subst_value="true">
+      service_time_file: $(arg service_time_file)
+    </rosparam>
+  </node>
 
   <node name="create_mesh" pkg="hanging_points_generator" type="create_mesh_node.py" output="screen" respawn="true">
 
