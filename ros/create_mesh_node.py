@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import subprocess
 import os
 import os.path as osp
 import pathlib2
+import subprocess
 import sys
 
 import cameramodels
@@ -12,10 +12,10 @@ import message_filters
 import numpy as np
 import open3d as o3d
 import rospy
+from cv_bridge import CvBridge
 from skrobot.interfaces.ros.transform_listener import TransformListener
 from skrobot.interfaces.ros.tf_utils import tf_pose_to_coords
 
-from cv_bridge import CvBridge
 from hanging_points_generator import hp_generator
 from hanging_points_generator.create_mesh import create_mesh_tsdf
 from hanging_points_generator.create_mesh import crop_images
