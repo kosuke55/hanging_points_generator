@@ -24,14 +24,20 @@ python create_mesh_voxelize_marching_cubes.py
 ## Mesh Reconstruction demo(ROS)
 ```
 python donwload_sample_data.py
-
-# inhand
-roslaunch hanging_points_generator sample_create_mesh.launch
-
-# handeey
-roslaunch hanging_points_generator sample_create_mesh_handeye.launch
 ```
 
+### inhand
+```
+roslaunch hanging_points_generator sample_create_mesh.launch
+```
+
+### handeye
+```
+roslaunch hanging_points_generator sample_create_mesh_handeye.launch
+```
+<img src="https://user-images.githubusercontent.com/39142679/92903952-71680600-f45d-11ea-91ea-12c64573b9c2.gif" height="200"> <img src="https://user-images.githubusercontent.com/39142679/92904044-83e23f80-f45d-11ea-895e-56811cfadb13.png" height="200">  
+
+### texture mapping
 Use [this](https://github.com/iory/texture-mapping) for texture mapping  
 <img src="https://github.com/iory/texture-mapping/blob/master/docs/image/textured.gif?raw=true" width="200">  
 
