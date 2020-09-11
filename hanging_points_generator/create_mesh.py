@@ -207,6 +207,11 @@ def create_urdf(mesh, output_dir):
         input mesh
     output_dir : str
         Ouput directry where output mesh saved
+
+    Returns
+    -------
+    output_file : str
+        output file path
     """
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -220,6 +225,8 @@ def create_urdf(mesh, output_dir):
     mesh.export(os.path.join(output_dir, 'base.stl'), "stl")
     tree.write(os.path.join(output_dir, 'base.urdf'),
                encoding='utf-8', xml_declaration=True)
+
+    return os.path.join(output_dir, 'base.urdf')
 
 
 def create_point_cloud(
