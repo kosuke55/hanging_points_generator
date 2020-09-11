@@ -144,9 +144,9 @@ class CreateMesh():
         self.dbscan_service = rospy.Service(
             'dbscan', Trigger,
             self.dbscan)
-        self.save_images_service = rospy.Service(
-            'save_images', Trigger,
-            self.save_images)
+        self.save_service = rospy.Service(
+            'save', Trigger,
+            self.save)
         self.meshfix_service = rospy.Service(
             'meshfix', Trigger,
             self.meshfix)
@@ -215,15 +215,24 @@ class CreateMesh():
             self.cropped_depth_list,
             self.intrinsic_list)
 
-    def save_images(self, req):
+    def save(self, req):
+        self.save_images()
+        save_camera_poses(
+            osp.join(self.save_dir, 'camera_pose'), 'camera_pose',
+            self.camera_pose_list)
+        o3d.io.write_point_cloud(
+            osp.join(self.save_dir, 'icp_result.pcd'), self.pcd_icp)
+        o3d.io.write_triangle_mesh(
+            osp.join(self.save_dir, 'tsdf_obj.ply'), self.mesh_tsdf)
+        self.mesh_voxelize_marching_cubes.export(
+            osp.join(self.save_dir, 'voxelized_mc_obj.ply'))
+
+    def save_images(self):
         save_images(self.save_dir, 'color_raw', self.color_list, 'bgr')
         save_images(self.save_dir, 'color', self.cropped_color_list)
         save_images(self.save_dir, 'depth_raw', self.depth_list)
         save_images(self.save_dir, 'depth', self.cropped_depth_list)
         save_images(self.save_dir, 'mask', self.mask_list)
-        save_camera_poses(
-            osp.join(self.save_dir, 'camera_pose'), 'camera_pose',
-            self.camera_pose_list)
 
     def icp_registration(self, req):
         self.crop_images()

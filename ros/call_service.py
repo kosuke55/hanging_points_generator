@@ -50,7 +50,7 @@ class RosbagCallService():
                 self.service_call('/dbscan')
                 self.service_call('/create_mesh_tsdf')
                 self.service_call('/create_mesh_voxelize_marcning_cubes')
-                self.service_call('/save_images')
+                self.service_call('/save')
                 rospy.sleep(5)
                 rospy.signal_shutdown('rosbag finished')
 
