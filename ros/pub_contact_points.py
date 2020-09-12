@@ -19,8 +19,8 @@ class ContactPointsPublisher():
         self.contact_points_json = os.path.join(self.current_dir,
                                                 '..',
                                                 self.contact_points_json)
-        self.base_frame = rospy.get_param(
-            '~base_frame', "/l_gripper_tool_frame")
+        self.world_frame = rospy.get_param(
+            '~world_frame', "/l_gripper_tool_frame")
         self.contact_points_pose_array = PoseArray()
         self.pub_contact_points = rospy.Publisher(
             "~output", PoseArray, queue_size=10)
@@ -53,7 +53,7 @@ class ContactPointsPublisher():
 
     def timer_callback(self, timer):
         self.contact_points_pose_array.header.stamp = rospy.Time.now()
-        self.contact_points_pose_array.header.frame_id = self.base_frame
+        self.contact_points_pose_array.header.frame_id = self.world_frame
         self.pub_contact_points.publish(self.contact_points_pose_array)
 
     def run(self):

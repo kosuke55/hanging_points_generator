@@ -39,8 +39,8 @@ class CreateMesh():
 
         self.camera_frame = rospy.get_param(
             '~camera_frame', 'head_mount_kinect_rgb_link')
-        self.base_frame = rospy.get_param(
-            '~base_frame', 'l_gripper_tool_frame')
+        self.world_frame = rospy.get_param(
+            '~world_frame', 'l_gripper_tool_frame')
 
         self.save_raw_img = rospy.get_param(
             '~save_raw_img', True)
@@ -177,7 +177,7 @@ class CreateMesh():
             return
         try:
             tf_pose = self.lis.lookup_transform(
-                self.base_frame, self.header.frame_id,
+                self.world_frame, self.header.frame_id,
                 self.header.stamp, rospy.Duration(1))
         except Exception:
             rospy.logwarn('Fail to listeen transform')
