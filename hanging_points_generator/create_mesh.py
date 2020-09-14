@@ -21,10 +21,10 @@ def create_mesh_tsdf(
 
     Parameters
     ----------
-    colors : list of open3d.open3d.geometry.Image
-    depths : list of open3d.open3d.geometry.Image
-    intrinsics : list of open3d.open3d.camera.PinholeCameraIntrinsic
-    camera_poses : list of skrobot.coordinates.base.Coordinates
+    colors : list[open3d.open3d.geometry.Image]
+    depths : list[open3d.open3d.geometry.Image]
+    intrinsics : list[open3d.open3d.camera.PinholeCameraIntrinsic]
+    camera_poses : list[skrobot.coordinates.base.Coordinates]
     voxel_length : float
         same as voxel_size, by default 0.002
     sdf_trunc : float, optional
@@ -391,7 +391,7 @@ def get_images_from_dir(input_dir, prefix, ext):
 
     Returns
     -------
-    images : list of open3d.open3d.geometry.Image
+    images : list[open3d.open3d.geometry.Image]
     """
 
     paths = list(
@@ -417,7 +417,7 @@ def get_camera_poses_from_dir(input_dir, prefix):
 
     Returns
     -------
-    camera_poses : list of skrobot.coordinates.base.Coordinates
+    camera_poses : list[skrobot.coordinates.base.Coordinates]
     """
 
     paths = list(sorted(Path(input_dir).glob('{}[0-9]*'.format(prefix))))
@@ -434,13 +434,13 @@ def get_pcds(colors, depths, intrinsics):
 
     Parameters
     ----------
-    colors : list of open3d.open3d.geometry.Image
-    depths : list of open3d.open3d.geometry.Image
-    intrinsics : list of open3d.open3d.camera.PinholeCameraIntrinsic
+    colors : list[open3d.open3d.geometry.Image]
+    depths : list[open3d.open3d.geometry.Image]
+    intrinsics : list[open3d.open3d.camera.PinholeCameraIntrinsic]
 
     Returns
     -------
-    pcd : list of open3d.open3d.geometry.PointCloud
+    pcd : list[open3d.open3d.geometry.PointCloud]
     """
 
     pcds = []
@@ -459,7 +459,7 @@ def save_camera_poses(output_dir, prefix, camera_poses):
     output_dir : str
     prefix : str
         save file prefix
-    camera_poses : list of skrobot.coordinates.base.Coordinates
+    camera_poses : list[skrobot.coordinates.base.Coordinates]
         [description]
     """
 
@@ -499,7 +499,7 @@ def save_images(output_dir, prefix, images, format='rgb'):
     output_dir : str
     prefix : str
         save file prefix
-    images : list of numpy.ndarray or open3d.open3d.geometry.Image
+    images : list[numpy.ndarray or open3d.open3d.geometry.Image]
     format : str, optional
         for cv2. 'rgb' or 'bgr', by default 'rgb'
     """
@@ -545,9 +545,9 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
 
     Parameters
     ----------
-    pcds : list of open3d.open3d.geometry.PointCloud
+    pcds : list[open3d.open3d.geometry.PointCloud]
         input pcd list
-    camera_poses : list of skrobot.coordinates.base.Coordinates
+    camera_poses : list[skrobot.coordinates.base.Coordinates]
         input camera pose list
     voxel_size : float, optional
         by default 0.002
@@ -558,7 +558,7 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
     -------
     target : open3d.open3d.geometry.PointCloud
         icp registered point cloud
-    camera_poses_icp : list of skrobot.coordinates.base.Coordinates
+    camera_poses_icp : list[skrobot.coordinates.base.Coordinates]
         icp registered camera pose list
     obj_poses : skrobot.coordinates.base.Coordinates
         icp registered object pose list
@@ -628,7 +628,7 @@ def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
 
     Returns
     -------
-    camera_poses_icp : List of skrobot.coordinates.base.Coordinates
+    camera_poses_icp : list[skrobot.coordinates.base.Coordinates]
     pcd : open3d.open3d.geometry.PointCloud
     """
 
@@ -729,7 +729,7 @@ def preprocess_masks(masks, kernel=(5, 5), morph_open=True, morph_close=True):
 
     Parameters
     ----------
-    masks : list of numpy.ndarray
+    masks : list[numpy.ndarray]
     kernel : tuple, optional
         kernel size, by default (5, 5)
     morph_open : bool, optional
@@ -739,7 +739,7 @@ def preprocess_masks(masks, kernel=(5, 5), morph_open=True, morph_close=True):
 
     Returns
     -------
-    preprocessed_masks : list of numpy.ndarray
+    preprocessed_masks : list[numpy.ndarray]
     """
     preprocessed_masks = []
     for mask in masks:
@@ -787,14 +787,14 @@ def apply_mask_images(images, masks, crop=True):
 
     Parameters
     ----------
-    images : list of numpy.ndarray
-    masks : list of numpy.ndarray
+    images : list[numpy.ndarray]
+    masks : list[numpy.ndarray]
     crop: bool
         if true crop image, by default True
 
     Returns
     -------
-    cropped_images : list of numpy.ndarray
+    cropped_images : list[numpy.ndarray]
     """
     cropped_images = []
     for image, mask in zip(images, masks):
@@ -827,10 +827,10 @@ def np_to_o3d_images(images):
 
     Parameters
     ----------
-    images : list of numpy.ndarray
+    images : list[numpy.ndarray]
 
     Returns
-    o3d_images : list of open3d.open3d.geometry.Image
+    o3d_images : list[open3d.open3d.geometry.Image]
     -------
 
     """
@@ -870,13 +870,13 @@ def depths_mean_filter(depths, distance=300.):
 
     Parameters
     ----------
-    depths : list of numpy.ndarray
+    depths : list[numpy.ndarray]
     distance : float, optional
         filtering threshold, by default 300
 
     Returns
     -------
-    filtered_depths : list of numpy.ndarray
+    filtered_depths : list[numpy.ndarray]
     """
     filtered_depths = []
     for depth in depths:

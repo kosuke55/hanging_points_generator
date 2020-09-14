@@ -80,7 +80,7 @@ def get_key_rotatins(use_diagonal=True):
 
     Returns
     -------
-    key_rotations : list
+    key_rotations : list[list[float]]
         list of key rotation
     """
     if use_diagonal:

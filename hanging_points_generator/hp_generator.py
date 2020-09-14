@@ -127,7 +127,7 @@ def filter_penetration(obj_file, hanging_points,
     ----------
     obj_file : srt
         obj file path (urdf or stl)
-    hanging_points : list
+    hanging_points : list[skrobot.coordinates.base.Coordinates]
         list of hanging points(=contact points)
     box_size : list
         penetration check box of size [length, width, width]
