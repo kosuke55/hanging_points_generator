@@ -209,7 +209,7 @@ class CreateMesh():
         self.callback_lock = False
         self.header = None
 
-        return TriggerResponse(True, 'success integrate point cloud')
+        return TriggerResponse(True, 'store_images')
 
     def get_pcds(self):
         self.cropped_color_list = np_to_o3d_images(self.cropped_color_list)
@@ -230,6 +230,7 @@ class CreateMesh():
             osp.join(self.save_dir, 'tsdf_obj.ply'), self.mesh_tsdf)
         self.mesh_voxelize_marching_cubes.export(
             osp.join(self.save_dir, 'voxelized_mc_obj.ply'))
+        return TriggerResponse(True, 'save')
 
     def save_images(self):
         save_images(self.save_dir, 'color_raw', self.color_list, 'bgr')
@@ -246,10 +247,12 @@ class CreateMesh():
             = icp_registration(self.pcds, self.camera_pose_list,
                                voxel_size=self.voxel_length)
         o3d.visualization.draw_geometries([self.pcd_icp])
+        return TriggerResponse(True, 'icp_registration')
 
     def dbscan(self, req):
         self.pcd_icp = dbscan(self.pcd_icp, self.eps, self.min_points)
         o3d.visualization.draw_geometries([self.pcd_icp])
+        return TriggerResponse(True, 'dbscan')
 
     def create_mesh_tsdf(self, req):
         rospy.loginfo('create_mesh_tsdf')
@@ -265,11 +268,13 @@ class CreateMesh():
         self.mesh_voxelize_marching_cubes \
             = create_mesh_voxelize_marcing_cubes(self.pcd_icp)
         self.mesh_voxelize_marching_cubes.show()
+        return TriggerResponse(True, 'create_mesh_voxelize_marcing_cubes')
 
     def create_urdf(self, req):
         create_urdf(self.mesh_tsdf, osp.join(self.save_dir, 'tsdf_urdf'))
         create_urdf(self.mesh_voxelize_marching_cubes, osp.join(
             self.save_dir, 'mesh_voxelize_marching_cubes_urdf'))
+        return TriggerResponse(True, 'create_urdf')
 
     def meshfix(self, req):
         subprocess.call(
