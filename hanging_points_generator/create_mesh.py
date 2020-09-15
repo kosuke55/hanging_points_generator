@@ -198,12 +198,53 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
     return mesh
 
 
+def open3d_to_trimesh(src):
+    """Convert mesh from open3d to trimesh
+
+     https://github.com/wkentaro/morefusion/blob/b8b892b3fbc384982a4929b1418ee29393069b11/morefusion/utils/open3d_to_trimesh.py
+
+　　　@inproceedings{Wada:etal:CVPR2020,
+　　　  title={{MoreFusion}: Multi-object Reasoning for {6D} Pose Estimation from Volumetric Fusion},
+　　　  author={Kentaro Wada and Edgar Sucar and Stephen James and Daniel Lenton and Andrew J. Davison},
+　　　  booktitle={Proceedings of the {IEEE} Conference on Computer Vision and Pattern Recognition ({CVPR})},
+　　　  year={2020},
+　　　}
+
+    Parameters
+    ----------
+    src : open3d.open3d.geometry.TriangleMesh
+
+    Returns
+    -------
+    dst : trimesh.base.Trimesh
+
+    Raises
+    ------
+    ValueError
+        [description]
+    """
+    if isinstance(src, o3d.open3d.geometry.TriangleMesh):
+        vertex_colors = None
+        if src.has_vertex_colors:
+            vertex_colors = np.asarray(src.vertex_colors)
+        dst = trimesh.Trimesh(
+            vertices=np.asarray(src.vertices),
+            faces=np.asarray(src.triangles),
+            vertex_normals=np.asarray(src.vertex_normals),
+            vertex_colors=vertex_colors,
+        )
+    else:
+        raise ValueError("Unsupported type of src: {}".format(type(src)))
+
+    return dst
+
+
 def create_urdf(mesh, output_dir):
     """Create urdf from mesh
 
     Parameters
     ----------
-    mesh : trimesh.base.Trimesh
+    mesh : trimesh.base.Trimesh or open3d.open3d.geometry.TriangleMesh
         input mesh
     output_dir : str
         Ouput directry where output mesh saved
@@ -213,6 +254,8 @@ def create_urdf(mesh, output_dir):
     output_file : str
         output file path
     """
+    if isinstance(mesh, o3d.open3d.geometry.TriangleMesh):
+        mesh = open3d_to_trimesh(mesh)
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     tree = ET.parse(os.path.join(current_dir, '../urdf/base/base.urdf'))

@@ -20,6 +20,7 @@ from hanging_points_generator import hp_generator
 from hanging_points_generator.create_mesh import apply_mask_images
 from hanging_points_generator.create_mesh import create_mesh_tsdf
 from hanging_points_generator.create_mesh import create_mesh_voxelize_marcing_cubes
+from hanging_points_generator.create_mesh import create_urdf
 from hanging_points_generator.create_mesh import dbscan
 from hanging_points_generator.create_mesh import depths_mean_filter
 from hanging_points_generator.create_mesh import get_pcds
@@ -135,6 +136,9 @@ class CreateMesh():
         self.icp_registration_service = rospy.Service(
             'icp_registration', Trigger,
             self.icp_registration)
+        self.create_urdf_service = rospy.Service(
+            'create_urdf', Trigger,
+            self.create_urdf)
         self.create_mesh_tsdf_service = rospy.Service(
             'create_mesh_tsdf', Trigger,
             self.create_mesh_tsdf)
@@ -261,6 +265,11 @@ class CreateMesh():
         self.mesh_voxelize_marching_cubes \
             = create_mesh_voxelize_marcing_cubes(self.pcd_icp)
         self.mesh_voxelize_marching_cubes.show()
+
+    def create_urdf(self, req):
+        create_urdf(self.mesh_tsdf, osp.join(self.save_dir, 'tsdf_urdf'))
+        create_urdf(self.mesh_voxelize_marching_cubes, osp.join(
+            self.save_dir, 'mesh_voxelize_marching_cubes_urdf'))
 
     def meshfix(self, req):
         subprocess.call(
