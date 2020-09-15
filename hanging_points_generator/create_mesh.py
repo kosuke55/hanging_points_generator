@@ -221,7 +221,7 @@ def open3d_to_trimesh(src):
     Raises
     ------
     ValueError
-        [description]
+        when type of src is not open3d.open3d.geometry.TriangleMesh
     """
     if isinstance(src, o3d.open3d.geometry.TriangleMesh):
         vertex_colors = None
