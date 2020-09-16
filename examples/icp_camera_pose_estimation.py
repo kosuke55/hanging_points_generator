@@ -23,6 +23,9 @@ if __name__ == '__main__':
     parser.add_argument('--voxel_size', '-v', type=float,
                         help='voxel length for down sampling.',
                         default=0.002)
+    parser.add_argument('--threshold', '-t', type=float,
+                        help='icp threshold',
+                        default=0.02)
     parser.add_argument('--output', '-o', type=str,
                         help='output file name',
                         default=os.path.join(
@@ -33,6 +36,7 @@ if __name__ == '__main__':
     pcd, _, _ = icp_registration_from_dir(
         args.input,
         args.scenes,
-        args.voxel_size)
+        args.voxel_size,
+        args.threshold)
     o3d.visualization.draw_geometries([pcd])
     o3d.io.write_point_cloud(args.output, pcd)

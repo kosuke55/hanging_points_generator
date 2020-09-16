@@ -606,7 +606,7 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
         input camera pose list
     voxel_size : float, optional
         by default 0.002
-    thresh : float, optional
+    threshold : float, optional
         by default 0.01
 
     Returns
@@ -668,7 +668,7 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
     return target, camera_poses_icp, obj_poses
 
 
-def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
+def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002, threshold=0.01):
     """Estimate camera pose and create integrated point cloud from dir
 
     Parameters
@@ -680,6 +680,8 @@ def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
         How many scenes were shot.
     voxel_size : float, optional
         voxel size, by default 0.002
+    threshold : float, optional
+        by default 0.01
 
     Returns
     -------
@@ -705,7 +707,7 @@ def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002):
     pcds = get_pcds(color_list, depth_list, intrinsic_list)
 
     pcd_icp, camera_poses_icp, obj_poses \
-        = icp_registration(pcds, camera_poses)
+        = icp_registration(pcds, camera_poses, voxel_size, threshold)
 
     camera_pose_dir = osp.join(input_dir, 'camera_pose')
     save_camera_poses(camera_pose_dir, 'camera_pose_icp', camera_poses_icp)
