@@ -668,7 +668,8 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
     return target, camera_poses_icp, obj_poses
 
 
-def icp_registration_from_dir(input_dir, scenes, voxel_size=0.002, threshold=0.01):
+def icp_registration_from_dir(
+        input_dir, scenes, voxel_size=0.002, threshold=0.01):
     """Estimate camera pose and create integrated point cloud from dir
 
     Parameters
