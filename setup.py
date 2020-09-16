@@ -36,11 +36,12 @@ if sys.argv[-1] == "release":
 setup_requires = []
 install_requires = [
     'cameramodels',
+    'connected-components-3d',
     'gdown',
+    'opencv-python',
     'pathlib2',
     'pybullet',
     'pymesh',
-    'opencv-python',
     'scikit-robot',
     'scikit-image',
     'trimesh'

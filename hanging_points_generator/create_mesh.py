@@ -6,6 +6,7 @@ import os.path as osp
 import pathlib2
 from pathlib import Path
 
+import cc3d
 import cv2
 import numpy as np
 import open3d as o3d
@@ -154,7 +155,31 @@ def create_mesh_voxelize(pcd, voxel_size=0.002):
     return mesh
 
 
-def pcd_to_voxel(pcd, voxel_size=0.004):
+def get_largest_components(occupancy_grid):
+    print(np.count_nonzero(occupancy_grid))
+    occupancy_grid = cc3d.connected_components(
+        occupancy_grid, connectivity=6)
+
+    max_label = 1
+    num_max_label = 0
+    for label in range(1, np.max(occupancy_grid) + 1):
+        num_label = np.count_nonzero(occupancy_grid == label)
+        if num_max_label < num_label:
+            num_max_label = num_label
+            max_label = label
+
+    if num_max_label == 0:
+        return occupancy_grid
+
+    occupancy_grid[np.where(occupancy_grid != max_label)] = 0
+    occupancy_grid[np.where(occupancy_grid == max_label)] = 1
+
+    print(np.count_nonzero(occupancy_grid))
+
+    return occupancy_grid
+
+
+def pcd_to_voxel(pcd, voxel_size=0.004, connected_components=True):
     """Conver pcd to voxel
 
     Parameters
@@ -181,14 +206,17 @@ def pcd_to_voxel(pcd, voxel_size=0.004):
     y = max(grid_indices, key=lambda x: x[1])[1]
     z = max(grid_indices, key=lambda x: x[2])[2]
 
-    occupacy_grid = np.zeros([x + 1, y + 1, z + 1], dtype=np.bool)
+    occupancy_grid = np.zeros([x + 1, y + 1, z + 1], dtype=np.bool)
 
     for voxel_index, voxel in enumerate(voxel_grid.get_voxels()):
-        occupacy_grid[voxel.grid_index[0],
-                      voxel.grid_index[1],
-                      voxel.grid_index[2]] = True
+        occupancy_grid[voxel.grid_index[0],
+                       voxel.grid_index[1],
+                       voxel.grid_index[2]] = True
 
-    return occupacy_grid
+    if connected_components:
+        occupancy_grid = get_largest_components(occupancy_grid)
+
+    return occupancy_grid
 
 
 def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
@@ -205,10 +233,10 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
     mesh : trimesh.base.Trimesh
     Mesh with voxelization and marching cubes applied
     """
-    occupacy_grid = pcd_to_voxel(pcd, voxel_size)
+    occupancy_grid = pcd_to_voxel(pcd, voxel_size)
     mesh = trimesh.Trimesh()
     mesh = trimesh.voxel.ops.matrix_to_marching_cubes(
-        matrix=occupacy_grid,
+        matrix=occupancy_grid,
         pitch=voxel_size)
 
     mesh.merge_vertices()
@@ -235,7 +263,7 @@ def open3d_to_trimesh(src):
     ValueError
         when type of src is not open3d.open3d.geometry.TriangleMesh
     """
-    if isinstance(src, o3d.open3d.geometry.TriangleMesh):
+    if isinstance(src, o3d.geometry.TriangleMesh):
         vertex_colors = None
         if src.has_vertex_colors:
             vertex_colors = np.asarray(src.vertex_colors)
@@ -266,7 +294,7 @@ def create_urdf(mesh, output_dir):
     output_file : str
         output file path
     """
-    if isinstance(mesh, o3d.open3d.geometry.TriangleMesh):
+    if isinstance(mesh, o3d.geometry.TriangleMesh):
         mesh = open3d_to_trimesh(mesh)
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
