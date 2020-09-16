@@ -154,24 +154,24 @@ def create_mesh_voxelize(pcd, voxel_size=0.002):
     return mesh
 
 
-def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
-    """Voxelize point cloud and apply marching cubes
+def pcd_to_voxel(pcd, voxel_size=0.004):
+    """Conver pcd to voxel
 
     Parameters
     ----------
     pcd : open3d.open3d.geometry.PointCloud
       Input pcd data
     voxel_size : float
+        [description], by default 0.004
 
     Returns
     -------
-    mesh : trimesh.base.Trimesh
-    Mesh with voxelization and marching cubes applied
+    occypacy_grid
+        [description]
     """
-
     voxel_grid \
         = o3d.geometry.VoxelGrid.create_from_point_cloud(pcd, voxel_size)
-    mesh = trimesh.Trimesh()
+
     grid_indices = []
 
     for voxel_index, voxel in enumerate(voxel_grid.get_voxels()):
@@ -188,6 +188,25 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
                       voxel.grid_index[1],
                       voxel.grid_index[2]] = True
 
+    return occupacy_grid
+
+
+def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
+    """Voxelize point cloud and apply marching cubes
+
+    Parameters
+    ----------
+    pcd : open3d.open3d.geometry.PointCloud
+      Input pcd data
+    voxel_size : float
+
+    Returns
+    -------
+    mesh : trimesh.base.Trimesh
+    Mesh with voxelization and marching cubes applied
+    """
+    occupacy_grid = pcd_to_voxel(pcd, voxel_size)
+    mesh = trimesh.Trimesh()
     mesh = trimesh.voxel.ops.matrix_to_marching_cubes(
         matrix=occupacy_grid,
         pitch=voxel_size)
