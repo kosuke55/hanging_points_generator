@@ -266,7 +266,8 @@ class CreateMesh():
 
     def create_mesh_voxelize_marcing_cubes(self, req):
         self.mesh_voxelize_marching_cubes \
-            = create_mesh_voxelize_marcing_cubes(self.pcd_icp)
+            = create_mesh_voxelize_marcing_cubes(
+                self.pcd_icp, smoothing_method='laplacian')
         self.mesh_voxelize_marching_cubes.show()
         return TriggerResponse(True, 'create_mesh_voxelize_marcing_cubes')
 

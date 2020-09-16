@@ -194,6 +194,8 @@ def pcd_to_voxel(pcd, voxel_size=0.004, connected_components=True):
     occypacy_grid
         [description]
     """
+    center = np.mean(np.asarray(pcd.points), axis=0)
+
     voxel_grid \
         = o3d.geometry.VoxelGrid.create_from_point_cloud(pcd, voxel_size)
 
@@ -216,11 +218,13 @@ def pcd_to_voxel(pcd, voxel_size=0.004, connected_components=True):
     if connected_components:
         occupancy_grid = get_largest_components(occupancy_grid)
 
-    return occupancy_grid
+    return occupancy_grid, center
 
 
-def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
-    """Voxelize point cloud and apply marching cubes
+def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004,
+                                       smoothing_method=None,
+                                       keep_center=True):
+    """Voxelize point cloud and apply marching mesh_voxelize_mamesh_voxelize_macubes
 
     Parameters
     ----------
@@ -233,7 +237,7 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
     mesh : trimesh.base.Trimesh
     Mesh with voxelization and marching cubes applied
     """
-    occupancy_grid = pcd_to_voxel(pcd, voxel_size)
+    occupancy_grid, center = pcd_to_voxel(pcd, voxel_size)
     mesh = trimesh.Trimesh()
     mesh = trimesh.voxel.ops.matrix_to_marching_cubes(
         matrix=occupancy_grid,
@@ -241,6 +245,12 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
 
     mesh.merge_vertices()
     # mesh.remove_duplicate_faces()
+    
+    if smoothing_method is not None:
+        mesh = smoothing_mesh(mesh, method=smoothing_method)
+    
+    if keep_center:
+        mesh.vertices += center
 
     return mesh
 
@@ -623,7 +633,8 @@ def dbscan(pcd, eps=0.01, min_points=30,
     return pcd
 
 
-def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
+def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01,
+                     camera_coords=True):
     """Estimate camera pose and create integrated point cloud
 
     Parameters
@@ -636,6 +647,8 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
         by default 0.002
     threshold : float, optional
         by default 0.01
+    camera_coords : bool, optional
+        by default True
 
     Returns
     -------
@@ -692,6 +705,9 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01):
                                           std_ratio=0.001)
         # pcd.remove_radius_outlier(nb_points=100, radius=0.002)
         # o3d.visualization.draw_geometries([target])
+    if camera_coords:
+        target.points = o3d.utility.Vector3dVector(
+            camera_poses[0].transform_vector(np.array(target.points)))
 
     return target, camera_poses_icp, obj_poses
 

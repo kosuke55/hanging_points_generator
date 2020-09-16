@@ -12,8 +12,12 @@ if __name__ == '__main__':
                         default=os.path.join(
                             os.path.dirname(os.path.abspath(__file__)),
                             '../sample_data/voxelized_obj.ply'))
+    parser.add_argument('--method', '-m', type=str,
+                        help='smoothing method "humphrey", "laplacian" \
+                        + "taubin" or "laplacian_calculation"',
+                        default='humphrey')
     args = parser.parse_args()
 
     mesh = trimesh.load(args.input)
-    mesh = smoothing_mesh(mesh, method='humphrey')
+    mesh = smoothing_mesh(mesh, method=args.method)
     mesh.show()
