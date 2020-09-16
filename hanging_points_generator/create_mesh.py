@@ -220,14 +220,7 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004):
 def open3d_to_trimesh(src):
     """Convert mesh from open3d to trimesh
 
-     https://github.com/wkentaro/morefusion/blob/b8b892b3fbc384982a4929b1418ee29393069b11/morefusion/utils/open3d_to_trimesh.py
-
-　　　@inproceedings{Wada:etal:CVPR2020,
-　　　  title={{MoreFusion}: Multi-object Reasoning for {6D} Pose Estimation from Volumetric Fusion},
-　　　  author={Kentaro Wada and Edgar Sucar and Stephen James and Daniel Lenton and Andrew J. Davison},
-　　　  booktitle={Proceedings of the {IEEE} Conference on Computer Vision and Pattern Recognition ({CVPR})},
-　　　  year={2020},
-　　　}
+    https://github.com/wkentaro/morefusion/blob/b8b892b3fbc384982a4929b1418ee29393069b11/morefusion/utils/open3d_to_trimesh.py
 
     Parameters
     ----------
