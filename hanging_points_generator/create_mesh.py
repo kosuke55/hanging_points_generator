@@ -17,7 +17,8 @@ import xml.etree.ElementTree as ET
 
 def create_mesh_tsdf(
         colors, depths, intrinsics, camera_poses,
-        voxel_length=0.002, sdf_trunc=0.005, compute_normal=True):
+        voxel_length=0.002, sdf_trunc=0.005,
+        connected_components=True):
     """Create mesh using tsdf
 
     Parameters
@@ -30,8 +31,6 @@ def create_mesh_tsdf(
         same as voxel_size, by default 0.002
     sdf_trunc : float, optional
         by default 0.005
-    compute_normal : bool, optional
-        If true, compute normal, by default True
 
     Returns
     -------
@@ -54,8 +53,9 @@ def create_mesh_tsdf(
             np.linalg.inv(camera_pose.T()))
 
     mesh = volume.extract_triangle_mesh()
-    if compute_normal:
-        mesh.compute_vertex_normals()
+    mesh = open3d_to_trimesh(mesh)
+    if connected_components:
+        mesh = get_largest_components_mesh(mesh)
 
     return mesh
 
@@ -155,7 +155,36 @@ def create_mesh_voxelize(pcd, voxel_size=0.002):
     return mesh
 
 
-def get_largest_components(occupancy_grid):
+def get_largest_components_mesh(mesh):
+    """Get largest components of mesh
+
+    Parameters
+    ----------
+    mesh : trimesh.base.Trimesh or open3d.open3d.geometry.TriangleMesh
+
+    Returns
+    -------
+    mesh :  trimesh.base.Trimesh
+    """
+    if isinstance(mesh, o3d.geometry.TriangleMesh):
+        mesh = open3d_to_trimesh(mesh)
+    mesh_split = mesh.split(only_watertight=False)
+    mesh = mesh_split[np.argmax([m.vertices.shape[0] for m in mesh_split])]
+
+    return mesh
+
+
+def get_largest_components_voxel(occupancy_grid):
+    """Get largest components of voxel
+
+    Parameters
+    ----------
+    occupancy_grid : numpy.ndarray
+
+    Returns
+    -------
+    occupancy_grid : numpy.ndarray
+    """
     print(np.count_nonzero(occupancy_grid))
     occupancy_grid = cc3d.connected_components(
         occupancy_grid, connectivity=6)
@@ -216,7 +245,7 @@ def pcd_to_voxel(pcd, voxel_size=0.004, connected_components=True):
                        voxel.grid_index[2]] = True
 
     if connected_components:
-        occupancy_grid = get_largest_components(occupancy_grid)
+        occupancy_grid = get_largest_components_voxel(occupancy_grid)
 
     return occupancy_grid, center
 
@@ -245,10 +274,10 @@ def create_mesh_voxelize_marcing_cubes(pcd, voxel_size=0.004,
 
     mesh.merge_vertices()
     # mesh.remove_duplicate_faces()
-    
+
     if smoothing_method is not None:
         mesh = smoothing_mesh(mesh, method=smoothing_method)
-    
+
     if keep_center:
         mesh.vertices += center
 

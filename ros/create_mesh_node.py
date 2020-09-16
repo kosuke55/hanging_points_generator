@@ -21,6 +21,7 @@ from hanging_points_generator.create_mesh import apply_mask_images
 from hanging_points_generator.create_mesh import create_mesh_tsdf
 from hanging_points_generator.create_mesh import create_mesh_voxelize_marcing_cubes
 from hanging_points_generator.create_mesh import create_urdf
+from hanging_points_generator.create_mesh import get_largest_components_mesh
 from hanging_points_generator.create_mesh import dbscan
 from hanging_points_generator.create_mesh import depths_mean_filter
 from hanging_points_generator.create_mesh import get_pcds
@@ -226,8 +227,7 @@ class CreateMesh():
             self.camera_pose_list)
         o3d.io.write_point_cloud(
             osp.join(self.save_dir, 'icp_result.pcd'), self.pcd_icp)
-        o3d.io.write_triangle_mesh(
-            osp.join(self.save_dir, 'tsdf_obj.ply'), self.mesh_tsdf)
+        self.mesh_tsdf.export(osp.join(self.save_dir, 'tsdf_obj.ply'))
         self.mesh_voxelize_marching_cubes.export(
             osp.join(self.save_dir, 'voxelized_mc_obj.ply'))
         return TriggerResponse(True, 'save')
@@ -259,8 +259,8 @@ class CreateMesh():
         self.mesh_tsdf = create_mesh_tsdf(
             self.cropped_color_list, self.cropped_depth_list,
             self.intrinsic_list, self.camera_pose_icp_list,
-            compute_normal=True)
-        o3d.visualization.draw_geometries([self.mesh_tsdf])
+            connected_components=True)
+        self.mesh_tsdf.show()
 
         return TriggerResponse(True, 'success create mesh')
 

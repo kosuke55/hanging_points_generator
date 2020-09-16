@@ -35,5 +35,5 @@ if __name__ == "__main__":
     mesh = create_mesh_tsdf_from_dir(args.input,
                                      args.scenes,
                                      args.voxel_length)
-    o3d.visualization.draw_geometries([mesh])
-    o3d.io.write_triangle_mesh(args.output, mesh)
+    mesh.show()
+    mesh.export(args.output)
