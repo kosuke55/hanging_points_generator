@@ -29,6 +29,7 @@ from hanging_points_generator.create_mesh import icp_registration
 from hanging_points_generator.create_mesh import mask_to_roi
 from hanging_points_generator.create_mesh import np_to_o3d_images
 from hanging_points_generator.create_mesh import preprocess_masks
+from hanging_points_generator.create_mesh import save_camera_models
 from hanging_points_generator.create_mesh import save_camera_poses
 from hanging_points_generator.create_mesh import save_images
 from sensor_msgs.msg import CameraInfo, Image
@@ -65,6 +66,8 @@ class CreateMesh():
             parents=True, exist_ok=True)
         pathlib2.Path(os.path.join(self.save_dir, 'camera_pose')).mkdir(
             parents=True, exist_ok=True)
+        pathlib2.Path(os.path.join(self.save_dir, 'camera_info')).mkdir(
+            parents=True, exist_ok=True)
 
         self._reset()
         self.load_camera_info()
@@ -85,7 +88,8 @@ class CreateMesh():
         self.depth_list = []
         self.mask_list = []
         self.camera_pose_list = []
-        self.intrinsic_list = []
+        self.camera_model_list = []
+        self.intrinsic_list = []  # open3d intrinsic
         self.header = None
         self.stanby = False
         self.callback_lock = False
@@ -203,6 +207,7 @@ class CreateMesh():
 
         if self.crop:
             self.camera_model.roi = mask_to_roi(self.mask)
+        self.camera_model_list.append(self.camera_model)
         self.intrinsic_list.append(self.camera_model.open3d_intrinsic)
 
         self.camera_pose_list.append(self.camera_pose.copy_worldcoords())
@@ -225,6 +230,9 @@ class CreateMesh():
         save_camera_poses(
             osp.join(self.save_dir, 'camera_pose'), 'camera_pose',
             self.camera_pose_list)
+        save_camera_models(
+            osp.join(self.save_dir, 'camera_info'), 'camera_info',
+            self.camera_model_list)
         o3d.io.write_point_cloud(
             osp.join(self.save_dir, 'icp_result.pcd'), self.pcd_icp)
         self.mesh_tsdf.export(osp.join(self.save_dir, 'tsdf_obj.ply'))

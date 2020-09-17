@@ -573,6 +573,23 @@ def get_pcds(colors, depths, intrinsics):
     return pcds
 
 
+def save_camera_models(output_dir, prefix, camera_models):
+    """Save camera model list
+
+    Parameters
+    ----------
+    output_dir : str
+    prefix : str
+        save file prefix
+    camera_poses : list[cameramodels.PinholeCameraModel]
+    """
+    for i, camera_model in enumerate(camera_models):
+        print(osp.join(
+            output_dir, prefix + '{:03}.yaml'.format(i)))
+        camera_model.dump(osp.join(
+            output_dir, prefix + '{:03}.yaml'.format(i)))
+
+
 def save_camera_poses(output_dir, prefix, camera_poses):
     """Save camera pose list
 
@@ -582,9 +599,7 @@ def save_camera_poses(output_dir, prefix, camera_poses):
     prefix : str
         save file prefix
     camera_poses : list[skrobot.coordinates.base.Coordinates]
-        [description]
     """
-
     for i, camera_pose in enumerate(camera_poses):
         print(osp.join(
             output_dir, prefix + '{:03}.txt'.format(i)))
