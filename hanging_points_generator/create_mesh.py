@@ -346,6 +346,10 @@ def create_urdf(mesh, output_dir, init_texture=False):
         input mesh
     output_dir : str
         Ouput directry where output mesh saved
+    init_texture : bool
+        If true, make the mesh texture the same as the base one.
+        This is necessary if you want to change the texture when rendering with
+        https://github.com/kosuke55/hanging_points_cnn/blob/master/hanging_points_cnn/create_dataset/renderer.py
 
     Returns
     -------
@@ -365,6 +369,7 @@ def create_urdf(mesh, output_dir, init_texture=False):
                                                   exist_ok=True)
 
     if init_texture:
+        # https://github.com/mikedh/trimesh/issues/865
         base = trimesh.load(os.path.join(current_dir, '../urdf/base/base.obj'))
         mesh.visual.material = base.visual.material
         mesh, center = centerize_mesh(mesh)
