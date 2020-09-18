@@ -34,6 +34,7 @@ from hanging_points_generator.create_mesh import save_camera_models
 from hanging_points_generator.create_mesh import save_camera_poses
 from hanging_points_generator.create_mesh import save_images
 from sensor_msgs.msg import CameraInfo, Image
+from std_srvs.srv import SetBool, SetBoolResponse
 from std_srvs.srv import Trigger, TriggerResponse
 
 
@@ -91,6 +92,7 @@ class CreateMesh():
         self.depth_list = []
         self.mask_list = []
         self.camera_pose_list = []
+        self.camera_pose_icp_list = []
         self.camera_model_list = []
         self.intrinsic_list = []  # open3d intrinsic
         self.header = None
@@ -172,6 +174,9 @@ class CreateMesh():
             'generate_hanging_points', Trigger,
             self.generate_hanging_points)
 
+        self.set_connected_components_service = rospy.Service(
+            'set_connected_components', SetBool, self.set_connected_components)
+
     def preprocess_masks(self):
         self.color_mask_list = preprocess_masks(self.mask_list)
         self.depth_mask_list = preprocess_masks(
@@ -237,6 +242,10 @@ class CreateMesh():
             save_camera_poses(
                 osp.join(self.save_dir, 'camera_pose'), 'camera_pose',
                 self.camera_pose_list)
+        if self.camera_pose_icp_list != []:
+            save_camera_poses(
+                osp.join(self.save_dir, 'camera_pose'), 'camera_pose_icp',
+                self.camera_pose_icp_list)
         if self.camera_model_list != []:
             save_camera_models(
                 osp.join(self.save_dir, 'camera_info'), 'camera_info',
@@ -318,6 +327,12 @@ class CreateMesh():
             viz_obj='False',
             save_dir=self.save_dir)
         return TriggerResponse(True, 'success create mesh')
+
+    def set_connected_components(self, req):
+        self.connected_components = req.data
+        return TriggerResponse(
+            True, 'self.connected_components is {}'.format(
+                self.connected_components))
 
     def run(self):
         try:
