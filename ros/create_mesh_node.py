@@ -97,6 +97,9 @@ class CreateMesh():
         self.stanby = False
         self.callback_lock = False
 
+        self.mesh_tsdf = None
+        self.mesh_voxelize_marching_cubes = None
+
     def reset(self, req):
         self._reset()
         return TriggerResponse(True, 'reset')
@@ -230,17 +233,22 @@ class CreateMesh():
 
     def save(self, req):
         self.save_images()
-        save_camera_poses(
-            osp.join(self.save_dir, 'camera_pose'), 'camera_pose',
-            self.camera_pose_list)
-        save_camera_models(
-            osp.join(self.save_dir, 'camera_info'), 'camera_info',
-            self.camera_model_list)
-        o3d.io.write_point_cloud(
-            osp.join(self.save_dir, 'icp_result.pcd'), self.pcd_icp)
-        self.mesh_tsdf.export(osp.join(self.save_dir, 'tsdf_obj.ply'))
-        self.mesh_voxelize_marching_cubes.export(
-            osp.join(self.save_dir, 'voxelized_mc_obj.ply'))
+        if self.camera_pose_list != []:
+            save_camera_poses(
+                osp.join(self.save_dir, 'camera_pose'), 'camera_pose',
+                self.camera_pose_list)
+        if self.camera_model_list != []:
+            save_camera_models(
+                osp.join(self.save_dir, 'camera_info'), 'camera_info',
+                self.camera_model_list)
+        if self.pcd_icp is not None:
+            o3d.io.write_point_cloud(
+                osp.join(self.save_dir, 'icp_result.pcd'), self.pcd_icp)
+        if self.mesh_tsdf is not None:
+            self.mesh_tsdf.export(osp.join(self.save_dir, 'tsdf_obj.ply'))
+        if self.mesh_voxelize_marching_cubes is not None:
+            self.mesh_voxelize_marching_cubes.export(
+                osp.join(self.save_dir, 'voxelized_mc_obj.ply'))
         return TriggerResponse(True, 'save')
 
     def save_images(self):
@@ -283,9 +291,11 @@ class CreateMesh():
         return TriggerResponse(True, 'create_mesh_voxelize_marcing_cubes')
 
     def create_urdf(self, req):
-        create_urdf(self.mesh_tsdf, osp.join(self.save_dir, 'tsdf_urdf'))
-        create_urdf(self.mesh_voxelize_marching_cubes, osp.join(
-            self.save_dir, 'mesh_voxelize_marching_cubes_urdf'))
+        if self.mesh_tsdf is not None:
+            create_urdf(self.mesh_tsdf, osp.join(self.save_dir, 'tsdf_urdf'))
+        if self.mesh_voxelize_marching_cubes is not None:
+            create_urdf(self.mesh_voxelize_marching_cubes, osp.join(
+                self.save_dir, 'mesh_voxelize_marching_cubes_urdf'))
         return TriggerResponse(True, 'create_urdf')
 
     def meshfix(self, req):
