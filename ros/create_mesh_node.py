@@ -60,6 +60,8 @@ class CreateMesh():
             '~voxel_length', 0.002)
         self.crop = rospy.get_param(
             '~crop', True)
+        self.connected_components = rospy.get_param(
+            '~connected_components', False)
 
         self.save_dir = os.path.join(self.current_dir, '..', self.save_dir)
         pathlib2.Path(os.path.join(self.save_dir, 'raw')).mkdir(
@@ -267,7 +269,7 @@ class CreateMesh():
         self.mesh_tsdf = create_mesh_tsdf(
             self.cropped_color_list, self.cropped_depth_list,
             self.intrinsic_list, self.camera_pose_icp_list,
-            connected_components=True)
+            connected_components=self.connected_components)
         self.mesh_tsdf.show()
 
         return TriggerResponse(True, 'success create mesh')
