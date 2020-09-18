@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
 import os
 import os.path as osp
 import pathlib2
@@ -209,7 +210,7 @@ class CreateMesh():
 
         if self.crop:
             self.camera_model.roi = mask_to_roi(self.mask)
-        self.camera_model_list.append(self.camera_model)
+        self.camera_model_list.append(copy.copy(self.camera_model))
         self.intrinsic_list.append(self.camera_model.open3d_intrinsic)
 
         self.camera_pose_list.append(self.camera_pose.copy_worldcoords())
