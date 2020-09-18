@@ -318,7 +318,26 @@ def open3d_to_trimesh(src):
     return dst
 
 
-def create_urdf(mesh, output_dir):
+def centerize_mesh(mesh):
+    """Move mesh to its center
+
+    Parameters
+    ----------
+    mesh : trimesh.base.Trimesh or open3d.open3d.geometry.TriangleMesh
+
+    Returns
+    -------
+    mesh : trimesh.base.Trimesh
+    center : list[float]
+    """
+    if isinstance(mesh, o3d.geometry.TriangleMesh):
+        mesh = open3d_to_trimesh(mesh)
+    center = np.mean(mesh.vertices, axis=0)
+    mesh.vertices -= center
+    return mesh, center
+
+
+def create_urdf(mesh, output_dir, init_texture=False):
     """Create urdf from mesh
 
     Parameters
@@ -344,7 +363,17 @@ def create_urdf(mesh, output_dir):
     # os.makedirs(os.path.join(output_dir), exist_ok=True)
     pathlib2.Path(os.path.join(output_dir)).mkdir(parents=True,
                                                   exist_ok=True)
-    mesh.export(os.path.join(output_dir, 'base.stl'), "stl")
+
+    if init_texture:
+        base = trimesh.load(os.path.join(current_dir, '../urdf/base/base.obj'))
+        mesh.visual.material = base.visual.material
+        mesh, center = centerize_mesh(mesh)
+        mesh.vertices += center
+        v_idx = base.kdtree.query(mesh.vertices.copy())[1]
+        mesh.visual.uv = base.visual.uv[v_idx]
+
+    mesh.export(os.path.join(output_dir, 'base.obj'), 'obj')
+
     tree.write(os.path.join(output_dir, 'base.urdf'),
                encoding='utf-8', xml_declaration=True)
 
