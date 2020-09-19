@@ -25,7 +25,7 @@ from hanging_points_generator.generator_utils import save_contact_points
 
 
 def check_contact_points(
-        contact_points_path, urdf_file, json_name='contact_points.json',
+        contact_points_path, urdf_file='', json_name='contact_points.json',
         cluster_min_points=2, use_filter_penetration=True,
         inf_penetration_check=True):
     """Chaeck contact poitns with urdf
@@ -54,6 +54,7 @@ def check_contact_points(
         contact_points_dict = json.load(open(contact_points_path, 'r'))
 
     contact_points = contact_points_dict['contact_points']
+    urdf_file = '' or contact_points_dict['urdf_file']
 
     if use_filter_penetration:
         if inf_penetration_check:

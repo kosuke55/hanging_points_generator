@@ -11,7 +11,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--input', '-i', type=str,
                         help='input urdf',
-                        required=True)
+                        default='')
     parser.add_argument('--pose', '-p', type=str,
                         help='input pose',
                         required=True)
