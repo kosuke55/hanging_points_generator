@@ -111,41 +111,40 @@ def step(n=1):
 
 
 def save_contact_points(
-        save_dir, save_file_name, contact_points_dict, filelock=False):
+        save_file, contact_points_dict, filelock=False):
     """Save contact points json file with filelock
 
     Parameters
     ----------
-    save_dir : str
-    save_file_name : str
+    save_file : str
     contact_points_dict : dict
 
     """
     if filelock:
-        if os.path.exists(os.path.join(save_dir, save_file_name)):
-            filelock_path = os.path.join(
-                save_dir, save_file_name + '.lock')
+        if os.path.exists(save_file):
+            filelock_path = save_file + '.lock'
             with FileLock(filelock_path):
-                with open(os.path.join(save_dir, save_file_name), 'r') as f:
+                with open(save_file, 'r') as f:
                     contact_points_dict_existed = json.load(f)
                     for c in contact_points_dict['contact_points']:
                         contact_points_dict_existed['contact_points'].append(c)
                     # find_count = len(
                     #     contact_points_dict_existed['contact_points'])
 
-            filelock_path = os.path.join(
-                save_dir, save_file_name + '.lock')
+            filelock_path = save_file + '.lock'
             with FileLock(filelock_path):
-                with open(os.path.join(save_dir, save_file_name), 'w') as f:
-                    json.dump(contact_points_dict_existed, f, ensure_ascii=False,
-                              indent=4, sort_keys=True, separators=(',', ': '))
+                with open(save_file, 'w') as f:
+                    json.dump(
+                        contact_points_dict_existed, f, ensure_ascii=False,
+                        indent=4, sort_keys=True, separators=(',', ': '))
         else:
-            with open(os.path.join(save_dir, save_file_name), 'w') as f:
-                json.dump(contact_points_dict, f, ensure_ascii=False,
-                          indent=4, sort_keys=True, separators=(',', ': '))
+            with open(save_file, 'w') as f:
+                json.dump(
+                    contact_points_dict, f, ensure_ascii=False,
+                    indent=4, sort_keys=True, separators=(',', ': '))
             # find_count += 1
     else:
-        with open(os.path.join(save_dir, save_file_name), 'w') as f:
+        with open(save_file, 'w') as f:
             json.dump(contact_points_dict, f, ensure_ascii=False,
                       indent=4, sort_keys=True, separators=(',', ': '))
 

@@ -430,7 +430,7 @@ def generate(urdf_file, required_points_num,
             contact_points_dict['contact_points'] = contact_points_list
 
             save_contact_points(
-                save_dir, 'contact_points.json', contact_points_dict)
+                osp.join(save_dir, 'contact_points.json'), contact_points_dict)
 
             find_count += 1
             print('{}({}) find:{}'.format(urdf_file, pid, find_count))
