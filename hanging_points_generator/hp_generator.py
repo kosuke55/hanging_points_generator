@@ -499,9 +499,12 @@ if __name__ == '__main__':
     parser.add_argument('--gui', '-g', type=int,
                         help='gui',
                         default=0)
-    parser.add_argument('--viz_obj', '-v', type=int,
+    parser.add_argument('--viz-obj', '-v', type=int,
                         help='viz obj with contactpoints',
                         default=0)
+    parser.add_argument('--hook-type', '-ht', type=str,
+                        help='hook type "just_bar" or hook urdf',
+                        default='just_bar')
     args = parser.parse_args()
 
     contact_points_list = generate(args.urdf,
@@ -509,4 +512,4 @@ if __name__ == '__main__':
                                    args.gui,
                                    args.viz_obj,
                                    os.path.dirname(args.urdf),
-                                   hook_type='just_bar')
+                                   hook_type=args.hook_type)
