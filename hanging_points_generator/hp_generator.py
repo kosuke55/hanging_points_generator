@@ -54,7 +54,7 @@ def check_contact_points(
         contact_points_dict = json.load(open(contact_points_path, 'r'))
 
     contact_points = contact_points_dict['contact_points']
-    urdf_file = '' or contact_points_dict['urdf_file']
+    urdf_file = urdf_file or contact_points_dict['urdf_file']
 
     if use_filter_penetration:
         if inf_penetration_check:
