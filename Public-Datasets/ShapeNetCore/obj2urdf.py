@@ -10,6 +10,7 @@ import shutil
 from datetime import datetime
 
 import coloredlogs
+import numpy as np
 import open3d as o3d
 
 from hanging_points_generator.create_mesh import create_urdf
@@ -62,6 +63,8 @@ hanging_object_list = [
     label_to_synset['mug']
 ]
 
+target_length = 0.1
+
 files = []
 for hanging_object in hanging_object_list:
     files.extend(glob.glob(osp.join(
@@ -90,6 +93,10 @@ for file in files:
         mesh_invert.invert()
         mesh += mesh_invert
         mesh.merge_vertices()
+        size = np.array(np.max(mesh.vertices, axis=0)
+                        - np.min(mesh.vertices, axis=0))
+        length = np.max(size)
+        mesh.vertices = mesh.vertices * target_length / length
 
     except Exception as e:
         logger.warning('skip {} {} {}'.format(category_name, synset, id_))
