@@ -498,10 +498,10 @@ if __name__ == '__main__':
                         default=1)
     parser.add_argument('--gui', '-g', type=int,
                         help='gui',
-                        default="True")
+                        default=0)
     parser.add_argument('--viz_obj', '-v', type=int,
                         help='viz obj with contactpoints',
-                        default="False")
+                        default=0)
     args = parser.parse_args()
 
     contact_points_list = generate(args.urdf,
