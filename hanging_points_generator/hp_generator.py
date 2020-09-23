@@ -477,9 +477,9 @@ def reset_pose(object_id, x_offset=0.2, y_offset=0., z_offset=1.):
     y = (np.random.rand() - 0.5) * 0.4 + y_offset
     z = (np.random.rand() - 0.5) * 0.4 + z_offset
 
-    roll = np.random.rand() * pi
-    pitch = np.random.rand() * pi
-    yaw = np.random.rand() * pi
+    roll = np.random.rand() * pi * 2
+    pitch = np.random.rand() * pi * 2
+    yaw = np.random.rand() * pi * 2
     pybullet.setGravity(0, 0, 0)
     pybullet.resetBasePositionAndOrientation(
         object_id,
