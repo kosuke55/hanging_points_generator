@@ -221,11 +221,11 @@ def load_multiple_contact_points(
     Returns
     -------
     base_cp_dict
-        merged contact_points dict
+        merged contact_points dict. If not file return None
 
     """
+    base_cp_dict = None
     paths = list(sorted(Path(base_dir).glob(osp.join('**', json_name))))
-
     for i, path in enumerate(paths):
         if i == 0:
             base_cp_file = str(path)
