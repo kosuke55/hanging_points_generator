@@ -686,6 +686,14 @@ def sample_contact_points(contact_points, num_samples):
 
 
 def set_contact_points_urdf_path(contact_points_path):
+    """Set contact points urdf path
+
+    Set base.urdf in same directory
+
+    Parameters
+    ----------
+    contact_points_path : str
+    """
     urdf_file = osp.join(osp.dirname(contact_points_path), 'base.urdf')
     contact_points_dict = json.load(open(contact_points_path, 'r'))
     contact_points_dict['urdf_file'] = urdf_file
@@ -693,19 +701,22 @@ def set_contact_points_urdf_path(contact_points_path):
 
 
 def filter_contact_points(contact_points_dict, eps=0.03):
-    """[summary]
+    """Filter contact points by clustering, aligning, averageing
 
     Parameters
     ----------
-    contact_points_dict : [type]
-        [description]
+    contact_points_dict :
+        dict{'contact_points' : list[list[list[float], list[float]]]
+             'urdf_file' : str}
+
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.03
 
     Returns
     -------
-    [type]
-        [description]
+    average_aligned_contact_points_coord_dict :
+        dict{'contact_points' : list[list[list[float], list[float]]]
+             'urdf_file' : str}
     """
     urdf_file = contact_points_dict['urdf_file']
     contact_points = contact_points_dict['contact_points']
