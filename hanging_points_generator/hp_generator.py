@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import os.path as osp
+from pathlib import Path
 import sys
 from math import pi
 
@@ -32,6 +33,7 @@ def generate(urdf_file, required_points_num,
              hook_type='just_bar', render=False):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     base_save_dir = osp.dirname(save_dir)
+    category_name = Path(base_save_dir).parent.name
     save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'))
     pid = os.getpid()
 
@@ -154,7 +156,7 @@ def generate(urdf_file, required_points_num,
                 print('break {} find_count:{} try_count:{} require:{}'.format(
                     urdf_file, find_count, try_count, required_points_num))
                 add_bad_list(
-                    osp.join(base_save_dir, 'bad_list.txt'), urdf_file)
+                    osp.join(base_save_dir, 'bad_list.txt'), category_name)
                 break
 
             # if find_count == 0 and try_count > 10000:
