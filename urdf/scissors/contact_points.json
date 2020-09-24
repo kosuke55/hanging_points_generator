@@ -1651,5 +1651,5 @@
             ]
         ]
     ],
-    "urdf_file": "/home/kosuke55/catkin_ws/src/hanging_points_generator/urdf/scissors/base.urdf"
+    "urdf_file": "/home/kosuke55/catkin_ws/src/hanging_points_generator/tests/../urdf/scissors/base.urdf"
 }

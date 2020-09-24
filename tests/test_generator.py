@@ -7,17 +7,21 @@ from hanging_points_generator.generator_utils \
     import check_contact_points
 from hanging_points_generator.generator_utils \
     import filter_contact_points
+from hanging_points_generator.generator_utils \
+    import set_contact_points_urdf_path
 
 
 class TestGenerator(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+
         cls.current_dir = os.path.dirname(os.path.abspath(__file__))
         cls.contact_points_file = osp.join(
             cls.current_dir, '../urdf/scissors/contact_points.json')
         cls.urdf_file = osp.join(
             cls.current_dir, '../urdf/scissors/base.urdf')
+        set_contact_points_urdf_path(cls.contact_points_file)
 
     def test_check_contact_points(self):
         check_contact_points(

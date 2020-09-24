@@ -66,19 +66,19 @@ def check_contact_points(
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))
 
-    if not _test:
-        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
-        viewer.add(obj_model)
-
+    contact_point_sphere_list = []
     for i, cp in enumerate(contact_points):
         contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
         contact_point_sphere.newcoords(
             skrobot.coordinates.Coordinates(pos=cp[0],
                                             rot=cp[1:]))
-        if not _test:
-            viewer.add(contact_point_sphere)
+        contact_point_sphere_list.append(contact_point_sphere)
 
     if not _test:
+        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+        viewer.add(obj_model)
+        for contact_point_sphere in contact_point_sphere_list:
+            viewer.add(contact_point_sphere)
         viewer._init_and_start_app()
 
 
@@ -328,6 +328,21 @@ def make_contact_points_coords(contact_points):
 
 
 def dbscan_coords(coords_list, eps=0.03, min_sample=2):
+    """Dbscan cluster coords list
+
+    Parameters
+    ----------
+    coords_list : list[skrobot.coordinates.Coordinates]
+    eps : float, optional
+        [description], by default 0.03
+    min_sample : int, optional
+        cluster min sample, by default 2
+
+    Returns
+    -------
+    dbscan :
+
+    """
     dbscan = DBSCAN(eps=eps, min_samples=min_sample).fit(
         [coords.worldpos() for coords in coords_list])
     return dbscan
@@ -341,7 +356,7 @@ def cluster_contact_points(points, eps=0.01, min_samples=-1):
     points : list[list[list[float], list[float]]]
 
     eps : float, optional
-        by default 0.01
+        eps paramerter of sklearn dbscan, by default 0.01
     min_samples : int, optional
         clustering min samples, if -1 set 1/5 of the whole, by default -1
 
@@ -553,12 +568,23 @@ def coords_to_dict(coords_list, urdf_file):
 
 
 def make_aligned_contact_points_coords(contact_points_coords, eps=0.01):
+    """Aligned contact points coords
+
+    Parameters
+    ----------
+    contact_points_coords : list[skrobot.coordinates.Coordinates]
+        [description]
+    eps : float, optional
+        eps paramerter of sklearn dbscan, by default 0.01
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     dbscan = dbscan_coords(contact_points_coords, eps=eps)
     contact_points_coords, labels = get_dbscan_core_coords(
         contact_points_coords, dbscan)
-    # contact_points_coords = get_dbscan_label_coords(
-    #     contact_points_coords, dbscan, 0)
-    # aligned_contact_points_coords = align_coords(contact_points_coords, [0] * len(contact_points_coords))
     aligned_contact_points_coords \
         = align_coords(contact_points_coords, labels)
     return aligned_contact_points_coords
@@ -582,16 +608,16 @@ def filter_penetration(obj_file, hanging_points,
     Parameters
     ----------
     obj_file : srt
-        obj file path (urdf or stl)
-    hanging_points : 
+        obj file path (urdf, stl or obj)
+    hanging_points : list[list[list[float], list[float]]]
         list of hanging points(=contact points)
-    box_size : list
-        penetration check box of size [length, width, width]
+    box_size : list[float]
+        penetration check box of size [length, width, width] order
 
     Returns
     -------
-    penetrating_hanging_points: list
-    filtered_hanging_points: list
+    penetrating_hanging_points: list[list[list[float], list[float]]]
+    filtered_hanging_points: list[list[list[float], list[float]]]
     """
 
     filtered_hanging_points = []
@@ -643,7 +669,28 @@ def sample_contact_points(contact_points, num_samples):
     return [contact_points[i] for i in idx]
 
 
+def set_contact_points_urdf_path(contact_points_path):
+    urdf_file = osp.join(osp.dirname(contact_points_path), 'base.urdf')
+    contact_points_dict = json.load(open(contact_points_path, 'r'))
+    contact_points_dict['urdf_file'] = urdf_file
+    save_contact_points(contact_points_path, contact_points_dict)
+
+
 def filter_contact_points(contact_points_dict, eps=0.03):
+    """[summary]
+
+    Parameters
+    ----------
+    contact_points_dict : [type]
+        [description]
+    eps : float, optional
+        eps paramerter of sklearn dbscan, by default 0.03
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     urdf_file = contact_points_dict['urdf_file'].encode()
     contact_points = contact_points_dict['contact_points']
     contact_points = cluster_contact_points(contact_points, eps=eps)
