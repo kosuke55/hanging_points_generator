@@ -76,22 +76,28 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 check_hanging_pose -i base.urdf -p contact_points -c 5 -f 1 -ipc 0
 # If contact_points is dir, load multiple contact_points.
 
-usage: check_hanging_pose [-h] --input INPUT --pose POSE
+usage: check_hanging_pose [-h] [--input INPUT] --pose POSE
                           [--clustering CLUSTERING]
                           [--filter-penetration FILTER_PENETRATION]
                           [--inf-penetration-check INF_PENETRATION_CHECK]
+                          [--align ALIGN] [--average AVERAGE]
+                          [--average-pos AVERAGE_POS]
 
 optional arguments:
   -h, --help            show this help message and exit
   --input INPUT, -i INPUT
-                        input urdf (default: None)
+                        input urdf (default: )
   --pose POSE, -p POSE  input pose (default: None)
   --clustering CLUSTERING, -c CLUSTERING
-                        dbscan clustering min points (default: 2)
+                        dbscan clustering min points (default: 0)
   --filter-penetration FILTER_PENETRATION, -f FILTER_PENETRATION
                         filter penetration (default: 0)
   --inf-penetration-check INF_PENETRATION_CHECK, -ipc INF_PENETRATION_CHECK
                         infinity penetration check (default: 1)
+  --align ALIGN         align coords (default: 0)
+  --average AVERAGE     average coords rot (default: 0)
+  --average-pos AVERAGE_POS
+                        average coords pos (default: 0)
 ```
 
 ### Externals
