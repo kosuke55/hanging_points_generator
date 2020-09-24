@@ -45,6 +45,7 @@ install_requires = [
     'pymesh',
     'scikit-robot',
     'scikit-image',
+    'sklearn',
     'trimesh'
 ]
 
