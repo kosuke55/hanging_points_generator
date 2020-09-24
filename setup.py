@@ -36,7 +36,7 @@ if sys.argv[-1] == "release":
 setup_requires = []
 install_requires = [
     'cameramodels',
-    'eos',
+    'extendedos',
     'connected-components-3d',
     'gdown',
     'opencv-python',
