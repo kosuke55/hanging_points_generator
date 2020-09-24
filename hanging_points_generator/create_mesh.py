@@ -373,9 +373,9 @@ def create_urdf(mesh, output_dir, init_texture=False):
         base = trimesh.load(os.path.join(current_dir, '../urdf/base/base.obj'))
         mesh.visual.material = base.visual.material
         mesh, center = centerize_mesh(mesh)
-        mesh.vertices += center
         v_idx = base.kdtree.query(mesh.vertices.copy())[1]
         mesh.visual.uv = base.visual.uv[v_idx]
+        mesh.vertices += center
 
     mesh.export(os.path.join(output_dir, 'base.obj'), 'obj')
 

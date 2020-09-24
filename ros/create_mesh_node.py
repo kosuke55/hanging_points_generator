@@ -301,7 +301,7 @@ class CreateMesh():
 
     def create_urdf(self, req):
         if self.mesh_tsdf is not None:
-            create_urdf(self.mesh_tsdf, osp.join(self.save_dir, 'tsdf_urdf'))
+            create_urdf(self.mesh_tsdf, osp.join(self.save_dir, 'tsdf_urdf'), init_texture=False)
         if self.mesh_voxelize_marching_cubes is not None:
             create_urdf(self.mesh_voxelize_marching_cubes, osp.join(
                 self.save_dir, 'mesh_voxelize_marching_cubes_urdf'))

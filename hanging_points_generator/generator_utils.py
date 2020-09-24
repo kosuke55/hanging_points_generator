@@ -21,8 +21,9 @@ from sklearn.cluster import DBSCAN
 
 def check_contact_points(
         contact_points_path, urdf_file='', json_name='contact_points.json',
-        cluster_min_points=2, use_filter_penetration=True,
-        inf_penetration_check=True, _test=False):
+        cluster_min_points=2, eps=0.03, use_filter_penetration=True,
+        inf_penetration_check=True, align=True, average=True,
+        average_pos=False, _test=False):
     """Chaeck contact poitns with urdf
 
     Parameters
@@ -51,6 +52,10 @@ def check_contact_points(
     contact_points = contact_points_dict['contact_points']
     urdf_file = urdf_file or contact_points_dict['urdf_file']
 
+    if cluster_min_points or cluster_min_points == -1:
+        contact_points = cluster_contact_points(
+            contact_points, min_samples=cluster_min_points, eps=eps)
+
     if use_filter_penetration:
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
@@ -59,19 +64,31 @@ def check_contact_points(
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
 
-    if cluster_min_points:
-        contact_points = cluster_contact_points(
-            contact_points, min_samples=cluster_min_points)
-
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))
+
+    if align or average:
+        contact_points_coords = make_contact_points_coords(contact_points)
+        dbscan = dbscan_coords(contact_points_coords, eps=eps)
+        contact_points_coords, labels = get_dbscan_core_coords(
+            contact_points_coords, dbscan)
+    if align:
+        contact_points_coords \
+            = align_coords(contact_points_coords, labels)
+        contact_points = coords_to_dict(contact_points_coords,
+                                        urdf_file)['contact_points']
+    if average:
+        contact_points_coords = make_average_coords_list(
+            contact_points_coords, labels, average_pos=average_pos)
+        contact_points \
+            = coords_to_dict(contact_points_coords,
+                             urdf_file)['contact_points']
 
     contact_point_sphere_list = []
     for i, cp in enumerate(contact_points):
         contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
         contact_point_sphere.newcoords(
-            skrobot.coordinates.Coordinates(pos=cp[0],
-                                            rot=cp[1:]))
+            skrobot.coordinates.Coordinates(pos=cp[0], rot=cp[1:]))
         contact_point_sphere_list.append(contact_point_sphere)
 
     if not _test:
@@ -433,7 +450,6 @@ def align_coords(coords_list, labels, angle_thresh=90., copy_list=True):
                         q_base, coords.quaternion)
 
                 if np.rad2deg(q_distance) > angle_thresh:
-                    print(np.rad2deg(q_distance))
                     # coords_list[idx].rotate(np.pi, 'y')
                     aligned_coords_list.append(
                         coords_list[idx].copy_worldcoords().rotate(
