@@ -10,7 +10,6 @@ from tqdm import tqdm
 from hanging_points_generator import hp_generator as hpg
 from hanging_points_generator.generator_utils import load_multiple_contact_points
 
-
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
