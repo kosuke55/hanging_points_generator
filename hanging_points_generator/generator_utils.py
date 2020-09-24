@@ -387,7 +387,7 @@ def cluster_contact_points(points, eps=0.01, min_samples=-1):
 
 def get_dbscan_core_coords(coords_list, dbscan):
     idx = tuple(dbscan.core_sample_indices_)
-    core_labels = filter(lambda x: x != -1, dbscan.labels_)
+    core_labels = list(filter(lambda x: x != -1, dbscan.labels_))
     core_coords_list = itemgetter(*idx)(coords_list)
     return core_coords_list, core_labels
 
@@ -628,7 +628,7 @@ def filter_penetration(obj_file, hanging_points,
         obj_file = path_without_ext + '.stl'
         if not osp.isfile(obj_file):
             obj_file = path_without_ext + '.obj'
-    obj = skrobot.models.MeshLink(obj_file.encode())
+    obj = skrobot.models.MeshLink(obj_file)
 
     collision_manager = trimesh.collision.CollisionManager()
     collision_manager.add_object('obj', obj.visual_mesh)
@@ -691,7 +691,7 @@ def filter_contact_points(contact_points_dict, eps=0.03):
     [type]
         [description]
     """
-    urdf_file = contact_points_dict['urdf_file'].encode()
+    urdf_file = contact_points_dict['urdf_file']
     contact_points = contact_points_dict['contact_points']
     contact_points = cluster_contact_points(contact_points, eps=eps)
     contact_points, _ = filter_penetration(
