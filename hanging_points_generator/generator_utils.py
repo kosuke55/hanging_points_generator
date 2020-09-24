@@ -307,10 +307,10 @@ def load_multiple_contact_points(
     Returns
     -------
     base_cp_dict
-        merged contact_points dict. If not file return None
+        merged contact_points dict. If not file retunr False
 
     """
-    base_cp_dict = None
+    base_cp_dict = False
     paths = list(sorted(Path(base_dir).glob(osp.join('**', json_name))))
     for i, path in enumerate(paths):
         if i == 0:
@@ -404,6 +404,9 @@ def cluster_contact_points(points, eps=0.01, min_samples=-1):
 
 def get_dbscan_core_coords(coords_list, dbscan):
     idx = tuple(dbscan.core_sample_indices_)
+    if len(idx) == 0:
+        print('No core sample')
+        return coords_list, False
     core_labels = list(filter(lambda x: x != -1, dbscan.labels_))
     core_coords_list = itemgetter(*idx)(coords_list)
     return core_coords_list, core_labels
@@ -601,6 +604,8 @@ def make_aligned_contact_points_coords(contact_points_coords, eps=0.01):
     dbscan = dbscan_coords(contact_points_coords, eps=eps)
     contact_points_coords, labels = get_dbscan_core_coords(
         contact_points_coords, dbscan)
+    if not labels:
+        return False
     aligned_contact_points_coords \
         = align_coords(contact_points_coords, labels)
     return aligned_contact_points_coords
@@ -612,6 +617,8 @@ def make_aligned_contact_points(contact_points_dict):
     contact_points_coords = make_contact_points_coords(contact_points)
     aligned_contact_points_coords \
         = make_aligned_contact_points_coords(contact_points_coords)
+    if not aligned_contact_points_coords:
+        return False
     aligned_contact_points_dict = coords_to_dict(
         aligned_contact_points_coords, urdf_file)
     return aligned_contact_points_dict
@@ -723,10 +730,15 @@ def filter_contact_points(contact_points_dict, eps=0.03):
     contact_points = cluster_contact_points(contact_points, eps=eps)
     contact_points, _ = filter_penetration(
         urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
+    if len(contact_points) == 0:
+        print('No points after penetration check')
+        return False
     contact_points_coords = make_contact_points_coords(contact_points)
     dbscan = dbscan_coords(contact_points_coords, eps=eps)
     contact_points_coords, labels = get_dbscan_core_coords(
         contact_points_coords, dbscan)
+    if not labels:
+        return False
     aligned_contact_points_coords \
         = align_coords(contact_points_coords, labels)
     average_aligned_contact_points_coords = make_average_coords_list(
@@ -737,6 +749,34 @@ def filter_contact_points(contact_points_dict, eps=0.03):
         = coords_to_dict(average_aligned_contact_points_coords, urdf_file)
 
     return average_aligned_contact_points_coord_dict
+
+
+def filter_contact_points_dir(input_dir):
+    """Filter all contact points in the directory
+
+    Parameters
+    ----------
+    input_dir : str
+        hanging_object of hanging_object/category/contact_points/<fancy_dir>/contact_points.json # noqa
+    """
+    contact_points_path_list = list(Path(input_dir).glob('*/contact_points'))
+    skip_list_file = osp.join(input_dir, 'skip_list.txt')
+    for contact_points_path in contact_points_path_list:
+        print('-----')
+        add_bad_list(skip_list_file, osp.dirname(contact_points_path))
+        contact_points = load_multiple_contact_points(str(contact_points_path))
+        if not contact_points:
+            print('Skip %s ' % str(contact_points_path))
+            continue
+        filtered_contact_points \
+            = filter_contact_points(contact_points)
+        if not filtered_contact_points:
+            print('Skip %s ' % str(contact_points_path))
+            continue
+        print('Filter %s' % str(contact_points_path))
+        save_contact_points(
+            str(contact_points_path.parent / 'filtered_contact_points.json'),
+            filtered_contact_points)
 
 
 def add_bad_list(path, item):
