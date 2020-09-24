@@ -31,8 +31,8 @@ def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir,
              hook_type='just_bar', render=False):
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'))
     base_save_dir = osp.dirname(save_dir)
+    save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'))
     pid = os.getpid()
 
     contact_points_list = []
@@ -153,7 +153,8 @@ def generate(urdf_file, required_points_num,
                     (find_count == 0 and try_count > 10000):
                 print('break {} find_count:{} try_count:{} require:{}'.format(
                     urdf_file, find_count, try_count, required_points_num))
-                add_bad_list(base_save_dir, urdf_file)
+                add_bad_list(
+                    osp.join(base_save_dir, 'bad_list.txt'), urdf_file)
                 break
 
             # if find_count == 0 and try_count > 10000:
