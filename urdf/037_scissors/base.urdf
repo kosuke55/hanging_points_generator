@@ -8,14 +8,14 @@
       <contact_erp value="1.0" />
     </contact>
     <inertial>
-      <origin rpy="0 0 0" xyz="0.015003572580688898 0.002710916122119828 0.007153367375146343" />
+      <origin rpy="0 0 0" xyz="0.0165715735958 0.00656553269185 0.00739723748394" />
        <mass value="0.1" />
        <inertia ixx="1e-3" ixy="0" ixz="0" iyy="1e-3" iyz="0" izz="1e-3" />
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0" />
       <geometry>
-        <mesh filename="base.stl" scale="1 1 1" />
+        <mesh filename="base.obj" scale="1 1 1" />
       </geometry>
        <material name="gray">
         <color rgba="0.5 0.5 0.5 1" />
@@ -23,7 +23,7 @@
     </visual>
     <collision concave="yes">
       <geometry>
-        <mesh filename="base.stl" scale="1 1 1" />
+        <mesh filename="base.obj" scale="1 1 1" />
       </geometry>
     </collision>
   </link>

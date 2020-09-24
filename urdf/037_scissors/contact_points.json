@@ -12871,5 +12871,5 @@
             ]
         ]
     ],
-    "urdf_file": "/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf/037_scissors/base.urdf"
+    "urdf_file": "base.urdf"
 }
