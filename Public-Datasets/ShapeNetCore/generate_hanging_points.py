@@ -5,6 +5,8 @@ import argparse
 import glob
 import os.path as osp
 
+from tqdm import tqdm
+
 from hanging_points_generator import hp_generator as hpg
 from hanging_points_generator.generator_utils import load_multiple_contact_points
 
@@ -37,7 +39,7 @@ input_dir = args.input_dir
 files = glob.glob(osp.join(input_dir, '*/base.urdf'))
 existed_points_num = args.existed_points_num
 
-for file in files:
+for file in tqdm(files):
     dirname, filename = osp.split(file)
     print('-----------------------')
     num_cp = 0
