@@ -801,3 +801,20 @@ def add_bad_list(path, item):
         else:
             with open(path, mode='a') as f:
                 f.writelines(item)
+
+
+def load_bad_list(path):
+    """Load bad list txt
+
+    Parameters
+    ----------
+    path : str
+        bad list txt file
+    """
+    filelock_path = path + '.lock'
+    with FileLock(filelock_path):
+        if osp.isfile(path):
+            with open(path) as f:
+                bad_list = [s.strip() for s in f.readlines()]
+
+    return bad_list
