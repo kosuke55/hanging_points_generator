@@ -4,7 +4,7 @@
 import argparse
 import os
 
-from hanging_points_generator.hp_generator \
+from hanging_points_generator.generator_utils \
     import check_contact_points
 
 

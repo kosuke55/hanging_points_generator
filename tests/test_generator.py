@@ -3,7 +3,7 @@ import os
 import os.path as osp
 import unittest
 
-from hanging_points_generator.hp_generator \
+from hanging_points_generator.generator_utils \
     import check_contact_points
 from hanging_points_generator.generator_utils \
     import filter_contact_points

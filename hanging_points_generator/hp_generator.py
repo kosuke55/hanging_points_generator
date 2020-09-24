@@ -26,67 +26,6 @@ from hanging_points_generator.generator_utils import load_multiple_contact_point
 from hanging_points_generator.generator_utils import save_contact_points
 
 
-def check_contact_points(
-        contact_points_path, urdf_file='', json_name='contact_points.json',
-        cluster_min_points=2, use_filter_penetration=True,
-        inf_penetration_check=True, _test=False):
-    """Chaeck contact poitns with urdf
-
-    Parameters
-    ----------
-    contact_points_path : str
-        file or dir path
-        if dir load multiple contact_points
-    urdf_file : str
-    json_name : str, optional
-        'contact_points.json' or 'pouring_points.json',
-        by default 'contact_points.json'
-    cluster_min_points : int, optional
-        by default 2
-    use_filter_penetration : bool, optional
-        by default True
-    inf_penetration_check : bool, optional
-        by default True
-
-    """
-    if osp.isdir(contact_points_path):
-        contact_points_dict = load_multiple_contact_points(
-            contact_points_path, json_name)
-    else:
-        contact_points_dict = json.load(open(contact_points_path, 'r'))
-
-    contact_points = contact_points_dict['contact_points']
-    urdf_file = urdf_file or contact_points_dict['urdf_file']
-
-    if use_filter_penetration:
-        if inf_penetration_check:
-            contact_points, _ = filter_penetration(
-                urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
-        else:
-            contact_points, _ = filter_penetration(
-                urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
-
-    if cluster_min_points:
-        contact_points = cluster_contact_points(
-            contact_points, min_samples=cluster_min_points)
-
-    obj_model = skrobot.models.urdf.RobotModelFromURDF(
-        urdf_file=osp.abspath(urdf_file))
-
-    viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
-    viewer.add(obj_model)
-
-    for i, cp in enumerate(contact_points):
-        contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
-        contact_point_sphere.newcoords(
-            skrobot.coordinates.Coordinates(pos=cp[0],
-                                            rot=cp[1:]))
-        viewer.add(contact_point_sphere)
-
-    if not _test:
-        viewer._init_and_start_app()
-
-
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir,
              hook_type='just_bar', render=False):
