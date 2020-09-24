@@ -737,3 +737,27 @@ def filter_contact_points(contact_points_dict, eps=0.03):
         = coords_to_dict(average_aligned_contact_points_coords, urdf_file)
 
     return average_aligned_contact_points_coord_dict
+
+
+def add_bad_list(path, item):
+    """Add bad object to list and save file
+
+    Parameters
+    ----------
+    path : str
+        bad list txt file
+    item : str
+        item to add
+    """
+    filelock_path = path + '.lock'
+    with FileLock(filelock_path):
+        if osp.isfile(path):
+            with open(path) as f:
+                bad_list = [s.strip() for s in f.readlines()]
+
+            if item not in bad_list:
+                with open(path, mode='a') as f:
+                    f.writelines('\n' + item)
+        else:
+            with open(path, mode='a') as f:
+                f.writelines(item)
