@@ -20,6 +20,7 @@ from filelock import FileLock
 from sklearn.cluster import DBSCAN
 
 from hanging_points_generator.renderer import Renderer
+from hanging_points_generator.generator_utils import filter_penetration
 from hanging_points_generator.generator_utils import load_multiple_contact_points
 from hanging_points_generator.generator_utils import save_contact_points
 
@@ -27,7 +28,7 @@ from hanging_points_generator.generator_utils import save_contact_points
 def check_contact_points(
         contact_points_path, urdf_file='', json_name='contact_points.json',
         cluster_min_points=2, use_filter_penetration=True,
-        inf_penetration_check=True):
+        inf_penetration_check=True, _test=False):
     """Chaeck contact poitns with urdf
 
     Parameters
@@ -81,7 +82,8 @@ def check_contact_points(
                                             rot=cp[1:]))
         viewer.add(contact_point_sphere)
 
-    viewer._init_and_start_app()
+    if not _test:
+        viewer._init_and_start_app()
 
 
 def cluster_hanging_points(hanging_points, eps=0.01, min_samples=-1):
@@ -118,57 +120,6 @@ def cluster_hanging_points(hanging_points, eps=0.01, min_samples=-1):
                 clustered_hanging_points.append(hp)
 
     return clustered_hanging_points
-
-
-def filter_penetration(obj_file, hanging_points,
-                       box_size=[0.1, 0.0001, 0.0001]):
-    """Filter the penetrating hanging points
-
-    Parameters
-    ----------
-    obj_file : srt
-        obj file path (urdf or stl)
-    hanging_points : list[skrobot.coordinates.base.Coordinates]
-        list of hanging points(=contact points)
-    box_size : list
-        penetration check box of size [length, width, width]
-
-    Returns
-    -------
-    penetrating_hanging_points: list
-    filtered_hanging_points: list
-    """
-
-    filtered_hanging_points = []
-    penetrating_hanging_points = []
-
-    path_without_ext, ext = osp.splitext(obj_file)
-    if ext == '.urdf':
-        obj_file = path_without_ext + '.stl'
-        if not osp.isfile(obj_file):
-            obj_file = path_without_ext + '.obj'
-    obj = skrobot.models.MeshLink(obj_file)
-
-    collision_manager = trimesh.collision.CollisionManager()
-    collision_manager.add_object('obj', obj.visual_mesh)
-
-    for hp in hanging_points:
-        penetration_check_box = skrobot.models.Box(
-            box_size,
-            face_colors=[255, 0, 0],
-            pos=hp[0], rot=hp[1:])
-        penetration_check_box.translate([0, 0.005, 0])
-
-        penetration = collision_manager.in_collision_single(
-            penetration_check_box.visual_mesh, penetration_check_box.T())
-
-        if penetration:
-            penetrating_hanging_points.append(hp)
-        else:
-            filtered_hanging_points.append(hp)
-
-    return filtered_hanging_points, penetrating_hanging_points
-
 
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir,
