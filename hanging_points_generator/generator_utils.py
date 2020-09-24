@@ -628,7 +628,7 @@ def filter_penetration(obj_file, hanging_points,
         obj_file = path_without_ext + '.stl'
         if not osp.isfile(obj_file):
             obj_file = path_without_ext + '.obj'
-    obj = skrobot.models.MeshLink(obj_file)
+    obj = skrobot.models.MeshLink(obj_file.encode())
 
     collision_manager = trimesh.collision.CollisionManager()
     collision_manager.add_object('obj', obj.visual_mesh)
