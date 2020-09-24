@@ -66,15 +66,17 @@ def check_contact_points(
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))
 
-    viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
-    viewer.add(obj_model)
+    if not _test:
+        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+        viewer.add(obj_model)
 
     for i, cp in enumerate(contact_points):
         contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
         contact_point_sphere.newcoords(
             skrobot.coordinates.Coordinates(pos=cp[0],
                                             rot=cp[1:]))
-        viewer.add(contact_point_sphere)
+        if not _test:
+            viewer.add(contact_point_sphere)
 
     if not _test:
         viewer._init_and_start_app()
