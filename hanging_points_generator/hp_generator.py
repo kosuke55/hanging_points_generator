@@ -20,6 +20,7 @@ from filelock import FileLock
 from sklearn.cluster import DBSCAN
 
 from hanging_points_generator.renderer import Renderer
+from hanging_points_generator.generator_utils import cluster_contact_points
 from hanging_points_generator.generator_utils import filter_penetration
 from hanging_points_generator.generator_utils import load_multiple_contact_points
 from hanging_points_generator.generator_utils import save_contact_points
@@ -66,7 +67,7 @@ def check_contact_points(
                 urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
 
     if cluster_min_points:
-        contact_points = cluster_hanging_points(
+        contact_points = cluster_contact_points(
             contact_points, min_samples=cluster_min_points)
 
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
@@ -85,41 +86,6 @@ def check_contact_points(
     if not _test:
         viewer._init_and_start_app()
 
-
-def cluster_hanging_points(hanging_points, eps=0.01, min_samples=-1):
-    """Clustering points
-
-    Parameters
-    ----------
-    hanging_points : [type]
-        [description]
-    eps : float, optional
-        [description], by default 0.01
-    min_samples : int, optional
-        clustering min samples, if -1 set 1/5 of the whole, by default -1
-
-    Returns
-    -------
-    clustered hanging_poitns
-        clustered hanging points
-    """
-
-    if min_samples == -1:
-        min_samples = len(hanging_points) // 5
-
-    points = [c[0] for c in hanging_points]
-    dbscan = DBSCAN(
-        eps=eps, min_samples=min_samples).fit(points)
-    clustered_hanging_points = []
-
-    for label in range(np.max(dbscan.labels_) + 1):
-        if np.count_nonzero(dbscan.labels_ == label) <= 1:
-            continue
-        for idx, hp in enumerate(hanging_points):
-            if dbscan.labels_[idx] == label:
-                clustered_hanging_points.append(hp)
-
-    return clustered_hanging_points
 
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir,
