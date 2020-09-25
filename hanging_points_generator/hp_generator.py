@@ -33,7 +33,7 @@ def generate(urdf_file, required_points_num,
              hook_type='just_bar', render=False):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     base_save_dir = osp.dirname(save_dir)
-    category_name = Path(base_save_dir).parent.name
+    category_name = Path(urdf_file).parent.name
     save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'))
     pid = os.getpid()
 
