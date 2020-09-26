@@ -1,8 +1,10 @@
 import argparse
+import os.path as osp
 from pathlib import Path
 
 from hanging_points_generator.generator_utils \
     import check_contact_points
+from hanging_points_generator.generator_utils import load_bad_list
 
 
 parser = argparse.ArgumentParser(
@@ -17,10 +19,14 @@ parser.add_argument(
     help='data idx',
     default=0)
 
+parser.add_argument('--bad-list', '-b', type=int,
+                    help='skip file in bad list',
+                    default=0)
+
 parser.add_argument('--clustering', '-c', type=int,
                     help='dbscan clustering min points', default=0)
-parser.add_argument('--eps', '-e', type=int,
-                    help='dbscan eps params', default=0)
+parser.add_argument('--eps', '-e', type=float,
+                    help='dbscan eps params', default=0.01)
 parser.add_argument('--filter-penetration', '-f', type=int,
                     help='filter penetration', default=0)
 parser.add_argument('--inf-penetration-check', '-ipc', type=int,
@@ -33,16 +39,25 @@ parser.add_argument('--average-pos', type=int,
                     help='average coords pos', default=0)
 args = parser.parse_args()
 base_dir = args.input_dir
-base_path = list(Path(args.input_dir).glob('*/contact_points'))
+pose_path = list(Path(base_dir).glob('*/contact_points'))
 start_idx = args.idx
+
+bad_list_file = str(Path(base_dir) / 'bad_list.txt')
+if osp.isfile(bad_list_file):
+    bad_list = load_bad_list(osp.join(base_dir, 'bad_list.txt'))
 
 try:
     idx = -1
-    for path in base_path:
+    for path in pose_path:
+        print('-----------------------')
+        print('%s : %d' % (str(path), idx))
         idx += 1
         if idx < start_idx:
             continue
-        print(str(path), idx)
+        category_name = path.parent.name
+        if category_name in bad_list:
+            print('Skipped %s because it is in bad_list' % category_name)
+            continue
         pose = str(path)
         urdf = str(path.parent / 'base.urdf')
         check_contact_points(pose, urdf,
