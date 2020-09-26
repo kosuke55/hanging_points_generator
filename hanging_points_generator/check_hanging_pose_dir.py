@@ -19,6 +19,8 @@ parser.add_argument(
 
 parser.add_argument('--clustering', '-c', type=int,
                     help='dbscan clustering min points', default=0)
+parser.add_argument('--eps', '-e', type=int,
+                    help='dbscan eps params', default=0)
 parser.add_argument('--filter-penetration', '-f', type=int,
                     help='filter penetration', default=0)
 parser.add_argument('--inf-penetration-check', '-ipc', type=int,
@@ -45,6 +47,7 @@ try:
         urdf = str(path.parent / 'base.urdf')
         check_contact_points(pose, urdf,
                              cluster_min_points=args.clustering,
+                             eps=args.eps,
                              use_filter_penetration=args.filter_penetration,
                              inf_penetration_check=args.inf_penetration_check,
                              align=args.align, average=args.average,

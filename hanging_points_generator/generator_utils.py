@@ -53,11 +53,8 @@ def check_contact_points(
         return False
 
     contact_points = contact_points_dict['contact_points']
+    print('Load %d points' % len(contact_points))
     urdf_file = urdf_file or contact_points_dict['urdf_file']
-
-    if cluster_min_points or cluster_min_points == -1:
-        contact_points = cluster_contact_points(
-            contact_points, min_samples=cluster_min_points, eps=eps)
 
     if use_filter_penetration:
         if inf_penetration_check:
@@ -67,12 +64,18 @@ def check_contact_points(
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
 
+    if cluster_min_points or cluster_min_points == -1:
+        contact_points = cluster_contact_points(
+            contact_points, min_samples=cluster_min_points, eps=eps)
+
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))
 
     if len(contact_points) == 0:
         print('No points')
         return False
+    else:
+        print('%d points are left after filtering' % len(contact_points))
 
     if align or average:
         contact_points_coords = make_contact_points_coords(contact_points)
