@@ -48,6 +48,9 @@ def check_contact_points(
             contact_points_path, json_name)
     else:
         contact_points_dict = json.load(open(contact_points_path, 'r'))
+    if not contact_points_dict:
+        print('No points file')
+        return False
 
     contact_points = contact_points_dict['contact_points']
     urdf_file = urdf_file or contact_points_dict['urdf_file']
@@ -67,17 +70,21 @@ def check_contact_points(
     obj_model = skrobot.models.urdf.RobotModelFromURDF(
         urdf_file=osp.abspath(urdf_file))
 
+    if len(contact_points) == 0:
+        print('No points')
+        return False
+
     if align or average:
         contact_points_coords = make_contact_points_coords(contact_points)
         dbscan = dbscan_coords(contact_points_coords, eps=eps)
         contact_points_coords, labels = get_dbscan_core_coords(
             contact_points_coords, dbscan)
-    if align:
+    if align and labels:
         contact_points_coords \
             = align_coords(contact_points_coords, labels)
         contact_points = coords_to_dict(contact_points_coords,
                                         urdf_file)['contact_points']
-    if average:
+    if average and labels:
         contact_points_coords = make_average_coords_list(
             contact_points_coords, labels, average_pos=average_pos)
         contact_points \
@@ -97,6 +104,7 @@ def check_contact_points(
         for contact_point_sphere in contact_point_sphere_list:
             viewer.add(contact_point_sphere)
         viewer._init_and_start_app()
+    return True
 
 
 def random_pos(z_offset=0.2):

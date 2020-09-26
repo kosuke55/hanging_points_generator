@@ -35,8 +35,12 @@ base_path = list(Path(args.input_dir).glob('*/contact_points'))
 start_idx = args.idx
 
 try:
+    idx = -1
     for path in base_path:
-        print(path)
+        idx += 1
+        if idx < start_idx:
+            continue
+        print(str(path), idx)
         pose = str(path)
         urdf = str(path.parent / 'base.urdf')
         check_contact_points(pose, urdf,
@@ -45,5 +49,6 @@ try:
                              inf_penetration_check=args.inf_penetration_check,
                              align=args.align, average=args.average,
                              average_pos=args.average_pos)
+
 except KeyboardInterrupt:
     pass
