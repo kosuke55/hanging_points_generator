@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import division
 
 import copy
 import json
@@ -718,7 +719,8 @@ def set_contact_points_urdf_path(contact_points_path):
     save_contact_points(contact_points_path, contact_points_dict)
 
 
-def filter_contact_points(contact_points_dict, eps=0.03):
+def filter_contact_points(
+        contact_points_dict, cluster_min_points=-1, eps=0.01):
     """Filter contact points by clustering, aligning, averageing
 
     Parameters
@@ -728,7 +730,7 @@ def filter_contact_points(contact_points_dict, eps=0.03):
              'urdf_file' : str}
 
     eps : float, optional
-        eps paramerter of sklearn dbscan, by default 0.03
+        eps paramerter of sklearn dbscan, by default 0.01
 
     Returns
     -------
@@ -738,12 +740,19 @@ def filter_contact_points(contact_points_dict, eps=0.03):
     """
     urdf_file = contact_points_dict['urdf_file']
     contact_points = contact_points_dict['contact_points']
-    contact_points = cluster_contact_points(contact_points, eps=eps)
     contact_points, _ = filter_penetration(
         urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
+    print('penetration contact_points :%d' % len(contact_points))
     if len(contact_points) == 0:
         print('No points after penetration check')
         return False
+    contact_points = cluster_contact_points(
+        contact_points, min_samples=cluster_min_points, eps=eps)
+    print('clusterring contact_points :%d' % len(contact_points))
+    if len(contact_points) == 0:
+        print('No points after clustering')
+        return False
+
     contact_points_coords = make_contact_points_coords(contact_points)
     dbscan = dbscan_coords(contact_points_coords, eps=eps)
     contact_points_coords, labels = get_dbscan_core_coords(
@@ -762,7 +771,7 @@ def filter_contact_points(contact_points_dict, eps=0.03):
     return average_aligned_contact_points_coord_dict
 
 
-def filter_contact_points_dir(input_dir):
+def filter_contact_points_dir(input_dir, rate_thresh=0.1):
     """Filter all contact points in the directory
 
     Parameters
@@ -774,17 +783,27 @@ def filter_contact_points_dir(input_dir):
     skip_list_file = osp.join(input_dir, 'skip_list.txt')
     for contact_points_path in contact_points_path_list:
         print('-----')
-        add_bad_list(skip_list_file, osp.dirname(contact_points_path))
         contact_points = load_multiple_contact_points(str(contact_points_path))
         if not contact_points:
-            print('Skip %s ' % str(contact_points_path))
+            print('Load no points. Skip %s' % str(contact_points_path))
+            add_bad_list(skip_list_file, osp.dirname(contact_points_path))
             continue
+        pre_points_num = len(contact_points['contact_points'])
+        print('contact points :%d' % pre_points_num)
         filtered_contact_points \
             = filter_contact_points(contact_points)
         if not filtered_contact_points:
             print('Skip %s ' % str(contact_points_path))
+            add_bad_list(skip_list_file, osp.dirname(contact_points_path))
             continue
-        print('Filter %s' % str(contact_points_path))
+        post_points_num = len(filtered_contact_points['contact_points'])
+        rate = post_points_num / pre_points_num
+        print('Filtering %d -> %d  remaning-rate : %f' % (
+            pre_points_num, post_points_num, rate))
+        if rate < rate_thresh:
+            print('Skip %s because of low remaning rate %f' % (
+                str(contact_points_path), rate))
+            add_bad_list(skip_list_file, osp.dirname(contact_points_path))
         save_contact_points(
             str(contact_points_path.parent / 'filtered_contact_points.json'),
             filtered_contact_points)

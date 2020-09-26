@@ -375,3 +375,4 @@ if __name__ == '__main__':
                                    args.viz_obj,
                                    os.path.dirname(args.urdf),
                                    hook_type=args.hook_type)
+
