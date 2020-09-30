@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import distutils.spawn
+import os
 import shlex
 import subprocess
 import sys
@@ -33,6 +34,17 @@ if sys.argv[-1] == "release":
     sys.exit(0)
 
 
+def listup_package_data():
+    data_files = []
+    for root, _, files in os.walk('hanging_points_generator/urdf'):
+        for filename in files:
+            data_files.append(
+                os.path.join(
+                    root[len('hanging_points_generator/'):],
+                    filename))
+    return data_files
+
+
 setup_requires = []
 install_requires = [
     'cameramodels',
@@ -48,7 +60,7 @@ install_requires = [
     'scikit-image',
     'sklearn',
     'torch',
-    'trimesh'
+    'trimesh==3.7.4'
 ]
 
 
@@ -75,6 +87,7 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
     ],
     packages=find_packages(),
+    package_data={'hanging_points_generator': listup_package_data()},
     entry_points={
         'console_scripts':
         ['check_hanging_pose=hanging_points_generator.apps.check_hanging_pose:main',
