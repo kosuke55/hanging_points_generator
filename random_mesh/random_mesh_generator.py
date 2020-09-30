@@ -25,13 +25,10 @@ parser.add_argument(
     default='random',
     help='filename prefix')
 parser.add_argument(
-    '--expid', type=str, default='3D_IWGAN',
-    help='Unique experiment identifier.')
-parser.add_argument(
     '--device', type=str, default='cuda',
     help='Device to use.')
 parser.add_argument(
-    '--batchsize', type=int, default=1, help='Batch size.')
+    '--batchsize', type=int, default=4096, help='Batch size.')
 args = parser.parse_args()
 
 gen = Generator().to(args.device)
@@ -41,8 +38,9 @@ gen.eval()
 obj_id = 0
 min_length = 0.1
 max_length = 0.15
+required_num = 500
 
-while(obj_id < 100):
+while obj_id < required_num:
     z = torch.normal(
         torch.zeros(args.batchsize, 200),
         torch.ones(args.batchsize, 200)).to(args.device)
@@ -53,7 +51,6 @@ while(obj_id < 100):
 
         model[torch.where(model >= 0.7)] = 1
         model[torch.where(model < 0.7)] = 0
-        print(torch.sum(model))
         if torch.sum(model) < 100:
             continue
         model = model.cpu().detach().numpy().astype(np.int32)
@@ -79,8 +76,9 @@ while(obj_id < 100):
             volume *= i
 
         density = np.count_nonzero(model) / volume
-        # if density > 0.3:
-        #     continue
+
+        if density > 0.2:
+            continue
 
         model = model.astype(np.float32)
         verts, faces = kal.conversions.voxelgrid_to_quadmesh(model)
@@ -89,7 +87,9 @@ while(obj_id < 100):
         max_xyz = torch.max(verts, axis=0).values
         min_xyz = torch.min(verts, axis=0).values
         length = torch.max(max_xyz - min_xyz, axis=0).values
-        verts = verts * 0.15 / length  # -0.075~0.075
+        target_length \
+            = np.random.rand() * (max_length - min_length) + min_length
+        verts = verts * target_length / length
 
         mesh = kal.rep.QuadMesh.from_tensors(verts, faces)
         mesh.laplacian_smoothing(iterations=3)
@@ -97,7 +97,6 @@ while(obj_id < 100):
             args.savedir, args.prefix + '_{:05}'.format(obj_id))
         os.makedirs(obj_dir, exist_ok=True)
         obj_file = os.path.join(obj_dir, 'tmp.obj')
-        # tmp_file = '/tmp/tmp.obj'
         mesh.save_mesh(obj_file)
 
         mesh = trimesh.load(obj_file)
@@ -115,3 +114,5 @@ while(obj_id < 100):
 
         print(obj_id)
         obj_id += 1
+        if obj_id >= required_num:
+            break
