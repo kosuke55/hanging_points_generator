@@ -360,7 +360,7 @@ def create_urdf(mesh, output_dir, init_texture=False):
         mesh = open3d_to_trimesh(mesh)
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    tree = ET.parse(os.path.join(current_dir, '../urdf/base/base.urdf'))
+    tree = ET.parse(os.path.join(current_dir, 'urdf/base/base.urdf'))
     root = tree.getroot()
     center = ''.join(str(i) + ' ' for i in mesh.centroid.tolist()).strip()
     root[0].find('inertial').find('origin').attrib['xyz'] = center
@@ -370,7 +370,7 @@ def create_urdf(mesh, output_dir, init_texture=False):
 
     if init_texture:
         # https://github.com/mikedh/trimesh/issues/865
-        base = trimesh.load(os.path.join(current_dir, '../urdf/base/base.obj'))
+        base = trimesh.load(os.path.join(current_dir, 'urdf/base/base.obj'))
         mesh.visual.material = base.visual.material
         mesh, center = centerize_mesh(mesh)
         v_idx = base.kdtree.query(mesh.vertices.copy())[1]
