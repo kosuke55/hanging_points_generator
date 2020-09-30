@@ -13,7 +13,6 @@ def visualize_objects_dir(input_dir, filename='base.urdf'):
     for path in paths:
         print(path)
         root, ext = osp.splitext(str(path))
-        print(ext, ext.lower(), 'urdf' in ext.lower())
         if not init:
             viewer.delete(obj)  # noqa
 
@@ -22,10 +21,8 @@ def visualize_objects_dir(input_dir, filename='base.urdf'):
             obj = skrobot.models.MeshLink(str(path))
 
         elif 'urdf' in ext.lower():
-            print('hoge')
             obj = skrobot.models.urdf.RobotModelFromURDF(
                 urdf_file=osp.abspath(str(path)))
-            print(id(obj))
 
         viewer.add(obj)
         if init:
