@@ -784,9 +784,10 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
     for contact_points_path in contact_points_path_list:
         print('-----')
         contact_points = load_multiple_contact_points(str(contact_points_path))
+        category_name = contact_points_path.parent.name
         if not contact_points:
             print('Load no points. Skip %s' % str(contact_points_path))
-            add_bad_list(skip_list_file, osp.dirname(contact_points_path))
+            add_list(skip_list_file, category_name)
             continue
         pre_points_num = len(contact_points['contact_points'])
         print('contact points :%d' % pre_points_num)
@@ -794,7 +795,7 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
             = filter_contact_points(contact_points)
         if not filtered_contact_points:
             print('Skip %s ' % str(contact_points_path))
-            add_bad_list(skip_list_file, osp.dirname(contact_points_path))
+            add_list(skip_list_file, category_name)
             continue
         post_points_num = len(filtered_contact_points['contact_points'])
         rate = post_points_num / pre_points_num
@@ -803,13 +804,13 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
         if rate < rate_thresh:
             print('Skip %s because of low remaning rate %f' % (
                 str(contact_points_path), rate))
-            add_bad_list(skip_list_file, osp.dirname(contact_points_path))
+            add_list(skip_list_file, category_name)
         save_contact_points(
             str(contact_points_path.parent / 'filtered_contact_points.json'),
             filtered_contact_points)
 
 
-def add_bad_list(path, item):
+def add_list(path, item):
     """Add bad object to list and save file
 
     Parameters

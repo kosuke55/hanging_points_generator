@@ -21,7 +21,7 @@ from filelock import FileLock
 from sklearn.cluster import DBSCAN
 
 from hanging_points_generator.renderer import Renderer
-from hanging_points_generator.generator_utils import add_bad_list
+from hanging_points_generator.generator_utils import add_list
 from hanging_points_generator.generator_utils import cluster_contact_points
 from hanging_points_generator.generator_utils import filter_penetration
 from hanging_points_generator.generator_utils import load_multiple_contact_points
@@ -155,7 +155,7 @@ def generate(urdf_file, required_points_num,
                     (find_count == 0 and try_count > 10000):
                 print('break {} find_count:{} try_count:{} require:{}'.format(
                     urdf_file, find_count, try_count, required_points_num))
-                add_bad_list(
+                add_list(
                     osp.join(base_save_dir, 'bad_list.txt'), category_name)
                 break
 
