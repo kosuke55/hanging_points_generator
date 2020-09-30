@@ -4,9 +4,11 @@ import os
 import cc3d
 import numpy as np
 import torch
+import trimesh
 import kaolin as kal
 
 from architectures import Generator
+from hanging_points_generator.create_mesh import create_urdf
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -91,13 +93,21 @@ while(obj_id < 100):
 
         mesh = kal.rep.QuadMesh.from_tensors(verts, faces)
         mesh.laplacian_smoothing(iterations=3)
-        os.makedirs(
-            os.path.join(args.savedir,
-                         args.prefix + '_{:05}'.format(obj_id)), exist_ok=True)
-        mesh.save_mesh(
-            os.path.join(args.savedir,
-                         args.prefix + '_{:05}'.format(obj_id), 'base.obj'))
-        os.makedirs(os.path.join(args.savedir, 'images'), exist_ok=True)
+        obj_dir = os.path.join(
+            args.savedir, args.prefix + '_{:05}'.format(obj_id))
+        os.makedirs(obj_dir, exist_ok=True)
+        obj_file = os.path.join(obj_dir, 'tmp.obj')
+        # tmp_file = '/tmp/tmp.obj'
+        mesh.save_mesh(obj_file)
+
+        mesh = trimesh.load(obj_file)
+        mesh_invert = mesh.copy()
+        mesh_invert.invert()
+        mesh += mesh_invert
+        mesh.merge_vertices()
+        if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
+            create_urdf(mesh, obj_dir, init_texture=True)
+        # os.makedirs(os.path.join(args.savedir, 'images'), exist_ok=True)
         # mesh.save_image(os.path.join(
         #     args.savedir, 'images', args.prefix + '_{:05}'.format(obj_id)),
         #     resolution=(640, 640))

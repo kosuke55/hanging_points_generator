@@ -1,3 +1,6 @@
 # random_mesh
 
-Install https://github.com/kosuke55/kaolin/tree/kosuke55-master
+Install  
+- https://github.com/kosuke55/kaolin/tree/kosuke55-master
+- this repository
+- open3d

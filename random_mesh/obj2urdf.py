@@ -28,4 +28,4 @@ for file in tqdm.tqdm(files, total=len(files)):
         continue
 
     if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
-        create_mesh.create_urdf(mesh, save_dir)
+        create_mesh.create_urdf(mesh, save_dir, init_texture=True)
