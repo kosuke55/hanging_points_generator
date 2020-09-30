@@ -36,8 +36,8 @@ if sys.argv[-1] == "release":
 setup_requires = []
 install_requires = [
     'cameramodels',
-    'extendedos',
     'connected-components-3d',
+    'extendedos',
     'gdown',
     'opencv-python; python_version >= "3.0"',
     'opencv-python==4.2.0.32; python_version < "3.0"',
@@ -47,6 +47,7 @@ install_requires = [
     'scikit-robot',
     'scikit-image',
     'sklearn',
+    'torch'
     'trimesh'
 ]
 
