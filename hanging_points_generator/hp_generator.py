@@ -71,17 +71,17 @@ def generate(urdf_file, required_points_num,
             baseOrientation=[-0.0, 0.7071067811865475, -0.0, 0.7071067811865476])
         hook_direction = np.array([1., 0, 0])
         pybullet.loadURDF(
-            os.path.join(current_dir, '../urdf/hook/plate_visual.urdf'),
+            os.path.join(current_dir, 'urdf/hook/plate_visual.urdf'),
             [-0.15, 0, 0.8], [0, 0, 0, 1])
 
     # hook urdf model
     else:
         hook_id = pybullet.loadURDF(
-            os.path.join(current_dir, '../urdf/hook/hook.urdf'),
+            os.path.join(current_dir, 'urdf/hook/hook.urdf'),
             [0, 0, 1], [0, 0, 0, 1])
         hook_direction = np.array([1, 0, np.tan(np.pi / 2 - 1.2)])
         pybullet.loadURDF(
-            os.path.join(current_dir, '../urdf/hook/plate.urdf'),
+            os.path.join(current_dir, 'urdf/hook/plate.urdf'),
             [0, 0, 1], [0, 0, 0, 1])
 
     hook_direction /= np.linalg.norm(hook_direction)
