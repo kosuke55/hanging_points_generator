@@ -60,7 +60,7 @@ install_requires = [
     'scikit-image',
     'sklearn',
     'torch',
-    'trimesh==3.7.4'
+    'trimesh>=3.8.10'
 ]
 
 
