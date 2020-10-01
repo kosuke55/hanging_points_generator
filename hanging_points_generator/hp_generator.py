@@ -34,7 +34,10 @@ def generate(urdf_file, required_points_num,
     current_dir = os.path.dirname(os.path.abspath(__file__))
     base_save_dir = osp.dirname(save_dir)
     category_name = Path(urdf_file).parent.name
-    save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'))
+    save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'),
+                                     save_environ=False, save_command=False,
+                                     save_git=False, save_gitignore=False,
+                                     save_pip=False)
     pid = os.getpid()
 
     contact_points_list = []
