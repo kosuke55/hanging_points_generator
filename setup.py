@@ -90,8 +90,9 @@ setup(
     package_data={'hanging_points_generator': listup_package_data()},
     entry_points={
         'console_scripts':
-        ['check_hanging_pose=hanging_points_generator.apps.check_hanging_pose:main',
-         'visualize_objects=hanging_points_generator.apps.visualize_objects:main']},
+        ['check-hanging-pose=hanging_points_generator.apps.check_hanging_pose:main',
+         'visualize-objects=hanging_points_generator.apps.visualize_objects:main',
+         'filter-points=hanging_points_generator.apps.filter_points:main']},
     zip_safe=False,
     setup_requires=setup_requires,
     install_requires=install_requires,
