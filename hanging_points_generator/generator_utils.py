@@ -851,7 +851,7 @@ def add_list(path, item):
                 f.writelines(item)
 
 
-def load_bad_list(path):
+def load_list(path):
     """Load bad list txt
 
     Parameters
