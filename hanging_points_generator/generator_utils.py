@@ -55,7 +55,7 @@ def check_contact_points(
 
     contact_points = contact_points_dict['contact_points']
     print('Load %d points' % len(contact_points))
-    urdf_file = urdf_file or contact_points_dict['urdf_file']
+    urdf_file = str(urdf_file or contact_points_dict['urdf_file'])
 
     if use_filter_penetration:
         if inf_penetration_check:
@@ -625,7 +625,7 @@ def make_aligned_contact_points_coords(contact_points_coords, eps=0.01):
 
 def make_aligned_contact_points(contact_points_dict):
     contact_points = contact_points_dict['contact_points']
-    urdf_file = contact_points_dict['urdf_file']
+    urdf_file = str(contact_points_dict['urdf_file'])
     contact_points_coords = make_contact_points_coords(contact_points)
     aligned_contact_points_coords \
         = make_aligned_contact_points_coords(contact_points_coords)
@@ -738,7 +738,7 @@ def filter_contact_points(
         dict{'contact_points' : list[list[list[float], list[float]]]
              'urdf_file' : str}
     """
-    urdf_file = contact_points_dict['urdf_file']
+    urdf_file = str(contact_points_dict['urdf_file'])
     contact_points = contact_points_dict['contact_points']
     contact_points, _ = filter_penetration(
         urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
