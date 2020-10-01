@@ -208,6 +208,21 @@ def step(n=1):
         pybullet.stepSimulation()
 
 
+def save_json(save_file, data, sort_key=True):
+    """Save json
+
+    Parameters
+    ----------
+    save_file : str
+    data : list or dict
+    sort_key : bool, optional
+        by default True
+    """
+    with open(save_file, 'w') as f:
+        json.dump(data, f, ensure_ascii=False,
+                  indent=4, sort_keys=sort_key, separators=(',', ': '))
+
+
 def save_contact_points(
         save_file, contact_points_dict, filelock=False):
     """Save contact points json file with filelock
@@ -226,25 +241,14 @@ def save_contact_points(
                     contact_points_dict_existed = json.load(f)
                     for c in contact_points_dict['contact_points']:
                         contact_points_dict_existed['contact_points'].append(c)
-                    # find_count = len(
-                    #     contact_points_dict_existed['contact_points'])
 
             filelock_path = save_file + '.lock'
             with FileLock(filelock_path):
-                with open(save_file, 'w') as f:
-                    json.dump(
-                        contact_points_dict_existed, f, ensure_ascii=False,
-                        indent=4, sort_keys=True, separators=(',', ': '))
+                save_json(save_file, contact_points_dict_existed)
         else:
-            with open(save_file, 'w') as f:
-                json.dump(
-                    contact_points_dict, f, ensure_ascii=False,
-                    indent=4, sort_keys=True, separators=(',', ': '))
-            # find_count += 1
+            save_json(save_file, contact_points_dict)
     else:
-        with open(save_file, 'w') as f:
-            json.dump(contact_points_dict, f, ensure_ascii=False,
-                      indent=4, sort_keys=True, separators=(',', ': '))
+        save_json(save_file, contact_points_dict)
 
 
 def get_urdf_center(urdf_file):
