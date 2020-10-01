@@ -222,6 +222,7 @@ def save_json(save_file, data, sort_key=True):
         json.dump(data, f, ensure_ascii=False,
                   indent=4, sort_keys=sort_key, separators=(',', ': '))
 
+
 def load_json(file):
     """Load json file
 
