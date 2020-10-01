@@ -48,7 +48,7 @@ def check_contact_points(
         contact_points_dict = load_multiple_contact_points(
             contact_points_path, json_name)
     else:
-        contact_points_dict = json.load(open(contact_points_path, 'r'))
+        contact_points_dict = load_json(contact_points_path)
     if not contact_points_dict:
         print('No points file')
         return False
@@ -222,6 +222,22 @@ def save_json(save_file, data, sort_key=True):
         json.dump(data, f, ensure_ascii=False,
                   indent=4, sort_keys=sort_key, separators=(',', ': '))
 
+def load_json(file):
+    """Load json file
+
+    Parameters
+    ----------
+    file : str
+        input json file
+
+    Returns
+    -------
+    data : dict
+    """
+    with open(file, 'r') as f:
+        data = json.load(f)
+    return data
+
 
 def save_contact_points(
         save_file, contact_points_dict, filelock=False):
@@ -237,10 +253,9 @@ def save_contact_points(
         if os.path.exists(save_file):
             filelock_path = save_file + '.lock'
             with FileLock(filelock_path):
-                with open(save_file, 'r') as f:
-                    contact_points_dict_existed = json.load(f)
-                    for c in contact_points_dict['contact_points']:
-                        contact_points_dict_existed['contact_points'].append(c)
+                contact_points_dict_existed = load_json(save_file)
+                for c in contact_points_dict['contact_points']:
+                    contact_points_dict_existed['contact_points'].append(c)
 
             filelock_path = save_file + '.lock'
             with FileLock(filelock_path):
@@ -330,11 +345,9 @@ def load_multiple_contact_points(
     paths = list(sorted(Path(base_dir).glob(osp.join('**', json_name))))
     for i, path in enumerate(paths):
         if i == 0:
-            base_cp_file = str(path)
-            base_cp_dict = json.load(open(base_cp_file, 'r'))
+            base_cp_dict = load_json(str(path))
         else:
-            cp_file = str(path)
-            cp_dict = json.load(open(cp_file, 'r'))
+            cp_dict = load_json(str(path))
             for cp in cp_dict['contact_points']:
                 base_cp_dict['contact_points'].append(cp)
 
@@ -718,7 +731,7 @@ def set_contact_points_urdf_path(contact_points_path):
     contact_points_path : str
     """
     urdf_file = osp.join(osp.dirname(contact_points_path), 'base.urdf')
-    contact_points_dict = json.load(open(contact_points_path, 'r'))
+    contact_points_dict = load_json(contact_points_path)
     contact_points_dict['urdf_file'] = urdf_file
     save_contact_points(contact_points_path, contact_points_dict)
 
