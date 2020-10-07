@@ -1,10 +1,11 @@
-# random_mesh
+# Random Mesh Generator
 
-# Example: 3D-IWGAN
-This example lets you train the 3D-IWGAN method. See: https://arxiv.org/abs/1707.09557 for details. 
+### 3D-IWGAN
+Generate a random shape using 3D-IWGAN https://arxiv.org/abs/1707.09557 method.  
+This repository uses kaolin's code.  
+https://github.com/NVIDIAGameWorks/kaolin/tree/master/examples/GANs/3D-IWGAN
 
-
-### Training the network: 
+### Training the network:
 
 To train run
 ```
