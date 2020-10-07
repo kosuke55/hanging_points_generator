@@ -12,6 +12,9 @@ from datetime import datetime
 import coloredlogs
 import numpy as np
 import open3d as o3d
+from shapenet_utils import all_synset
+from shapenet_utils import synset_to_label
+from shapenet_utils import label_to_synset
 
 from hanging_points_generator.create_mesh import create_urdf
 from hanging_points_generator.create_mesh import open3d_to_trimesh
@@ -30,7 +33,13 @@ parser.add_argument(
     '-s',
     type=str,
     help='save directory',
-    default='/media/kosuke55/SANDISK/meshdata/hanging_object')
+    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini')
+parser.add_argument(
+    '--num-samples',
+    '-n',
+    type=int,
+    help='number of sampling',
+    default=10)
 args = parser.parse_args()
 
 logfile = '{}_obj2urdf.log'.format(datetime.now().strftime('%Y%m%d_%H%M'))
@@ -39,50 +48,32 @@ logger = logging.getLogger(__name__)
 coloredlogs.install(level='DEBUG')
 
 input_dir = args.input_dir
-synset_to_label = {'03797390': 'mug'}
-label_to_synset = {v: k for k, v in synset_to_label.items()}
-
-ignore_list = [
-    # mug
-    'b9be7cfe653740eb7633a2dd89cec754',
-    '659192a6ba300f1f4293529704725d98',
-    'bf2b5e941b43d030138af902bc222a59',
-    'b98fa11a567f644344b25d683fe71de',
-    'b9004dcda66abf95b99d2a3bbaea842a',
-    '127944b6dabee1c9e20e92c5b8147e4a',
-    '1038e4eac0e18dcce02ae6d2a21d494a',
-    'e71102b6da1d63f3a363b55cbd344baa',
-    '27119d9b2167080ec190cb14324769d',
-    '5ef0c4f8c0884a24762241154bf230ce',
-]
-
 base_save_dir = args.save_dir
+num_samples = args.num_samples
 os.makedirs(base_save_dir, exist_ok=True)
 
-hanging_object_list = [
-    label_to_synset['mug']
-]
+hanging_object_list = all_synset()
 
 target_length = 0.1
 
 files = []
 for hanging_object in hanging_object_list:
-    files.extend(glob.glob(osp.join(
-        input_dir, '{}/*/models/model_normalized.obj'.format(hanging_object))))
+    one_category_files = glob.glob(osp.join(
+        input_dir, '{}/*/models/model_normalized.obj'.format(hanging_object)))
+    idx = np.unique(np.random.randint(0, len(one_category_files), num_samples))
+    sampled_one_category_files = [one_category_files[i] for i in idx]
+    files.extend(sampled_one_category_files)
 
 for file in files:
     dirname, filename = os.path.split(file)
     filename_without_ext, ext = os.path.splitext(filename)
     id_ = dirname.split('/')[-2]
     # id_ = dirname.split('/')[-1]
-    if id_ in ignore_list:
-        logger.info('ignore {}'.format(file))
-        continue
     synset = dirname.split('/')[-3]
     category_name = synset_to_label[synset]
     save_dir = os.path.join(
         base_save_dir, synset + '_' + id_ + '_' + category_name)
-    print(save_dir)
+
     try:
         mesh = o3d.io.read_triangle_mesh(file)
         mesh = mesh.simplify_vertex_clustering(
@@ -105,8 +96,10 @@ for file in files:
 
     if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
         try:
+            print(dirname, save_dir)
             shutil.copytree(dirname, save_dir)
         except FileExistsError as e:
             logger.warning(e)
-
         create_urdf(mesh, save_dir, init_texture=True)
+    else:
+        logger.warning('skip {} {} {}'.format(category_name, synset, id_))
