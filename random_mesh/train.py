@@ -17,83 +17,103 @@ import json
 import os
 
 import numpy as np
+from shapenet_utils import filter_filling_rate
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-
-from utils import calculate_gradient_penalty
-from architectures import Generator, Discriminator
-
 import kaolin as kal
+from architectures import Generator, Discriminator
+from utils import calculate_gradient_penalty
 
-import ipdb
-
-all_category = ['table', 'monitor', 'phone',
-                'watercraft', 'chair', 'lamp',
-                'speaker', 'bench', 'plane',
-                'bathtub', 'bookcase', 'bag',
-                'basket', 'bowl', 'bus',
-                'cabinet', 'camera', 'car',
-                'dishwasher', 'file', 'knife',
-                'laptop', 'mailbox', 'microwave',
-                'piano', 'pillow', 'pistol',
-                'printer', 'rocket', 'sofa',
-                'washer', 'rifle', 'can', 'mug']
-
-
-all_category = [
-    '019_pitcher_base',
-    '025_mug',
-    '035_power_drill',
-    '048_hammer',
-    '051_large_clamp',
-    '022_windex_bottle',
-    '033_spatula',
-    '042_adjustable_wrench',
-    '050_medium_clamp',
-    '052_extra_large_clamp'
-]
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--modelnet-root', type=str, help='Root directory of the ModelNet dataset.')
-# parser.add_argument('--cache-dir', type=str, default='/media/kosuke/SANDISK/ShapeNetCore.v2/kaolin_cache',
-#                     help='Path to write intermediate representation to.')
-parser.add_argument('--cache-dir', type=str, default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/kaolin_cache',
-                    help='Path to write intermediate representation to.')
-parser.add_argument('--expid', type=str, default='3D_IWGAN', help='Unique experiment identifier.')
+
+parser.add_argument(
+    '--cache-dir',
+    type=str,
+    default='/media/kosuke/SANDISK/meshdata/shapenet_gan/kaolin_cache',
+    help='Path to write intermediate representation to.')
+parser.add_argument(
+    '--expid',
+    type=str,
+    default='3D_IWGAN',
+    help='Unique experiment identifier.')
 parser.add_argument('--device', type=str, default='cuda', help='Device to use')
-parser.add_argument('--categories', type=str, nargs='+', default=all_category, help='list of object classes to use')
-parser.add_argument('--epochs', type=int, default=50000, help='Number of train epochs.')
+
+parser.add_argument(
+    '--epochs',
+    type=int,
+    default=50000,
+    help='Number of train epochs.')
 parser.add_argument('--batchsize', type=int, default=50, help='Batch size.')
-parser.add_argument('--print-every', type=int, default=2, help='Print frequency (batches).')
-parser.add_argument('--logdir', type=str, default='log', help='Directory to log data to.')
-parser.add_argument('--resume', action='store_true', help='Resume training from last checkpoint.')
+parser.add_argument(
+    '--print-every',
+    type=int,
+    default=2,
+    help='Print frequency (batches).')
+parser.add_argument(
+    '--logdir',
+    type=str,
+    default='log',
+    help='Directory to log data to.')
+parser.add_argument(
+    '--resume',
+    action='store_true',
+    help='Resume training from last checkpoint.')
 
-parser.add_argument('--shapenet-root', type=str,
-                    default='/media/kosuke/SANDISK/meshdata/ShapeNetCore.v2',
-                    help='Root directory of the shapenet dataset.')
+parser.add_argument(
+    '--dataset-type',
+    type=str,
+    help='dataset_type. mdoelnet, shapenet or ycb',
+    default='shapenet')
+parser.add_argument(
+    '--modelnet-root',
+    type=str,
+    help='Root directory of the ModelNet dataset.')
+parser.add_argument(
+    '--shapenet-root', type=str,
+    default='/media/kosuke/SANDISK/meshdata/ShapeNetCore.v2',
+    help='Root directory of the shapenet dataset.')
+parser.add_argument(
+    '--ycb-root',
+    type=str,
+    default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf',
+    help='Root directory of the ycb dataset.')
 
-parser.add_argument('--ycb-root', type=str,
-                    default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf',
-                    help='Root directory of the ycb dataset.')
+parser.add_argument('-g', '--gpu', type=int, required=True, help='gpu id')
 
 args = parser.parse_args()
 
-
+os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 # Setup Dataloader
-# train_set = kal.datasets.modelnet.ModelNetVoxels(
-#     basedir=args.modelnet_root, cache_dir=args.cache_dir,
-#     categories=args.categories, resolutions=[30])
-# train_set = kal.datasets.shapenet.ShapeNet_Voxels(
-#     root=args.shapenet_root, cache_dir=args.cache_dir,
-#     categories=args.categories, resolutions=[30],
-#     voxel_range=1.)
-train_set = kal.datasets.ycb_Voxels(
-    root=args.ycb_root, cache_dir=args.cache_dir,
-    categories=args.categories, resolutions=[30],
-    voxel_range=1.)
+if args.dataset_type == 'mdoelnet':
+    train_set = kal.datasets.modelnet.ModelNetVoxels(
+        basedir=args.modelnet_root, cache_dir=args.cache_dir,
+        categories=args.categories, resolutions=[30])
+elif args.dataset_type == 'shapenet':
+    category, _ = filter_filling_rate(0, 0.5, sort=True, to_label=True)
+    train_set = kal.datasets.shapenet.ShapeNet_Voxels(
+        root=args.shapenet_root, cache_dir=args.cache_dir,
+        categories=categories, resolutions=[30], voxel_range=1.)
+elif args.dataset_type == 'ycb':
+    category = [
+        '019_pitcher_base',
+        '025_mug',
+        '035_power_drill',
+        '048_hammer',
+        '051_large_clamp',
+        '022_windex_bottle',
+        '033_spatula',
+        '042_adjustable_wrench',
+        '050_medium_clamp',
+        '052_extra_large_clamp'
+    ]
+    train_set = kal.datasets.ycb_Voxels(
+        root=args.ycb_root, cache_dir=args.cache_dir,
+        categories=categories, resolutions=[30],
+        voxel_range=1.)
 dataloader_train = DataLoader(
     train_set, batch_size=args.batchsize, shuffle=True, num_workers=8)
 
@@ -200,8 +220,16 @@ class Engine(object):
     def load(self):
         gen.load_state_dict(torch.load(os.path.join(logdir, 'gen.pth')))
         dis.load_state_dict(torch.load(os.path.join(logdir, 'dis.pth')))
-        optim_g.load_state_dict(torch.load(os.path.join(logdir, 'optim_g.pth')))
-        optim_d.load_state_dict(torch.load(os.path.join(logdir, 'optim_d.pth')))
+        optim_g.load_state_dict(
+            torch.load(
+                os.path.join(
+                    logdir,
+                    'optim_g.pth')))
+        optim_d.load_state_dict(
+            torch.load(
+                os.path.join(
+                    logdir,
+                    'optim_d.pth')))
         # Read data corresponding to the loaded model
         with open(os.path.join(logdir, 'recent.log'), 'r') as f:
             run_data = json.load(f)
@@ -219,9 +247,15 @@ class Engine(object):
         torch.save(
             dis.state_dict(), os.path.join(logdir, 'dis_{}.pth'.format(epoch)))
         torch.save(
-            optim_g.state_dict(), os.path.join(logdir, 'optim_g_{}.pth'.format(epoch)))
+            optim_g.state_dict(),
+            os.path.join(
+                logdir,
+                'optim_g_{}.pth'.format(epoch)))
         torch.save(
-            optim_d.state_dict(), os.path.join(logdir, 'optim_d_{}.pth'.format(epoch)))
+            optim_d.state_dict(),
+            os.path.join(
+                logdir,
+                'optim_d_{}.pth'.format(epoch)))
         # Log other data corresponding to the recent model
         with open(os.path.join(logdir, 'recent.log'), 'w') as f:
             f.write(json.dumps(log_table))
