@@ -831,7 +831,7 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
         result_dict[category_name] = {'pre_points_num': pre_points_num,
                                       'post_points_num': post_points_num,
                                       'rate': rate}
-    save_json(osp.join(input_dir, 'filter_result.json'), result_dict)
+    save_json(osp.join(input_dir, 'filtering_result.json'), result_dict)
 
 
 
