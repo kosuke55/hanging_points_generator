@@ -6,6 +6,7 @@ import glob
 import logging
 import os
 import os.path as osp
+import random
 import shutil
 from datetime import datetime
 
@@ -60,7 +61,7 @@ files = []
 for hanging_object in hanging_object_list:
     one_category_files = glob.glob(osp.join(
         input_dir, '{}/*/models/model_normalized.obj'.format(hanging_object)))
-    idx = np.unique(np.random.randint(0, len(one_category_files), num_samples))
+    idx = random.sample(range(0, len(one_category_files)), num_samples)
     sampled_one_category_files = [one_category_files[i] for i in idx]
     files.extend(sampled_one_category_files)
 

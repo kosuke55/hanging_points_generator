@@ -6,6 +6,7 @@ import copy
 import json
 import os
 import os.path as osp
+import random
 from operator import itemgetter
 from pathlib import Path
 
@@ -718,7 +719,7 @@ def sample_contact_points(contact_points, num_samples):
     """
     if num_samples > len(contact_points):
         num_samples = len(contact_points)
-    idx = np.unique(np.random.randint(0, len(contact_points), num_samples))
+    idx = random.sample(range(0, len(contact_points), num_samples)
     return [contact_points[i] for i in idx]
 
 
