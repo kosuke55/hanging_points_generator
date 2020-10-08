@@ -719,7 +719,7 @@ def sample_contact_points(contact_points, num_samples):
     """
     if num_samples > len(contact_points):
         num_samples = len(contact_points)
-    idx = random.sample(range(0, len(contact_points), num_samples))
+    idx = random.sample(range(0, len(contact_points)), num_samples)
     return [contact_points[i] for i in idx]
 
 
