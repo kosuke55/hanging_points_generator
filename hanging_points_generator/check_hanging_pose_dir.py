@@ -4,7 +4,7 @@ from pathlib import Path
 
 from hanging_points_generator.generator_utils \
     import check_contact_points
-from hanging_points_generator.generator_utils import load_bad_list
+from hanging_points_generator.generator_utils import load_list
 
 
 parser = argparse.ArgumentParser(
@@ -30,7 +30,7 @@ parser.add_argument('--eps', '-e', type=float,
 parser.add_argument('--filter-penetration', '-f', type=int,
                     help='filter penetration', default=0)
 parser.add_argument('--inf-penetration-check', '-ipc', type=int,
-                    help='infinity penetration check ', default=1)
+                    help='infinity penetration check ', default=0)
 parser.add_argument('--align', type=int,
                     help='align coords', default=0)
 parser.add_argument('--average', type=int,
@@ -40,18 +40,23 @@ parser.add_argument('--average-pos', type=int,
 args = parser.parse_args()
 base_dir = args.input_dir
 pose_path = list(Path(base_dir).glob('*/contact_points'))
+# pose_path = list(Path(base_dir).glob('*/filtered_contact_points.json'))
 start_idx = args.idx
 
-bad_list_file = str(Path(base_dir) / 'bad_list.txt')
+# bad_list_file = str(Path(base_dir) / 'bad_list.txt')
+bad_list_file = str(Path(base_dir) / 'skip_list.txt')
+bad_list = []
 if osp.isfile(bad_list_file):
-    bad_list = load_bad_list(osp.join(base_dir, 'bad_list.txt'))
+    bad_list = load_list(osp.join(base_dir, 'skip_list.txt'))
+    # bad_list = load_list(osp.join(base_dir, 'bad_list.txt'))
+print(bad_list)
 
 try:
     idx = -1
     for path in pose_path:
+        idx += 1
         print('-----------------------')
         print('%s : %d' % (str(path), idx))
-        idx += 1
         if idx < start_idx:
             continue
         category_name = path.parent.name
