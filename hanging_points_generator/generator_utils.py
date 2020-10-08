@@ -800,6 +800,7 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
     """
     contact_points_path_list = list(Path(input_dir).glob('*/contact_points'))
     skip_list_file = osp.join(input_dir, 'skip_list.txt')
+    result_dict = {}
     for contact_points_path in contact_points_path_list:
         print('-----')
         contact_points = load_multiple_contact_points(str(contact_points_path))
@@ -827,6 +828,11 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
         save_contact_points(
             str(contact_points_path.parent / 'filtered_contact_points.json'),
             filtered_contact_points)
+        result_dict[category_name] = {'pre_points_num': pre_points_num,
+                                      'post_points_num': post_points_num,
+                                      'rate': rate}
+    save_json(osp.join(input_dir, 'filter_result.json'), result_dict)
+
 
 
 def add_list(path, item):
