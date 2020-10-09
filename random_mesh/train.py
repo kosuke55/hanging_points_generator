@@ -17,11 +17,12 @@ import json
 import os
 
 import numpy as np
-from shapenet_utils import filter_filling_rate
 import torch
 import torch.optim as optim
+from shapenet_utils import hanging_label
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
 
 import kaolin as kal
 from architectures import Generator, Discriminator
@@ -56,12 +57,18 @@ parser.add_argument(
 parser.add_argument(
     '--logdir',
     type=str,
-    default='log',
+    default='/media/kosuke55/SANDISK/random_mesh_gan/log_hanging',
     help='Directory to log data to.')
 parser.add_argument(
-    '--resume',
-    action='store_true',
-    help='Resume training from last checkpoint.')
+    '--save-interval',
+    type=int,
+    default='50',
+    help='save model interval')
+parser.add_argument(
+    '--resume-idx',
+    type=int,
+    help='Resume training from selected idx checkpoint.',
+    default=0)
 
 parser.add_argument(
     '--dataset-type',
@@ -72,7 +79,7 @@ parser.add_argument(
     '--modelnet-root',
     type=str,
     help='Root directory of the ModelNet dataset.')
-parser.add_argument(
+bparser.add_argument(
     '--shapenet-root', type=str,
     default='/media/kosuke/SANDISK/meshdata/ShapeNetCore.v2',
     help='Root directory of the shapenet dataset.')
@@ -88,17 +95,17 @@ args = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 # Setup Dataloader
-if args.dataset_type == 'mdoelnet':
-    train_set = kal.datasets.modelnet.ModelNetVoxels(
-        basedir=args.modelnet_root, cache_dir=args.cache_dir,
-        categories=args.categories, resolutions=[30])
-elif args.dataset_type == 'shapenet':
-    category, _ = filter_filling_rate(0, 0.5, sort=True, to_label=True)
+# if args.dataset_type == 'mdoelnet':
+#     train_set = kal.datasets.modelnet.ModelNetVoxels(
+#         basedir=args.modelnet_root, cache_dir=args.cache_dir,
+#         categories=categories, resolutions=[30])
+if args.dataset_type == 'shapenet':
+    categories = hanging_label()
     train_set = kal.datasets.shapenet.ShapeNet_Voxels(
         root=args.shapenet_root, cache_dir=args.cache_dir,
         categories=categories, resolutions=[30], voxel_range=1.)
 elif args.dataset_type == 'ycb':
-    category = [
+    categories = [
         '019_pitcher_base',
         '025_mug',
         '035_power_drill',
@@ -144,15 +151,16 @@ class Engine(object):
         - validate_every (int): How frequently (# epochs) to run validation.
     """
 
-    def __init__(self, print_every=1, resume=False):
+    def __init__(self, print_every=1, resume_idx=0):
         self.cur_epoch = 0
         self.train_loss = []
         self.val_loss = []
         self.bestval = 0
         self.print_every = print_every
         self.count = 0
+        self.resume_idx = resume_idx
 
-        if resume:
+        if resume_idx > 0:
             self.load()
 
     def train(self):
@@ -218,22 +226,25 @@ class Engine(object):
         self.cur_epoch += 1
 
     def load(self):
-        gen.load_state_dict(torch.load(os.path.join(logdir, 'gen.pth')))
-        dis.load_state_dict(torch.load(os.path.join(logdir, 'dis.pth')))
+        gen.load_state_dict(torch.load(
+            os.path.join(logdir, 'gen_%d.pth' % self.resume_idx)))
+        dis.load_state_dict(torch.load(
+            os.path.join(logdir, 'dis_%d.pth' % self.resume_idx)))
         optim_g.load_state_dict(
             torch.load(
                 os.path.join(
                     logdir,
-                    'optim_g.pth')))
+                    'optim_g_%d.pth' % self.resume_idx)))
         optim_d.load_state_dict(
             torch.load(
                 os.path.join(
                     logdir,
-                    'optim_d.pth')))
+                    'optim_d_%d.pth' % self.resume_idx)))
         # Read data corresponding to the loaded model
         with open(os.path.join(logdir, 'recent.log'), 'r') as f:
             run_data = json.load(f)
-        self.cur_epoch = run_data['epoch']
+        # self.cur_epoch = run_data['epoch']
+        self.cur_epoch = self.resume_idx
 
     def save(self, epoch):
         # Create a dictionary of all data to save
@@ -263,10 +274,11 @@ class Engine(object):
         tqdm.write('====== Saved recent model ======>')
 
 
-trainer = Engine(print_every=args.print_every, resume=args.resume)
+trainer = Engine(
+    print_every=args.print_every,
+    resume_idx=args.resume_idx)
 
 for epoch in range(args.epochs):
     trainer.train()
-    # if epoch % 5 == 4:
-    if np.mod(epoch, 1000) == 0:
+    if np.mod(epoch, args.save_interval) == 0:
         trainer.save(epoch)
