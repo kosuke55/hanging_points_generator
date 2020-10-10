@@ -834,14 +834,13 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
     save_json(osp.join(input_dir, 'filtering_result.json'), result_dict)
 
 
-
 def add_list(path, item):
-    """Add bad object to list and save file
+    """Add object to list and save file
 
     Parameters
     ----------
     path : str
-        bad list txt file
+        ist txt file
     item : str
         item to add
     """
@@ -853,24 +852,25 @@ def add_list(path, item):
 
             if item not in bad_list:
                 with open(path, mode='a') as f:
-                    f.writelines('\n' + item)
+                    f.writelines(item + '\n')
         else:
             with open(path, mode='a') as f:
-                f.writelines(item)
+                f.writelines(item + '\n')
 
 
 def load_list(path):
-    """Load bad list txt
+    """Load list txt
 
     Parameters
     ----------
     path : str
-        bad list txt file
+        list txt file
     """
     filelock_path = path + '.lock'
+    list_ = []
     with FileLock(filelock_path):
         if osp.isfile(path):
             with open(path) as f:
-                bad_list = [s.strip() for s in f.readlines()]
+                list_ = [s.strip() for s in f.readlines()]
 
-    return bad_list
+    return list_
