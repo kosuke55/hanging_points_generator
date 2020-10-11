@@ -58,7 +58,6 @@ for file in tqdm(files):
     print(category_name)
     if category_name in skip_list:
         print('Skipped %s because it is in skip_list' % file)
-        skip_count +=1
         continue
     print('-----------------------')
     num_cp = 0
