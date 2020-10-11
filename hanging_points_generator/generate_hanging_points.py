@@ -9,7 +9,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from hanging_points_generator import hp_generator as hpg
-from hanging_points_generator.generator_utils import load_bad_list
+from hanging_points_generator.generator_utils import load_list
 from hanging_points_generator.generator_utils \
     import load_multiple_contact_points
 
@@ -24,6 +24,8 @@ parser.add_argument(
 parser.add_argument('--required-points-num', '-n', type=int,
                     help='required points number',
                     default=1)
+parser.add_argument('--try-num', '-tn', type=int,
+                    help='number of try', default=1000)
 parser.add_argument('--existed-points-num', '-en', type=int,
                     help='required points number',
                     default=100)
@@ -35,29 +37,29 @@ parser.add_argument('--viz_obj', '-v', type=int,
 parser.add_argument('--hook-type', '-ht', type=str,
                     help='hook type "just_bar" or hook urdf',
                     default='just_bar')
-parser.add_argument('--skip-bad-list', '-s', type=int,
-                    help='skip file in bad list',
+parser.add_argument('--skip-list', '-s', type=str,
+                    help='skip file list',
                     default=0)
 
 args = parser.parse_args()
 input_dir = args.input_dir
 files = glob.glob(osp.join(input_dir, '*/base.urdf'))
 existed_points_num = args.existed_points_num
-skip = args.skip_bad_list
+skip_file = args.skip_list
 
-bad_list_file = osp.join(input_dir, 'bad_list.txt')
-bad_list = []
-if osp.isfile(bad_list_file):
-    bad_list = load_bad_list(osp.join(input_dir, 'bad_list.txt'))
-print(bad_list)
+skip_list = []
+if osp.isfile(skip_file):
+    skip_list = load_list(skip_file)
+print('skip list: ', skip_list)
+
 for file in tqdm(files):
     dirname, filename = osp.split(file)
     category_name = Path(dirname).name
     print(category_name)
-    if skip:
-        if category_name in bad_list:
-            print('Skipped %s because it is in bad_list' % file)
-            continue
+    if category_name in skip_list:
+        print('Skipped %s because it is in skip_list' % file)
+        skip_count +=1
+        continue
     print('-----------------------')
     num_cp = 0
     contact_points_path = osp.join(dirname, 'contact_points')
@@ -72,6 +74,7 @@ for file in tqdm(files):
 
     hpg.generate(urdf_file=file,
                  required_points_num=args.required_points_num,
+                 try_num=args.try_num,
                  enable_gui=args.gui,
                  viz_obj=args.viz_obj,
                  save_dir=dirname,
