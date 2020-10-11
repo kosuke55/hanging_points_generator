@@ -9,16 +9,17 @@ import os.path as osp
 import random
 import shutil
 from datetime import datetime
+from pathlib import Path
 
-import coloredlogs
 import numpy as np
 import open3d as o3d
-from shapenet_utils import all_synset
 from shapenet_utils import synset_to_label
-from shapenet_utils import label_to_synset
+from shapenet_utils import hanging_synset
 
 from hanging_points_generator.create_mesh import create_urdf
+from hanging_points_generator.generator_utils import load_list
 from hanging_points_generator.create_mesh import open3d_to_trimesh
+
 
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -34,36 +35,51 @@ parser.add_argument(
     '-s',
     type=str,
     help='save directory',
-    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini')
+    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10')
+    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_hanging_50')
 parser.add_argument(
     '--num-samples',
     '-n',
     type=int,
     help='number of sampling',
-    default=10)
+    default=50)
 args = parser.parse_args()
 
-logfile = '{}_obj2urdf.log'.format(datetime.now().strftime('%Y%m%d_%H%M'))
-logging.basicConfig(filename=logfile, level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG')
 
 input_dir = args.input_dir
 base_save_dir = args.save_dir
 num_samples = args.num_samples
 os.makedirs(base_save_dir, exist_ok=True)
 
-hanging_object_list = all_synset()
+hanging_object_list = hanging_synset()
+print(hanging_object_list)
 
 target_length = 0.1
 
 files = []
+exist_files = load_list(
+    '/home/kosuke55/snippets/python/tmp/shapenet_mini_10_hanging_list.txt')
+
 for hanging_object in hanging_object_list:
-    one_category_files = glob.glob(osp.join(
-        input_dir, '{}/*/models/model_normalized.obj'.format(hanging_object)))
-    idx = random.sample(range(0, len(one_category_files)), num_samples)
-    sampled_one_category_files = [one_category_files[i] for i in idx]
+    one_category_paths = list(
+        sorted(
+            Path(input_dir).glob(
+                '{}/*/models/model_normalized.obj'.format(hanging_object))))
+    sampled_one_category_files = []
+    while len(sampled_one_category_files) < num_samples:
+        idx = random.randint(0, len(one_category_paths) - 1)
+        if True in [f.split('_')[1] in str(one_category_paths[idx])
+                    for f in exist_files]:
+            continue
+        if str(one_category_paths[idx]) not in sampled_one_category_files:
+            sampled_one_category_files.append(str(one_category_paths[idx]))
+
+    print(
+        hanging_object,
+        len(one_category_paths),
+        len(sampled_one_category_files))
     files.extend(sampled_one_category_files)
+
 
 for file in files:
     dirname, filename = os.path.split(file)
@@ -91,8 +107,7 @@ for file in files:
         mesh.vertices = mesh.vertices * target_length / length
 
     except Exception as e:
-        logger.warning('skip {} {} {}'.format(category_name, synset, id_))
-        logger.warning(e)
+        print('skip {} {} {}'.format(category_name, synset, id_))
         continue
 
     if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
@@ -100,7 +115,7 @@ for file in files:
             print(dirname, save_dir)
             shutil.copytree(dirname, save_dir)
         except FileExistsError as e:
-            logger.warning(e)
+            print(e)
         create_urdf(mesh, save_dir, init_texture=True)
     else:
-        logger.warning('skip {} {} {}'.format(category_name, synset, id_))
+        print('skip {} {} {}'.format(category_name, synset, id_))
