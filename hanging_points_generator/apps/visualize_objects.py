@@ -7,7 +7,7 @@ import skrobot
 
 
 def visualize_objects_dir(input_dir, filename='base.urdf'):
-    paths = Path(input_dir).glob(osp.join('*', filename))
+    paths = list(sorted(Path(input_dir).glob(osp.join('*', filename))))
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
     init = True
     for path in paths:
