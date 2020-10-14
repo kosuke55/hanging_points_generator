@@ -12,6 +12,14 @@
       <remap from="in" to="aligned_depth_to_color/image_raw" />
       <remap from="out" to="aligned_depth_to_color/image_raw_repub" />
     </node>
+
+    <node name="republished_points_xyzrgb_hd" pkg="nodelet" type="nodelet" args="standalone depth_image_proc/point_cloud_xyzrgb" respawn="true">
+      <remap from="rgb/camera_info" to="color/camera_info" />
+      <remap from="rgb/image_rect_color" to="color/image_rect_color_repub" />
+      <remap from="depth_registered/image_rect" to="aligned_depth_to_color/image_raw_repub" />
+      <remap from="depth_registered/points" to="depth_registered/republished_points" />
+      <param name="queue_size" type="int" value="$(arg queue_size)" />
+    </node>
   </group>
 
   <node name="mask_republish" pkg="image_transport" type="republish" args="compressed raw">

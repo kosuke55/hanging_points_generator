@@ -9,7 +9,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from hanging_points_generator import hp_generator as hpg
-from hanging_points_generator.generator_utils import load_bad_list
+from hanging_points_generator.generator_utils import load_list
 from hanging_points_generator.generator_utils \
     import load_multiple_contact_points
 
@@ -48,7 +48,7 @@ skip = args.skip_bad_list
 bad_list_file = osp.join(input_dir, 'bad_list.txt')
 bad_list = []
 if osp.isfile(bad_list_file):
-    bad_list = load_bad_list(osp.join(input_dir, 'bad_list.txt'))
+    bad_list = load_list(osp.join(input_dir, 'bad_list.txt'))
 print(bad_list)
 for file in tqdm(files):
     dirname, filename = osp.split(file)

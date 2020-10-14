@@ -1,5 +1,6 @@
 import argparse
 import os
+import os.path as osp
 
 import cc3d
 import numpy as np
@@ -9,6 +10,7 @@ import kaolin as kal
 
 from architectures import Generator
 from hanging_points_generator.create_mesh import create_urdf
+from hanging_points_generator.generator_utils import save_json
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -40,6 +42,7 @@ min_length = 0.1
 max_length = 0.15
 required_num = 500
 
+filling_rate_dict = {}
 while obj_id < required_num:
     z = torch.normal(
         torch.zeros(args.batchsize, 200),
@@ -70,16 +73,6 @@ while obj_id < required_num:
         model[np.where(model != max_label)] = 0
         model[np.where(model == max_label)] = 1
 
-        volume = 1
-        for i in np.max(np.where(model == 1), axis=1) - \
-                np.min(np.where(model == 1), axis=1) + 1:
-            volume *= i
-
-        density = np.count_nonzero(model) / volume
-
-        if density > 0.2:
-            continue
-
         model = model.astype(np.float32)
         verts, faces = kal.conversions.voxelgrid_to_quadmesh(model)
         center = torch.mean(verts, dim=0)
@@ -93,26 +86,35 @@ while obj_id < required_num:
 
         mesh = kal.rep.QuadMesh.from_tensors(verts, faces)
         mesh.laplacian_smoothing(iterations=3)
-        obj_dir = os.path.join(
+        obj_dir = osp.join(
             args.savedir, args.prefix + '_{:05}'.format(obj_id))
         os.makedirs(obj_dir, exist_ok=True)
-        obj_file = os.path.join(obj_dir, 'tmp.obj')
+        obj_file = osp.join(obj_dir, 'tmp.obj')
         mesh.save_mesh(obj_file)
 
         mesh = trimesh.load(obj_file)
+        voxel = mesh.voxelized(0.001)
+        voxel.fill()
+        filling_rate = voxel.volume / mesh.convex_hull.volume
+        print(obj_id, filling_rate)
+        mesh.show()
+        if filling_rate > 0.5:
+            continue
         mesh_invert = mesh.copy()
         mesh_invert.invert()
         mesh += mesh_invert
         mesh.merge_vertices()
-        if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
-            create_urdf(mesh, obj_dir, init_texture=True)
-        # os.makedirs(os.path.join(args.savedir, 'images'), exist_ok=True)
-        # mesh.save_image(os.path.join(
+        # if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
+        #     create_urdf(mesh, obj_dir, init_texture=True)
+        #     filling_rate_dict[obj_dir] = filling_rate
+        # os.makedirs(osp.join(args.savedir, 'images'), exist_ok=True)
+        # mesh.save_image(osp.join(
         #     args.savedir, 'images', args.prefix + '_{:05}'.format(obj_id)),
         #     resolution=(640, 640))
         # 'images/tmp/mesh.png', resolution=(640, 640))
-
-        print(obj_id)
+        mesh.show()
         obj_id += 1
         if obj_id >= required_num:
             break
+
+save_json(osp.join(args.savedir, 'filling_rate.json'), filling_rate_dict)

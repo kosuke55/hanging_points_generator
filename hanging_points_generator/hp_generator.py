@@ -101,7 +101,6 @@ def generate(urdf_file, required_points_num, try_num,
     object_id = pybullet.loadURDF(urdf_file,
                                   StartPos, StartOrientation)
 
-    try_num = 50000
     find_count = 0
     is_hanging_object = True
 

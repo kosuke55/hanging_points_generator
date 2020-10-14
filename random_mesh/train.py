@@ -79,7 +79,7 @@ parser.add_argument(
     '--modelnet-root',
     type=str,
     help='Root directory of the ModelNet dataset.')
-bparser.add_argument(
+parser.add_argument(
     '--shapenet-root', type=str,
     default='/media/kosuke/SANDISK/meshdata/ShapeNetCore.v2',
     help='Root directory of the shapenet dataset.')
@@ -280,5 +280,5 @@ trainer = Engine(
 
 for epoch in range(args.epochs):
     trainer.train()
-    if np.mod(epoch, args.save_interval) == 0:
-        trainer.save(epoch)
+    if np.mod(trainer.cur_epoch, args.save_interval) == 0:
+        trainer.save(trainer.cur_epoch)
