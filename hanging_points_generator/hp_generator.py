@@ -28,7 +28,7 @@ from hanging_points_generator.generator_utils import load_multiple_contact_point
 from hanging_points_generator.generator_utils import save_contact_points
 
 
-def generate(urdf_file, required_points_num,
+def generate(urdf_file, required_points_num, try_num,
              enable_gui, viz_obj, save_dir,
              hook_type='just_bar', render=False):
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -123,8 +123,11 @@ def generate(urdf_file, required_points_num,
             bad_flag = False
             if try_count > try_num - 10:
                 print('try_count:{}'.format(try_count))
-            if find_count >= required_points_num or \
-                    (find_count == 0 and try_count > 10000):
+            if find_count >= required_points_num:
+                print('break {} find_count:{} try_count:{} require:{}'.format(
+                    urdf_file, find_count, try_count, required_points_num))
+                break
+            if find_count == 0 and try_count > try_num / 2.:
                 print('break {} find_count:{} try_count:{} require:{}'.format(
                     urdf_file, find_count, try_count, required_points_num))
                 add_list(
@@ -244,7 +247,6 @@ def generate(urdf_file, required_points_num,
             save_contact_points(
                 osp.join(save_dir, 'contact_points.json'), contact_points_dict)
 
-
             find_count += 1
             print('{}({}) find:{}'.format(urdf_file, pid, find_count))
 
@@ -282,6 +284,8 @@ if __name__ == '__main__':
     parser.add_argument('--required_points_num', '-n', type=int,
                         help='required points number',
                         default=1)
+    parser.add_argument('--try-num', '-tn', type=int,
+                        help='number of try', default=1000)
     parser.add_argument('--gui', '-g', type=int,
                         help='gui',
                         default=0)
@@ -295,8 +299,8 @@ if __name__ == '__main__':
 
     contact_points_list = generate(args.urdf,
                                    args.required_points_num,
+                                   args.try_num,
                                    args.gui,
                                    args.viz_obj,
                                    os.path.dirname(args.urdf),
                                    hook_type=args.hook_type)
-
