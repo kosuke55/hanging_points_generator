@@ -37,13 +37,10 @@ gt_dir = args.ground_truth
 
 input_paths = Path(input_dir).glob('*/filtered_contact_points.json')
 for input_path in input_paths:
+    print('\n-------')
     category = input_path.parent.name
     gt_path = (Path(gt_dir) / category).with_suffix('.json')
-
     print(gt_path)
-    # if category == '037_scissors':
-    #     break
-
     gt_data = load_json(str(gt_path))
     gt_pos = [p[0] for p in gt_data['contact_points']]
     gt_vec = [np.array(p)[1:, 0] for p in gt_data['contact_points']]
@@ -53,6 +50,7 @@ for input_path in input_paths:
 
     data = load_json(str(input_path))
     labels = data['labels']
+    print('total len: %d' % len(labels))
     diff_dict = {}
     diff_dict['-1'] = {}
     diff_dict['-1']['pos_diff'] = []
@@ -77,14 +75,37 @@ for input_path in input_paths:
                     two_vectors_angle(pose[1:, 0], -gt_vec[min_idx]))
 
         if min_distance > thresh_distance:
-            print('Far')
             diff_dict['-1']['pos_diff'].append(pos_diff)
             diff_dict['-1']['distance'].append(min_distance)
             diff_dict['-1']['angle'].append(angle)
         else:
-            print(str(gt_labels[min_idx]))
             diff_dict[str(gt_labels[min_idx])]['pos_diff'].append(pos_diff)
             diff_dict[str(gt_labels[min_idx])]['distance'].append(min_distance)
             diff_dict[str(gt_labels[min_idx])]['angle'].append(angle)
+
+    for key in diff_dict:
+        print('----label %s ----' % key)
+        print('len: %d' % len(diff_dict[key]['angle']))
+        if key == '-1':
+            continue
+        pos_diff = np.array(diff_dict[key]['pos_diff'])
+        if pos_diff.size == 0:
+            continue
+        diff_dict[key]['pos_diff_mean'] = np.mean(pos_diff, axis=0).tolist()
+        diff_dict[key]['pos_diff_max'] = np.max(pos_diff, axis=0).tolist()
+        diff_dict[key]['pos_diff_min'] = np.min(pos_diff, axis=0).tolist()
+
+        print('pos_diff_max %f %f %f' % tuple(diff_dict[key]['pos_diff_max']))
+        print('pos_diff_mean %f %f %f' % tuple(diff_dict[key]['pos_diff_mean']))
+        print('pos_diff_min %f %f %f' % tuple(diff_dict[key]['pos_diff_min']))
+
+        angle = np.array(diff_dict[key]['angle'])
+        diff_dict[key]['angle_mean'] = np.mean(angle).tolist()
+        diff_dict[key]['angle_max'] = np.max(angle).tolist()
+        diff_dict[key]['angle_min'] = np.min(angle).tolist()
+
+        print('angle_max %f' % diff_dict[key]['angle_max'])
+        print('angle_mean %f' % diff_dict[key]['angle_mean'])
+        print('angle_min %f' % diff_dict[key]['angle_min'])
 
     save_json(str(input_path.parent / 'eval.json'), diff_dict)
