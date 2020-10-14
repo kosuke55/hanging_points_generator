@@ -739,7 +739,7 @@ def set_contact_points_urdf_path(contact_points_path):
 
 
 def filter_contact_points(
-        contact_points_dict, cluster_min_points=-1, eps=0.01):
+        contact_points_dict, cluster_min_points=-1, eps=0.01, num_samples=30):
     """Filter contact points by clustering, aligning, averageing
 
     Parameters
@@ -782,15 +782,16 @@ def filter_contact_points(
         = align_coords(contact_points_coords, labels)
     average_aligned_contact_points_coords = make_average_coords_list(
         aligned_contact_points_coords, labels, average_pos=False)
-    average_aligned_contact_points_coords \
-        = sample_contact_points(average_aligned_contact_points_coords, 30)
+    if num_samples > 0:
+        average_aligned_contact_points_coords = sample_contact_points(
+            average_aligned_contact_points_coords, num_samples=num_samples)
     average_aligned_contact_points_coord_dict \
         = coords_to_dict(average_aligned_contact_points_coords, urdf_file)
 
     return average_aligned_contact_points_coord_dict
 
 
-def filter_contact_points_dir(input_dir, rate_thresh=0.1):
+def filter_contact_points_dir(input_dir, rate_thresh=0.1, num_samples=30):
     """Filter all contact points in the directory
 
     Parameters
@@ -799,7 +800,8 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
         hanging_object of hanging_object/category/contact_points/<fancy_dir>/contact_points.json # noqa
     """
     contact_points_path_list = list(Path(input_dir).glob('*/contact_points'))
-    skip_list_file = osp.join(input_dir, 'skip_list.txt')
+    skip_list_file = osp.join(input_dir, 'filter_skip_list.txt')
+    remain_list_file = osp.join(input_dir, 'filter_remain_list.txt')
     result_dict = {}
     for contact_points_path in contact_points_path_list:
         print('-----')
@@ -812,10 +814,13 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
         pre_points_num = len(contact_points['contact_points'])
         print('contact points :%d' % pre_points_num)
         filtered_contact_points \
-            = filter_contact_points(contact_points)
+            = filter_contact_points(contact_points, num_samples=num_samples)
         if not filtered_contact_points:
             print('Skip %s ' % str(contact_points_path))
             add_list(skip_list_file, category_name)
+            result_dict[category_name] = {'pre_points_num': pre_points_num,
+                                          'post_points_num': 0,
+                                          'rate': 0.}
             continue
         post_points_num = len(filtered_contact_points['contact_points'])
         rate = post_points_num / pre_points_num
@@ -825,6 +830,8 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1):
             print('Skip %s because of low remaning rate %f' % (
                 str(contact_points_path), rate))
             add_list(skip_list_file, category_name)
+            continue
+        add_list(remain_list_file, category_name)
         save_contact_points(
             str(contact_points_path.parent / 'filtered_contact_points.json'),
             filtered_contact_points)
