@@ -813,6 +813,7 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1, num_samples=30):
         print('-----')
         contact_points = load_multiple_contact_points(str(contact_points_path))
         category_name = contact_points_path.parent.name
+        print(category_name)
         if not contact_points:
             print('Load no points. Skip %s' % str(contact_points_path))
             add_list(skip_list_file, category_name)
