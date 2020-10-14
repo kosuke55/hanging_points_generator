@@ -410,7 +410,7 @@ def cluster_contact_points(points, eps=0.01, min_samples=-1):
 
     Returns
     -------
-    clustered poitnts
+    clustered points
         clustered hanging points
     """
 
