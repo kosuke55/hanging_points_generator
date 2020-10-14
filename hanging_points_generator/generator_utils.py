@@ -413,7 +413,6 @@ def cluster_contact_points(points, eps=0.01, min_samples=-1):
     clustered points
         clustered hanging points
     """
-
     if min_samples == -1:
         min_samples = len(points) // 5
 
@@ -438,7 +437,8 @@ def get_dbscan_core_coords(coords_list, dbscan):
     if len(idx) == 0:
         print('No core sample')
         return coords_list, False
-    core_labels = list(filter(lambda x: x != -1, dbscan.labels_))
+    core_labels = [int(x) for x in list(
+        filter(lambda x: x != -1, dbscan.labels_))]
     core_coords_list = itemgetter(*idx)(coords_list)
     return core_coords_list, core_labels
 
@@ -593,12 +593,13 @@ def average_coords(coords_list):
     return coords_average
 
 
-def coords_to_dict(coords_list, urdf_file):
+def coords_to_dict(coords_list, urdf_file, labels=None):
     """Cover coords list to dict for json
 
     Parameters
     ----------
     coords_list : list[skrobot.coordinates.Coordinates]
+    labels : list[int]
 
     Returns
     -------
@@ -607,13 +608,16 @@ def coords_to_dict(coords_list, urdf_file):
     contact_points_list = []
     contact_points_dict = {
         'urdf_file': urdf_file,
-        'contact_points': []}
+        'contact_points': [],
+        'labels': []}
     for coords in coords_list:
         pose = np.concatenate(
             [coords.T()[:3, 3][None, :],
                 coords.T()[:3, :3]]).tolist()
         contact_points_list.append(pose)
     contact_points_dict['contact_points'] = contact_points_list
+    if labels is not None:
+        contact_points_dict['labels'] = labels
     return contact_points_dict
 
 
@@ -785,8 +789,10 @@ def filter_contact_points(
     if num_samples > 0:
         average_aligned_contact_points_coords = sample_contact_points(
             average_aligned_contact_points_coords, num_samples=num_samples)
+
     average_aligned_contact_points_coord_dict \
-        = coords_to_dict(average_aligned_contact_points_coords, urdf_file)
+        = coords_to_dict(
+            average_aligned_contact_points_coords, urdf_file, labels)
 
     return average_aligned_contact_points_coord_dict
 
