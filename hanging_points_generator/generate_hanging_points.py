@@ -39,7 +39,7 @@ parser.add_argument('--hook-type', '-ht', type=str,
                     default='just_bar')
 parser.add_argument('--skip-list', '-s', type=str,
                     help='skip file list',
-                    default=0)
+                    default='bad_list.txt')
 
 args = parser.parse_args()
 input_dir = args.input_dir
