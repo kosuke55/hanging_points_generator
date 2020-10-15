@@ -111,7 +111,6 @@ while obj_id < required_num:
         #     args.savedir, 'images', args.prefix + '_{:05}'.format(obj_id)),
         #     resolution=(640, 640))
         # 'images/tmp/mesh.png', resolution=(640, 640))
-        mesh.show()
         obj_id += 1
         if obj_id >= required_num:
             break
