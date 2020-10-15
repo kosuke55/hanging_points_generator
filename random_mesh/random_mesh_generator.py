@@ -97,16 +97,15 @@ while obj_id < required_num:
         voxel.fill()
         filling_rate = voxel.volume / mesh.convex_hull.volume
         print(obj_id, filling_rate)
-        mesh.show()
         if filling_rate > 0.5:
             continue
         mesh_invert = mesh.copy()
         mesh_invert.invert()
         mesh += mesh_invert
         mesh.merge_vertices()
-        # if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
-        #     create_urdf(mesh, obj_dir, init_texture=True)
-        #     filling_rate_dict[obj_dir] = filling_rate
+        if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
+            create_urdf(mesh, obj_dir, init_texture=True)
+            filling_rate_dict[obj_dir] = filling_rate
         # os.makedirs(osp.join(args.savedir, 'images'), exist_ok=True)
         # mesh.save_image(osp.join(
         #     args.savedir, 'images', args.prefix + '_{:05}'.format(obj_id)),
