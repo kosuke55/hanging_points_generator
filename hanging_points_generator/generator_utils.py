@@ -25,7 +25,7 @@ def check_contact_points(
         contact_points_path, urdf_file='', json_name='contact_points.json',
         cluster_min_points=2, eps=0.03, use_filter_penetration=True,
         inf_penetration_check=True, align=True, average=True,
-        average_pos=False, _test=False):
+        average_pos=False, _test=False, image_name=None):
     """Chaeck contact poitns with urdf
 
     Parameters
@@ -98,17 +98,34 @@ def check_contact_points(
 
     contact_point_sphere_list = []
     for i, cp in enumerate(contact_points):
-        contact_point_sphere = skrobot.models.Sphere(0.001, color=[255, 0, 0])
+        # contact_point_sphere = skrobot.models.sphere(0.005, color=[255, 0, 0])
+        contact_point_sphere = skrobot.models.Axis(0.003, 0.05)
         contact_point_sphere.newcoords(
             skrobot.coordinates.Coordinates(pos=cp[0], rot=cp[1:]))
         contact_point_sphere_list.append(contact_point_sphere)
 
     if not _test:
-        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 640))
         viewer.add(obj_model)
         for contact_point_sphere in contact_point_sphere_list:
             viewer.add(contact_point_sphere)
+
         viewer._init_and_start_app()
+
+        if image_name is not None:
+            print('Save %s' % image_name)
+            from PIL import Image
+            loop = True
+            while loop:
+                try:
+                    data = viewer.scene.save_image(visible=True)
+                    rendered = Image.open(trimesh.util.wrap_as_stream(data))
+                    rendered.save(image_name)
+                    loop = False
+                except AttributeError:
+                    print('Fail to save. Try again.')
+                    pass
+
     return True
 
 
