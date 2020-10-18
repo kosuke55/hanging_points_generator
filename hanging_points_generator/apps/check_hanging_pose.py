@@ -14,10 +14,6 @@ def main():
     parser.add_argument('--input', '-i', type=str,
                         help='input urdf',
                         default='')
-    parser.add_argument('--input-file-name', '-ifn', type=str,
-                        help='input object file name. '
-                        + 'base.urdf or textured.urdf',
-                        default='base.urdf')
     parser.add_argument('--idx', type=int,
                         help='data idx',
                         default=0)
@@ -48,14 +44,8 @@ def main():
                         default='skip-list-file')
 
     args = parser.parse_args()
-    input_file_name = args.input_file_name
     pose_file_name = args.pose_file_name
     skip_list_file = args.skip_list_file
-    if input_file_name == 'b':
-        input_file_name = 'base.urdf'
-    elif input_file_name == 't':
-        input_file_name = 'textured.urdf'
-
     if pose_file_name == 'c':
         pose_file_name = 'contact_points'
     elif pose_file_name == 'f':
@@ -91,7 +81,7 @@ def main():
                         category_name)
                     continue
                 pose = str(path)
-                urdf = str(path.parent / input_file_name)
+                urdf = str(path.parent / 'base.urdf')
                 check_contact_points(
                     pose,
                     urdf,
