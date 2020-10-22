@@ -59,7 +59,7 @@ for input_path in input_paths:
 
     for pose, label in zip(data['contact_points'], data['labels']):
         pose = np.array(pose)
-        pos_diff = pose[0] - gt_pos
+        pos_diff = np.abs(pose[0] - gt_pos)
         distances = np.linalg.norm(pos_diff, axis=1)
         min_idx = np.argmin(distances)
         min_distance = np.min(distances)
