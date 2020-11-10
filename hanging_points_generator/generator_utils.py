@@ -124,7 +124,6 @@ def check_contact_points(
                     loop = False
                 except AttributeError:
                     print('Fail to save. Try again.')
-                    pass
 
     return True
 
