@@ -15,13 +15,12 @@ from hanging_points_generator.generator_utils import save_json
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--savedir', type=str,
-    # default='/media/kosuke/SANDISK/meshdata/random_shape',
-    default='/media/kosuke/SANDISK/meshdata/random_shape_ycb',
+    default='/media/kosuke/SANDISK/meshdata/random_shape_shapenet_hanging_1016',
     help='Directory to save mesh to.')
 parser.add_argument(
     '--pretrained_model', '-p',
     type=str, help='Pretrained models',
-    default='/home/kosuke55/kaolin/examples/GANs/3D-IWGAN/log/3D_IWGAN/gen_5000.pth')
+    default='/media/kosuke55/SANDISK/random_mesh_gan/log_hanging/3D_IWGAN/gen_3000.pth')
 parser.add_argument(
     '--prefix', type=str,
     default='random',
@@ -30,7 +29,7 @@ parser.add_argument(
     '--device', type=str, default='cuda',
     help='Device to use.')
 parser.add_argument(
-    '--batchsize', type=int, default=4096, help='Batch size.')
+    '--batchsize', type=int, default=512, help='Batch size.')
 args = parser.parse_args()
 
 gen = Generator().to(args.device)
@@ -40,7 +39,7 @@ gen.eval()
 obj_id = 0
 min_length = 0.1
 max_length = 0.15
-required_num = 500
+required_num = 4000
 
 filling_rate_dict = {}
 while obj_id < required_num:
@@ -93,19 +92,19 @@ while obj_id < required_num:
         mesh.save_mesh(obj_file)
 
         mesh = trimesh.load(obj_file)
-        voxel = mesh.voxelized(0.001)
-        voxel.fill()
-        filling_rate = voxel.volume / mesh.convex_hull.volume
-        print(obj_id, filling_rate)
-        if filling_rate > 0.5:
-            continue
+        # voxel = mesh.voxelized(0.001)
+        # voxel.fill()
+        # filling_rate = voxel.volume / mesh.convex_hull.volume
+        # print(obj_id, filling_rate)
+        # if filling_rate > 0.5:
+        #     continue
         mesh_invert = mesh.copy()
         mesh_invert.invert()
         mesh += mesh_invert
         mesh.merge_vertices()
         if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
             create_urdf(mesh, obj_dir, init_texture=True)
-            filling_rate_dict[obj_dir] = filling_rate
+            # filling_rate_dict[obj_dir] = filling_rate
         # os.makedirs(osp.join(args.savedir, 'images'), exist_ok=True)
         # mesh.save_image(osp.join(
         #     args.savedir, 'images', args.prefix + '_{:05}'.format(obj_id)),
