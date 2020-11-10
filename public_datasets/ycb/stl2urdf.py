@@ -16,7 +16,12 @@ input_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16'
 # /media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16/019_pitcher_base/google_16k/nontextured.stl
 files = glob.glob(osp.join(input_dir, '*/*/*'))
 
-save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf"
+init_texture = True
+if init_texture:
+    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/textured_urdf"
+else:
+    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf"
+
 os.makedirs(save_dir, exist_ok=True)
 
 # http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/
@@ -69,7 +74,7 @@ for file in files:
             shell=True)
 
         create_mesh.create_urdf(mesh, os.path.join(
-            save_dir, category_name))
+            save_dir, category_name), init_texture=init_texture)
 
         tree = ET.parse(os.path.join(save_dir, category_name, 'base.urdf'))
         root = tree.getroot()
