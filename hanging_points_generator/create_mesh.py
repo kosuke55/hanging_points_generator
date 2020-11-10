@@ -37,10 +37,10 @@ def create_mesh_tsdf(
     mesh: open3d.open3d.geometry.TriangleMesh
         Mesh created by tsdf
     """
-    volume = o3d.integration.ScalableTSDFVolume(
+    volume = o3d.pipelines.integration.ScalableTSDFVolume(
         voxel_length=voxel_length,
         sdf_trunc=sdf_trunc,
-        color_type=o3d.integration.TSDFVolumeColorType.RGB8,
+        color_type=o3d.pipelines.integration.TSDFVolumeColorType.RGB8,
         volume_unit_resolution=16,
         depth_sampling_stride=1)
     for color, depth, intrinsic, camera_pose in zip(
@@ -758,9 +758,9 @@ def icp_registration(pcds, camera_poses, voxel_size=0.002, threshold=0.01,
         source.remove_statistical_outlier(nb_neighbors=100,
                                           std_ratio=0.001)
 
-        result_icp = o3d.registration.registration_icp(
+        result_icp = o3d.pipelines.registration.registration_icp(
             source, target, threshold, trans_init.T(),
-            o3d.registration.TransformationEstimationPointToPoint())
+            o3d.pipelines.registration.TransformationEstimationPointToPoint())
 
         icp_coords = skrobot.coordinates.Coordinates(
             pos=result_icp.transformation[:3, 3],
