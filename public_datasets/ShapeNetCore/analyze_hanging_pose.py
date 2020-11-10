@@ -2,37 +2,39 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from hanging_points_generator.generator_utils import load_json
-from shapenet_utils import synset_to_label
+from shapenet_utils import filling_rate
+from shapenet_utils import hanging_points_dict
 from shapenet_utils import label_to_synset
 from shapenet_utils import make_category_filling_rate
-from shapenet_utils import filling_rate
 from shapenet_utils import manipulation_synset
+from shapenet_utils import synset_to_label
 
 
-# def make_graph(points, filename):
+def make_graph(points, filename):
 
-#     synset = [k for k, v in points.items()]
-#     value = [v for k, v in points.items()]
+    synset = [k for k, v in points.items()]
+    value = [v for k, v in points.items()]
 
-#     idx = np.argsort(np.array(value)).tolist()
-#     value.sort()
-#     synset = [synset[i] for i in idx]
-#     label = [synset_to_label[s] for s in synset]
-#     plt.rcParams["font.size"] = 5
-#     plt.barh(label, value, height=0.5)
-#     plt.xlabel('num hanging points')
-#     plt.ylabel('category')
-#     plt.tight_layout()
-#     plt.savefig(filename, format='png', dpi=200)
-#     plt.close()
+    idx = np.argsort(np.array(value)).tolist()
+    value.sort()
+    synset = [synset[i] for i in idx]
+    label = [synset_to_label[s] for s in synset]
+    plt.rcParams["font.size"] = 10
+    plt.barh(label, value, height=0.5)
+    plt.xlabel('number of hanging points')
+    plt.ylabel('category')
+    plt.tight_layout()
+    plt.savefig(filename, format='png', dpi=200)
+    plt.close()
 
 
-def make_graph(data, points, filename):
+def make_graph_with_filtering_rate(data, points, filename):
     if isinstance(data, dict):
         label, value = make_category_filling_rate(data, to_label=True)
     elif isinstance(data, list):
@@ -75,7 +77,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--file', '-f', type=str,
     default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10/filtering_result.json',
-    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10_copy/filtering_result.json',
     help='filtering result file path')
 parser.add_argument(
     '--out-file', '-o', type=str,
@@ -95,22 +96,21 @@ for key in filtering_result:
     points_list[synset].append(num_points)
 
 points = {}
-# for key in points_list:
+
 target_synsets = manipulation_synset()
 for key in target_synsets:
-    # if key not in points_list:
-    #     print(synset_to_label[key])
-    #     continue
     if len(points_list[key]) < 10:
         points_list[key].extend(
             [0] * (10 - len(points_list[key])))
-    # points[key] = np.mean(points_list[key])
     points[key] = np.median(points_list[key])
 
-# make_graph(points, args.out_file)
 data = filling_rate()
 data = dict(filter(lambda item: item[0] in target_synsets, data.items()))
-make_graph(data, points, args.out_file)
+
+make_graph(points, args.out_file)
+make_graph_with_filtering_rate(
+    data, points,
+    str(Path(args.out_file).stem) + '_with_filtering_rate.png')
 
 points_list_label = {}
 for key in points_list:
@@ -119,3 +119,17 @@ for key in points_list:
 points_label = {}
 for key in points:
     points_label[synset_to_label[key]] = points[key]
+
+# for table
+synset = [k for k, v in points.items()]
+value = [v for k, v in points.items()]
+hp_dict = hanging_points_dict(to_label=True)
+idx = np.argsort(-np.array(value)).tolist()
+value.sort(reverse=True)
+synset = [synset[i] for i in idx]
+label = [synset_to_label[s] for s in synset]
+value_list = [hp_dict[key] for key in label]
+
+for l, vl, v in zip(label, value_list, value):
+    print('{}   &{} &{} &{} &{} &{} &{} &{} &{} &{} &{}   &{}'.format(
+        l, vl[0], vl[1], vl[2], vl[3], vl[4], vl[5], vl[6], vl[7], vl[8], vl[9], v))
