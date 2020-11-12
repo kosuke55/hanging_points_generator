@@ -165,6 +165,18 @@ def random_rot():
     return rot
 
 
+def rotate_object(object_id, rot):
+    """Rotate to the specified roatation
+    Parameters
+    ----------
+    object_id : str
+    rot : list[float float float float]
+        quarternion
+    """
+    pos, _ = pybullet.getBasePositionAndOrientation(object_id)
+    pybullet.resetBasePositionAndOrientation(object_id, pos, rot)
+
+
 def random_rotate_object(object_id):
     """Rotate to the random roatation
 

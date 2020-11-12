@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import os.path as osp
 import sys
 
 import numpy as np
@@ -230,7 +231,7 @@ def generate(urdf_file, required_points_num,
             pybullet.setGravity(0, 0, gravity)
 
             for _ in range(30):
-                sphere_ids.append(mm_sphere())
+                sphere_ids.append(make_sphere())
                 step(10)
                 remove_out_sphere(sphere_ids)
 
@@ -245,7 +246,7 @@ def generate(urdf_file, required_points_num,
             pouring_points_dict['contact_points'] = pouring_points_list
 
             save_contact_points(
-                save_dir, 'pouring_points.json', pouring_points_dict)
+                osp.join(save_dir, 'pouring_points.json'), pouring_points_dict)
 
             remove_all_sphere(sphere_ids)
 
@@ -259,7 +260,6 @@ if __name__ == '__main__':
     parser.add_argument('--urdf', '-u', type=str,
                         help='input urdf',
                         default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf/025_mug/base.urdf')
-    # default='../urdf/610/scissors/base.urdf')
     parser.add_argument('--required_points_num', '-n', type=int,
                         help='required points number',
                         default=1)
