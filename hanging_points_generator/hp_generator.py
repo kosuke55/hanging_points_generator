@@ -226,15 +226,15 @@ def generate(urdf_file, required_points_num, try_num,
             contact_point_obj = obj_coords.inverse_transformation().transform(
                 contact_point).translate(center, 'world')
 
-            contact_point_sphere = skrobot.models.Sphere(
+            contact_point_marker = skrobot.models.Sphere(
                 0.001, color=[255, 0, 0])
-            contact_point_sphere.newcoords(
+            contact_point_marker.newcoords(
                 skrobot.coordinates.Coordinates(
                     pos=contact_point_obj.worldpos(),
                     rot=contact_point_obj.worldrot()))
 
             if viz_obj:
-                viewer.add(contact_point_sphere)
+                viewer.add(contact_point_marker)
 
             pose = np.concatenate(
                 [contact_point_obj.T()[:3, 3][None, :],
