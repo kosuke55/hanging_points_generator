@@ -10,6 +10,7 @@ import cc3d
 import cv2
 import numpy as np
 import open3d as o3d
+import pybullet
 import skrobot
 import trimesh
 import xml.etree.ElementTree as ET
@@ -1093,3 +1094,35 @@ def mask_to_roi(mask):
         right = 0
 
     return [top, left, bottom, right]
+
+
+def vhacd_dir(base_dir, name_in='base.obj', name_out='vhacd.obj',
+              name_log='log.txt', alpha=0.04, resolution=50000):
+    """vhacd for directory
+
+    directory structure
+    <base_dir>/<category_name>/<input.obj>
+    ex)
+    shapenet_mug_urdf/03797390_1038e4eac0e18dcce02ae6d2a21d494a_mug/base.obj
+
+    Parameters
+    ----------
+    base_dir : str
+    name_in : str, optional
+        by default 'base.obj'
+    name_out : str, optional
+        by default 'vhacd.obj'
+    name_log : str, optional
+        by default 'log.txt'
+    alpha : float, optional
+        by default 0.04
+    resolution : int, optional
+        by default 50000
+    """
+    paths = Path(base_dir).glob(osp.join('*/', name_in))
+    for path in paths:
+        pybullet.vhacd(
+            str(path),
+            str(path.parent / name_out),
+            str(path.parent / name_log),
+            alpha=alpha, resolution=resolution)
