@@ -592,7 +592,7 @@ def averageQuaternions(Q):
 
 
 def average_coords(coords_list):
-    """Caluc average coords
+    """Calculate average coords
 
     Parameters
     ----------
