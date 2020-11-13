@@ -43,6 +43,85 @@ def make_sphere(radius=0.005, use_random_pos=True):
     return sphere_id
 
 
+def make_2daabb_pattern_spheres(
+        object_id, radius=0.01, space=0.05, z_space=0.1):
+    """Make spheres above ofject bbaa
+
+    Parameters
+    ----------
+    object_id : int
+    radius : float, optional
+        by default 0.01
+    space : float, optional
+        space between two spheres, by default 0.05
+    z_space : float, optional
+        z space between bbaa and spheres, by default 0.1
+
+    Returns
+    -------
+    sphere_list : list[int]
+        list of sphere_id
+    """
+    aabb = pybullet.getAABB(object_id)
+    sphere_list = make_pattern_spheres(
+        x_min=aabb[0][0], x_max=aabb[1][0],
+        y_min=aabb[0][1], y_max=aabb[1][1],
+        z=aabb[1][2] + z_space, radius=radius, space=space)
+
+    return sphere_list
+
+
+def make_pattern_spheres(
+        x_min, x_max,
+        y_min, y_max,
+        z, radius=0.01, space=0.05):
+    """Make rect patttern spheres
+
+    Parameters
+    ----------
+    x_min : float
+        x_min of rect
+    x_max : float
+        x_max of rect
+    y_min : float
+        y_min of rect
+    y_max : float
+        y_max of rect
+    z : float
+        z value of spheres
+    radius : float, optional
+        by default 0.01x
+    space : float, optional
+        space between two spheres, by default 0.05
+
+    Returns
+    -------
+    sphere_list : list[int]
+        list of sphere_id
+    """
+
+    interval = radius * 2 + space
+
+    w = x_max - x_min
+    num_x = int(np.ceil(w / interval))
+
+    d = y_max - y_min
+    num_y = int(np.ceil(d / interval))
+
+    sphere_list = []
+    for i in range(num_x):
+        for j in range(num_y):
+            x = x_min + interval * i
+            y = y_min + interval * j
+            sphere = pybullet.createCollisionShape(
+                pybullet.GEOM_SPHERE, radius=radius)
+            sphere_id = pybullet.createMultiBody(
+                1, sphere, -1, basePosition=[x, y, z])
+            sphere_list.append(sphere_id)
+
+    return sphere_list
+
+
 def remove_all_sphere(sphere_ids):
     """removeall sphere
 
