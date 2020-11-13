@@ -258,7 +258,7 @@ def get_contact_points(
 
 
 def generate(urdf_file, required_points_num,
-             enable_gui, viz_obj, save_dir):
+             enable_gui, viz_obj, save_dir, pattern_spheres=True):
     """Drop the ball and find the pouring points.
 
     Parameters
@@ -272,6 +272,8 @@ def generate(urdf_file, required_points_num,
         viz obj with contactpoints
     save_dir : str
         save dir path
+    pattern_spheres : bool, optional
+        by default True
     """
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -309,10 +311,17 @@ def generate(urdf_file, required_points_num,
             sphere_ids = []
             pybullet.setGravity(0, 0, gravity)
 
-            for _ in range(30):
-                sphere_ids.append(make_sphere())
-                step(10)
-                remove_out_sphere(sphere_ids)
+            if pattern_spheres:
+                sphere_ids = make_2daabb_pattern_spheres(
+                        object_id, radius=0.005, space=0.025, z_space=0.1)
+                for _ in range(30):
+                    step(10)
+                    remove_out_sphere(sphere_ids)
+            else:
+                for _ in range(30):
+                    sphere_ids.append(make_sphere())
+                    step(10)
+                    remove_out_sphere(sphere_ids)
 
             for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
                 pybullet.setGravity(f[0], f[1], gravity)
@@ -348,10 +357,15 @@ if __name__ == '__main__':
     parser.add_argument('--viz_obj', '-v', type=str,
                         help='viz obj with contactpoints',
                         default="False")
+    parser.add_argument('--pattern', '-p', type=int,
+                        help='make pattern spheres',
+                        default=1)
+
     args = parser.parse_args()
 
     contact_points_list = generate(args.urdf,
                                    args.required_points_num,
                                    args.gui,
                                    args.viz_obj,
-                                   os.path.dirname(args.urdf))
+                                   os.path.dirname(args.urdf),
+                                   pattern_spheres=args.pattern)
