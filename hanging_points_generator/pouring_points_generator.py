@@ -20,7 +20,8 @@ from hanging_points_generator.generator_utils import save_contact_points
 from hanging_points_generator.generator_utils import step
 
 
-def make_sphere(radius=0.005, use_random_pos=True):
+def make_sphere(radius=0.005, pos=[0, 0, 0],
+                use_random_pos=False, rgba=None):
     """Make shapere
 
     Parameters
@@ -29,6 +30,8 @@ def make_sphere(radius=0.005, use_random_pos=True):
         shapere radius, by default 0.005
     use_random_pos : bool, optional
         use random posisiton, by default True
+    rgba : list[float float float float]
+        if None, random color, by default None
 
     Returns
     -------
@@ -38,13 +41,16 @@ def make_sphere(radius=0.005, use_random_pos=True):
         pybullet.GEOM_SPHERE, radius=radius)
     sphere_id = pybullet.createMultiBody(
         1, sphere, -1,
-        basePosition=random_pos() if use_random_pos else [0, 0, 0])
+        basePosition=random_pos() if use_random_pos else pos)
+    if rgba is not None:
+        pybullet.changeVisualShape(sphere_id, -1, rgbaColor=rgba)
 
     return sphere_id
 
 
 def make_2daabb_pattern_spheres(
-        object_id, radius=0.01, space=0.05, z_space=0.1):
+        object_id, radius=0.01,
+        space=0.05, z_space=0.1, rgba=None):
     """Make spheres above ofject bbaa
 
     Parameters
@@ -56,25 +62,29 @@ def make_2daabb_pattern_spheres(
         space between two spheres, by default 0.05
     z_space : float, optional
         z space between bbaa and spheres, by default 0.1
+    rgba : list[float float float float]
+        if None, random color, by default None
 
     Returns
     -------
     sphere_ids : list[int]
         list of sphere_id
+    pos_list : list[list[float float float]]
+        list of [x y z]s
     """
     aabb = pybullet.getAABB(object_id)
-    sphere_ids = make_pattern_spheres(
+    sphere_ids, pos_list = make_pattern_spheres(
         x_min=aabb[0][0], x_max=aabb[1][0],
         y_min=aabb[0][1], y_max=aabb[1][1],
-        z=aabb[1][2] + z_space, radius=radius, space=space)
+        z=aabb[1][2] + z_space, radius=radius, space=space, rgba=rgba)
 
-    return sphere_ids
+    return sphere_ids, pos_list
 
 
 def make_pattern_spheres(
         x_min, x_max,
         y_min, y_max,
-        z, radius=0.01, space=0.05):
+        z, radius=0.01, space=0.05, rgba=None):
     """Make rect patttern spheres
 
     Parameters
@@ -93,11 +103,15 @@ def make_pattern_spheres(
         by default 0.01x
     space : float, optional
         space between two spheres, by default 0.05
+    rgba : list[float float float float]
+        if None, random color, by default None
 
     Returns
     -------
     sphere_ids : list[int]
         list of sphere_id
+    pos_list : list[list[float float float]]
+        list of [x y z]
     """
 
     interval = radius * 2 + space
@@ -109,6 +123,7 @@ def make_pattern_spheres(
     num_y = int(np.ceil(d / interval))
 
     sphere_ids = []
+    pos_list = []
     for i in range(num_x):
         for j in range(num_y):
             x = x_min + interval * i
@@ -117,9 +132,12 @@ def make_pattern_spheres(
                 pybullet.GEOM_SPHERE, radius=radius)
             sphere_id = pybullet.createMultiBody(
                 1, sphere, -1, basePosition=[x, y, z])
+            if rgba is not None:
+                pybullet.changeVisualShape(sphere_id, -1, rgbaColor=rgba)
             sphere_ids.append(sphere_id)
+            pos_list.append([x, y, z])
 
-    return sphere_ids
+    return sphere_ids, pos_list
 
 
 def remove_all_sphere(sphere_ids):
@@ -135,19 +153,36 @@ def remove_all_sphere(sphere_ids):
     sphere_ids = []
 
 
-def remove_out_sphere(sphere_ids):
+def remove_out_sphere(sphere_ids, pos_list=None):
     """remove non pouring points of shapre
 
     Parameters
     ----------
     sphere_ids : list
         loaded sphere ids list
+    pos_list : list[list[float float float]]
+        list of [x y z], by default None
+
     """
-    for sphere_id in sphere_ids:
-        pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
-        if pos[2] < -0.1:
-            pybullet.removeBody(sphere_id)
-            sphere_ids.remove(sphere_id)
+    pos_in_list = []
+    pos_out_list = []
+    if pos_list is None:
+        for sphere_id in sphere_ids:
+            pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
+            if pos[2] < -0.1:
+                pybullet.removeBody(sphere_id)
+                sphere_ids.remove(sphere_id)
+
+    else:
+        for sphere_id, pos_init in zip(sphere_ids, pos_list):
+            pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
+            if pos[2] < -0.1:
+                pybullet.removeBody(sphere_id)
+                sphere_ids.remove(sphere_id)
+                pos_out_list.append(pos_init)
+            else:
+                pos_in_list.append(pos_init)
+        return pos_in_list, pos_out_list
 
 
 def get_key_rotatins(use_diagonal=True):
@@ -312,22 +347,37 @@ def generate(urdf_file, required_points_num,
             pybullet.setGravity(0, 0, gravity)
 
             if pattern_spheres:
-                sphere_ids = make_2daabb_pattern_spheres(
-                        object_id, radius=0.005, space=0.025, z_space=0.1)
-                for _ in range(30):
-                    step(10)
-                    remove_out_sphere(sphere_ids)
+                sphere_ids, pos_list = make_2daabb_pattern_spheres(
+                    object_id, radius=0.005, space=0.01, z_space=0.1)
+                step(300)
+
+                for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
+                    pybullet.setGravity(f[0], f[1], gravity)
+                    step(100)
+
+                pos_in_list, pos_out_list = remove_out_sphere(
+                    sphere_ids, pos_list)
+
+                for pos in pos_in_list:
+                    sphere_ids.append(make_sphere(pos=pos))
+
+                step(300)
+
+                for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
+                    pybullet.setGravity(f[0], f[1], gravity)
+                    step(100)
+
             else:
                 for _ in range(30):
-                    sphere_ids.append(make_sphere())
+                    sphere_ids.append(make_sphere(use_random_pos=True))
                     step(10)
                     remove_out_sphere(sphere_ids)
 
-            for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
-                pybullet.setGravity(f[0], f[1], gravity)
-                for _ in range(10):
-                    step(10)
-                    remove_out_sphere(sphere_ids)
+                for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
+                    pybullet.setGravity(f[0], f[1], gravity)
+                    for _ in range(10):
+                        step(1)
+                        remove_out_sphere(sphere_ids)
 
             pouring_points_list = get_contact_points(
                 object_id, object_center, sphere_ids, pouring_points_list)
