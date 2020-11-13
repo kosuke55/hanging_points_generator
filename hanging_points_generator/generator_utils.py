@@ -26,7 +26,7 @@ def check_contact_points(
         cluster_min_points=2, eps=0.03, use_filter_penetration=True,
         inf_penetration_check=True, align=True, average=True,
         average_pos=False, _test=False, image_name=None, large_axis=False):
-    """Chaeck contact poitns with urdf
+    """Chaeck contact points with urdf
 
     Parameters
     ----------
