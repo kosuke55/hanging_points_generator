@@ -395,21 +395,26 @@ def generate(urdf_file, required_points_num,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--urdf', '-u', type=str,
-                        help='input urdf',
-                        default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf/025_mug/base.urdf')
-    parser.add_argument('--required_points_num', '-n', type=int,
-                        help='required points number',
-                        default=1)
-    parser.add_argument('--gui', '-g', type=str,
-                        help='gui',
-                        default="True")
-    parser.add_argument('--viz_obj', '-v', type=str,
-                        help='viz obj with contactpoints',
-                        default="False")
-    parser.add_argument('--pattern', '-p', type=int,
-                        help='make pattern spheres',
-                        default=1)
+    parser.add_argument(
+        '--urdf', '-u', type=str,
+        help='input urdf',
+        default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf/025_mug/base.urdf')
+    parser.add_argument(
+        '--required_points_num', '-n', type=int,
+        help='required points number',
+        default=1)
+    parser.add_argument(
+        '--gui', '-g', type=str,
+        help='gui',
+        default="True")
+    parser.add_argument(
+        '--viz_obj', '-v', type=str,
+        help='viz obj with contactpoints',
+        default="False")
+    parser.add_argument(
+        '--pattern', '-p', type=int,
+        help='make pattern spheres',
+        default=1)
 
     args = parser.parse_args()
 
