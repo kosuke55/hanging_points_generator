@@ -70,7 +70,7 @@ def make_2daabb_pattern_spheres(
     sphere_ids : list[int]
         list of sphere_id
     pos_list : list[list[float float float]]
-        list of [x y z]s
+        list of [x y z]
     """
     aabb = pybullet.getAABB(object_id)
     sphere_ids, pos_list = make_pattern_spheres(
