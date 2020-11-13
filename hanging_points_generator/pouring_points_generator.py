@@ -59,16 +59,16 @@ def make_2daabb_pattern_spheres(
 
     Returns
     -------
-    sphere_list : list[int]
+    sphere_ids : list[int]
         list of sphere_id
     """
     aabb = pybullet.getAABB(object_id)
-    sphere_list = make_pattern_spheres(
+    sphere_ids = make_pattern_spheres(
         x_min=aabb[0][0], x_max=aabb[1][0],
         y_min=aabb[0][1], y_max=aabb[1][1],
         z=aabb[1][2] + z_space, radius=radius, space=space)
 
-    return sphere_list
+    return sphere_ids
 
 
 def make_pattern_spheres(
@@ -96,7 +96,7 @@ def make_pattern_spheres(
 
     Returns
     -------
-    sphere_list : list[int]
+    sphere_ids : list[int]
         list of sphere_id
     """
 
@@ -108,7 +108,7 @@ def make_pattern_spheres(
     d = y_max - y_min
     num_y = int(np.ceil(d / interval))
 
-    sphere_list = []
+    sphere_ids = []
     for i in range(num_x):
         for j in range(num_y):
             x = x_min + interval * i
@@ -117,9 +117,9 @@ def make_pattern_spheres(
                 pybullet.GEOM_SPHERE, radius=radius)
             sphere_id = pybullet.createMultiBody(
                 1, sphere, -1, basePosition=[x, y, z])
-            sphere_list.append(sphere_id)
+            sphere_ids.append(sphere_id)
 
-    return sphere_list
+    return sphere_ids
 
 
 def remove_all_sphere(sphere_ids):
