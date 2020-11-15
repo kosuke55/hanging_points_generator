@@ -180,6 +180,14 @@ def rotate_object(object_id, rot):
     pybullet.resetBasePositionAndOrientation(object_id, pos, rot)
 
 
+def rotate_local(rot, theta, axis):
+    rot = coordinates.math.xyzw2wxyz(rot)
+    c = coordinates.Coordinates(rot=rot)
+    c.rotate(theta, axis, 'local')
+    rot = coordinates.math.wxyz2xyzw(c.quaternion)
+    return rot
+
+
 def random_rotate_object(object_id):
     """Rotate to the random roatation
 

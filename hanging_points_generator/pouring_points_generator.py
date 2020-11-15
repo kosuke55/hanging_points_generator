@@ -16,6 +16,7 @@ from hanging_points_generator.generator_utils import get_urdf_center
 from hanging_points_generator.generator_utils import load_static_urdf
 from hanging_points_generator.generator_utils import random_pos
 from hanging_points_generator.generator_utils import rotate_object
+from hanging_points_generator.generator_utils import rotate_local
 from hanging_points_generator.generator_utils import save_contact_points
 from hanging_points_generator.generator_utils import step
 
@@ -151,6 +152,7 @@ def remove_all_sphere(sphere_ids):
     for sphere_id in sphere_ids:
         pybullet.removeBody(sphere_id)
     sphere_ids = []
+    return sphere_ids
 
 
 def remove_out_sphere(sphere_ids, pos_list=None):
@@ -158,12 +160,16 @@ def remove_out_sphere(sphere_ids, pos_list=None):
 
     Parameters
     ----------
-    sphere_ids : list
+    sphere_ids : list[int]
         loaded sphere ids list
     pos_list : list[list[float float float]]
         list of [x y z], by default None
 
+    Returns
+    -------
+    remained_sphere_ids : list[int]
     """
+    remained_sphere_ids = []
     pos_in_list = []
     pos_out_list = []
     if pos_list is None:
@@ -171,18 +177,17 @@ def remove_out_sphere(sphere_ids, pos_list=None):
             pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
             if pos[2] < -0.1:
                 pybullet.removeBody(sphere_id)
-                sphere_ids.remove(sphere_id)
 
     else:
         for sphere_id, pos_init in zip(sphere_ids, pos_list):
             pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
             if pos[2] < -0.1:
                 pybullet.removeBody(sphere_id)
-                sphere_ids.remove(sphere_id)
                 pos_out_list.append(pos_init)
             else:
+                remained_sphere_ids.append(sphere_id)
                 pos_in_list.append(pos_init)
-        return pos_in_list, pos_out_list
+        return remained_sphere_ids, pos_in_list, pos_out_list
 
 
 def get_key_rotatins(use_diagonal=True):
@@ -334,15 +339,11 @@ def generate(urdf_file, required_points_num,
 
     object_id = load_static_urdf(urdf_file, [0, 0, 0], [0, 0, 0, 1])
 
-    key_rotations = get_key_rotatins()
-
-    try_num = len(key_rotations)
-    find_count = 0
-    is_pouring_object = True
+    key_rotations = get_key_rotatins()b
 
     try:
-        for try_count in six.moves.range(try_num):
-            rotate_object(object_id, key_rotations[try_count])
+        for key_rotation in key_rotations:
+            rotate_object(object_id, key_rotation)
             sphere_ids = []
             pybullet.setGravity(0, 0, gravity)
 
@@ -351,17 +352,25 @@ def generate(urdf_file, required_points_num,
                     object_id, radius=0.005, space=0.01, z_space=0.1)
                 step(300)
 
-                for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
-                    pybullet.setGravity(f[0], f[1], gravity)
-                    step(100)
-
-                pos_in_list, pos_out_list = remove_out_sphere(
+                sphere_ids, pos_in_list, pos_out_list = remove_out_sphere(
                     sphere_ids, pos_list)
 
-                for pos in pos_in_list:
-                    sphere_ids.append(make_sphere(pos=pos))
+                for _ in range(2):
+                    for pos in pos_in_list:
+                        sphere_ids.append(make_sphere(pos=pos))
+                    step(300)
 
-                step(300)
+                for axis in ['x', 'y', 'z']:
+                    for i in range(4):
+                        rot = rotate_local(
+                            key_rotation, np.pi / 12 / 4 * i, axis)
+                        rotate_object(object_id, rot)
+                        step(20)
+                    for i in range(4):
+                        rot = rotate_local(
+                            key_rotation, -np.pi / 12 / 4 * i, axis)
+                        rotate_object(object_id, rot)
+                        step(20)
 
                 for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
                     pybullet.setGravity(f[0], f[1], gravity)
@@ -386,7 +395,7 @@ def generate(urdf_file, required_points_num,
             save_contact_points(
                 osp.join(save_dir, 'pouring_points.json'), pouring_points_dict)
 
-            remove_all_sphere(sphere_ids)
+            sphere_ids = remove_all_sphere(sphere_ids)
 
     except KeyboardInterrupt:
         sys.exit()
