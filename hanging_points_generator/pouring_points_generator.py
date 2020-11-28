@@ -206,19 +206,26 @@ def get_key_rotatins(use_diagonal=True):
     if use_diagonal:
         key_rotations = [
             pybullet.getQuaternionFromEuler([0, 0, 0]),
-            pybullet.getQuaternionFromEuler([np.pi / 4, 0, 0]),
             pybullet.getQuaternionFromEuler([np.pi / 2, 0, 0]),
-            pybullet.getQuaternionFromEuler([np.pi / 4 * 3, 0, 0]),
             pybullet.getQuaternionFromEuler([np.pi, 0, 0]),
-            pybullet.getQuaternionFromEuler([-np.pi / 4 * 3, 0, 0]),
             pybullet.getQuaternionFromEuler([-np.pi / 2, 0, 0]),
-            pybullet.getQuaternionFromEuler([-np.pi / 4, 0, 0]),
-            pybullet.getQuaternionFromEuler([0, np.pi / 4, 0]),
             pybullet.getQuaternionFromEuler([0, np.pi / 2, 0]),
+            pybullet.getQuaternionFromEuler([0, -np.pi / 2, 0]),
+
+            pybullet.getQuaternionFromEuler([np.pi / 4, 0, 0]),
+            pybullet.getQuaternionFromEuler([np.pi / 4 * 3, 0, 0]),
+            pybullet.getQuaternionFromEuler([-np.pi / 4 * 3, 0, 0]),
+            pybullet.getQuaternionFromEuler([-np.pi / 4, 0, 0]),
+
+            pybullet.getQuaternionFromEuler([0, np.pi / 4, 0]),
             pybullet.getQuaternionFromEuler([0, np.pi / 4 * 3, 0]),
             pybullet.getQuaternionFromEuler([0, -np.pi / 4 * 3, 0]),
-            pybullet.getQuaternionFromEuler([0, -np.pi / 2, 0]),
-            pybullet.getQuaternionFromEuler([0, -np.pi / 4, 0])
+            pybullet.getQuaternionFromEuler([0, -np.pi / 4, 0]),
+
+            pybullet.getQuaternionFromEuler([0, 0, np.pi / 4]),
+            pybullet.getQuaternionFromEuler([0, 0, np.pi / 4 * 3]),
+            pybullet.getQuaternionFromEuler([0, 0, -np.pi / 4 * 3]),
+            pybullet.getQuaternionFromEuler([0, 0, -np.pi / 4]),
         ]
     else:
         key_rotations = [
