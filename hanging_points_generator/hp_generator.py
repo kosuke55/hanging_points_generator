@@ -58,7 +58,7 @@ def generate(urdf_file, required_points_num, try_num,
     else:
         pybullet.connect(pybullet.DIRECT)
     pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
-    gravity = -10
+    gravity = -9.8
     timestep = 1000.
     pybullet.setTimeStep(1 / timestep)
 

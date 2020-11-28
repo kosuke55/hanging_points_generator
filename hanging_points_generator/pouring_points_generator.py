@@ -333,13 +333,13 @@ def generate(urdf_file, required_points_num,
     else:
         pybullet.connect(pybullet.DIRECT)
 
-    gravity = -10
+    gravity = -9.8
     timestep = 240.
     pybullet.setTimeStep(1 / timestep)
 
     object_id = load_static_urdf(urdf_file, [0, 0, 0], [0, 0, 0, 1])
 
-    key_rotations = get_key_rotatins()b
+    key_rotations = get_key_rotatins()
 
     try:
         for key_rotation in key_rotations:
