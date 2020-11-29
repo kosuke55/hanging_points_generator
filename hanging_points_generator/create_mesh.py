@@ -1191,6 +1191,6 @@ def simple_texture_mapping(obj, image, projection_coords=None):
 
     if isinstance(image, np.ndarray):
         image = Image.fromarray(image)
-    obj.visual.material.image = Image.open(img_file)
+    obj.visual.material.image = image
 
     return obj
