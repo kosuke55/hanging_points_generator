@@ -5,6 +5,7 @@ import os
 import os.path as osp
 import pathlib2
 from pathlib import Path
+from PIL import Image
 
 import cc3d
 import cv2
@@ -1126,3 +1127,59 @@ def vhacd_dir(base_dir, name_in='base.obj', name_out='vhacd.obj',
             str(path.parent / name_out),
             str(path.parent / name_log),
             alpha=alpha, resolution=resolution)
+
+
+def normalize_vertices(vertices):
+    """Normalize vertices
+
+    Parameters
+    ----------
+    vertices : numpy.ndarray
+        Shape must be (n, 3)
+
+    Returns
+    -------
+    _vertices
+        normalized vertices
+    """
+    xyz_max = np.max(vertices, axis=0)
+    xyz_min = np.min(vertices, axis=0)
+
+    _vertices = vertices.copy()
+    for i in range(vertices.shape[1]):
+        _vertices[:, i] = (vertices[:, i] - xyz_min[i]) / \
+            (xyz_max[i] - xyz_min[i])
+
+    return _vertices
+
+
+def simple_texture_mapping(obj, image):
+    """Project the texture image onto the surface of the mesh
+
+    Parameters
+    ----------
+    obj : trimesh.base.Trimesh
+    image : PIL.Image.Image or numpy.ndarray
+        texture image
+
+    Returns
+    -------
+    obj : trimesh.base.Trimesh
+        textured mesh
+    """
+    vertices = np.array(obj.vertices)
+    normalized_vertices = normalize_vertices(vertices)
+    uv = normalized_vertices[:, :2]
+
+    if not hasattr(obj, 'visual'):
+        obj.visual = trimesh.visual.texture.TextureVisuals()
+    obj.visual.uv = trimesh.caching.tracked_array(uv)
+
+    if not hasattr(obj.visual, 'material'):
+        obj.visual.material = trimesh.visual.material.SimpleMaterial()
+
+    if isinstance(image, np.ndarray):
+        image = Image.fromarray(image)
+    obj.visual.material.image = Image.open(img_file)
+
+    return obj
