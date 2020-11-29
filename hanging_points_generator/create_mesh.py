@@ -1153,7 +1153,7 @@ def normalize_vertices(vertices):
     return _vertices
 
 
-def simple_texture_mapping(obj, image):
+def simple_texture_mapping(obj, image, projection_coords=None):
     """Project the texture image onto the surface of the mesh
 
     Parameters
@@ -1161,6 +1161,14 @@ def simple_texture_mapping(obj, image):
     obj : trimesh.base.Trimesh
     image : PIL.Image.Image or numpy.ndarray
         texture image
+    projection_coords : skrobot.coordinates.base.Coordinates
+        Project a texture from this coordinates.
+
+        v(=y)
+        ∧
+        |  Image
+        |
+        ⦿----->  u(=x)
 
     Returns
     -------
@@ -1168,6 +1176,9 @@ def simple_texture_mapping(obj, image):
         textured mesh
     """
     vertices = np.array(obj.vertices)
+    if projection_coords is not None:
+        vertices = projection_coords.transform_vector(vertices)
+
     normalized_vertices = normalize_vertices(vertices)
     uv = normalized_vertices[:, :2]
 
