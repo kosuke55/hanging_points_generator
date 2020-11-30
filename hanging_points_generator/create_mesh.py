@@ -1194,3 +1194,37 @@ def simple_texture_mapping(obj, image, projection_coords=None):
     obj.visual.material.image = image
 
     return obj
+
+
+def visualize_faces_on_texture(obj):
+    """Visualize mesh faces on texture image
+
+    Parameters
+    ----------
+    obj : trimesh.base.Trimesh
+
+    Returns
+    -------
+    image : numpy.ndarray
+        faces on texture image
+    """
+    image = cv2.cvtColor(
+        np.array(obj.visual.material.image), cv2.COLOR_RGB2BGR)
+    uv = np.array(obj.visual.uv)
+    uvfull = (uv * (image.shape[0] - 1)).astype(np.uint16)
+    u_idx = uvfull[:, 0]
+    v_idx = uvfull[:, 1]
+    faces = np.array(obj.faces)
+    pts_list = []
+    for face in faces:
+        xs = u_idx[face]
+        ys = image.shape[1] - v_idx[face]
+        pts = np.array([
+            [xs[0], ys[0]],
+            [xs[1], ys[1]],
+            [xs[2], ys[2]]
+        ], np.int32)
+        pts = pts.reshape((-1, 1, 2))
+        pts_list.append(pts)
+    image = cv2.polylines(image, pts_list, False, (255, 255, 0))
+    return image
