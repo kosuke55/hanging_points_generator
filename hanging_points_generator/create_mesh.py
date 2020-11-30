@@ -1196,12 +1196,16 @@ def simple_texture_mapping(obj, image, projection_coords=None):
     return obj
 
 
-def visualize_faces_on_texture(obj):
+def visualize_faces_on_texture(obj, color=(255, 255, 0), thickness=3):
     """Visualize mesh faces on texture image
 
     Parameters
     ----------
     obj : trimesh.base.Trimesh
+    color : tuple(int)
+        line color. (b g r) order.
+    thickness : int
+        line tickness
 
     Returns
     -------
@@ -1226,7 +1230,8 @@ def visualize_faces_on_texture(obj):
         ], np.int32)
         pts = pts.reshape((-1, 1, 2))
         pts_list.append(pts)
-    image = cv2.polylines(image, pts_list, False, (255, 255, 0))
+    image = cv2.polylines(
+        image, pts_list, False, color=color, thickness=thickness)
     return image
 
 
