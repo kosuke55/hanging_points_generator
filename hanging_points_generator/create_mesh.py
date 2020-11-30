@@ -1228,3 +1228,27 @@ def visualize_faces_on_texture(obj):
         pts_list.append(pts)
     image = cv2.polylines(image, pts_list, False, (255, 255, 0))
     return image
+
+
+def save_obj_image(obj, filename, resolution=(640, 640)):
+    """Save obj image
+
+    Parameters
+    ----------
+    obj : trimesh.base.Trimesh
+    filename : str
+        save image filename
+    resolution : tuple, optional
+        image resolution, by default (640, 640)
+    """
+    viewer = skrobot.viewers.TrimeshSceneViewer(resolution=resolution)
+    viewer.add(skrobot.models.MeshLink(obj))
+    loop = True
+    while loop:
+        try:
+            data = viewer.scene.save_image(visible=True)
+            rendered = Image.open(trimesh.util.wrap_as_stream(data))
+            rendered.save(filename)
+            loop = False
+        except AttributeError:
+            pass
