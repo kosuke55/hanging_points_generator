@@ -314,7 +314,6 @@ def shake(object_id, base_rotation, shake_step, shake_angle_max):
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir, radius=0.005,
              pattern_spheres=True, repeat_per_rotation=3, apply_force=False):
-
     """Drop the ball and find the pouring points.
 
     Parameters
@@ -384,7 +383,8 @@ def generate(urdf_file, required_points_num,
 
                     for _ in range(2):
                         for pos in pos_in_list:
-                            sphere_ids.append(make_sphere(radius=radius, pos=pos))
+                            sphere_ids.append(
+                                make_sphere(radius=radius, pos=pos))
                         step(300)
                     shake(object_id, key_rotation,
                           shake_step=4, shake_angle_max=np.pi / 6)
@@ -421,7 +421,6 @@ def generate(urdf_file, required_points_num,
                     pouring_points_dict)
 
                 if len(sphere_ids) == 0:
-                    print('break')
                     sphere_ids = remove_all_sphere(sphere_ids)
                     break
                 sphere_ids = remove_all_sphere(sphere_ids)
