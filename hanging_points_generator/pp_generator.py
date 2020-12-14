@@ -285,6 +285,31 @@ def get_contact_points(
     return contact_points_list
 
 
+def shake(object_id, base_rotation, shake_step, shake_angle_max):
+    """Shake an object around base_rotation
+
+    Parameters
+    ----------
+    object_id : int
+        pybullet object id
+    base_rotation : tuple(float float float)
+        shake an object around this rotation
+    shake_step : int
+        How many angles max should be divided
+    shake_angle_max : float
+        Maximum value of shake tilt angle
+    """
+    shake_angle_list = np.arange(
+        0, shake_angle_max, shake_angle_max / shake_step)
+    shake_angle_list = np.hstack((shake_angle_list, shake_angle_list[::-1]))
+    shake_angle_list = np.hstack((shake_angle_list, -shake_angle_list))
+
+    for axis in ['x', 'y', 'z']:
+        for shake_angle in shake_angle_list:
+            rot = rotate_local(base_rotation, shake_angle, axis)
+            rotate_object(object_id, rot)
+            step(20)
+
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir, pattern_spheres=True,
              repeat_per_rotation=3, apply_force=False):
@@ -357,20 +382,8 @@ def generate(urdf_file, required_points_num,
                         for pos in pos_in_list:
                             sphere_ids.append(make_sphere(radius=radius, pos=pos))
                         step(300)
-
-                    shake_step = 4
-                    shake_angle_max = np.pi / 6
-                    shake_angle_list = np.arange(0, shake_angle_max, shake_angle_max / shake_step)
-                    shake_angle_list = np.hstack((shake_angle_list, shake_angle_list[::-1]))
-                    shake_angle_list = np.hstack((shake_angle_list, -shake_angle_list))
-
-                    for axis in ['x', 'y', 'z']:
-                        for shake_angle in shake_angle_list:
-                            rot = rotate_local(
-                                key_rotation, shake_angle, axis)
-                            print(rot)
-                            rotate_object(object_id, rot)
-                            step(20)
+                    shake(object_id, key_rotation,
+                          shake_step=4, shake_angle_max=np.pi / 6)
 
                     if apply_force:
                         for f in [[0, 0], [-5, 0], [5, 0],
