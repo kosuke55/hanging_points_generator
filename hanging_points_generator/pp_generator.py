@@ -384,6 +384,9 @@ def generate(urdf_file, required_points_num,
     except KeyboardInterrupt:
         sys.exit()
 
+    pybullet.disconnect()
+    return pouring_points_list
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
