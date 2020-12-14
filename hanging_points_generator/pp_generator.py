@@ -246,7 +246,7 @@ def get_key_rotatins(use_diagonal=True):
 
 def get_contact_points(
         object_id, object_center, sphere_ids, contact_points_list=None,
-        x_axis=[1, 0, 0], y_axis=[0, 0, -1], use_min_height=False):
+        x_axis=[0, 0, -1], y_axis=[1, 0, 0], use_min_height=False):
     """get contact points between object and spheres
 
     Parameters
