@@ -101,7 +101,7 @@ def make_pattern_spheres(
     z : float
         z value of spheres
     radius : float, optional
-        by default 0.01x
+        by default 0.01
     space : float, optional
         space between two spheres, by default 0.05
     rgba : list[float float float float]
