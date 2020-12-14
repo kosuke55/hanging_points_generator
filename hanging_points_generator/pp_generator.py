@@ -338,7 +338,7 @@ def generate(urdf_file, required_points_num,
         by default False
     """
 
-    save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'),
+    save_dir = make_fancy_output_dir(osp.join(save_dir, 'pouring_points'),
                                      save_environ=False, save_command=False,
                                      save_git=False, save_gitignore=False,
                                      save_pip=False)
