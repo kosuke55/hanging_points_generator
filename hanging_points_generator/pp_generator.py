@@ -51,7 +51,7 @@ def make_sphere(radius=0.005, pos=[0, 0, 0],
 
 
 def make_2daabb_pattern_spheres(
-        object_id, radius=0.01,
+        object_id, radius=0.005,
         space=0.05, z_space=0.1, rgba=None):
     """Make spheres above ofject bbaa
 
@@ -310,9 +310,11 @@ def shake(object_id, base_rotation, shake_step, shake_angle_max):
             rotate_object(object_id, rot)
             step(20)
 
+
 def generate(urdf_file, required_points_num,
-             enable_gui, viz_obj, save_dir, pattern_spheres=True,
-             repeat_per_rotation=3, apply_force=False):
+             enable_gui, viz_obj, save_dir, radius=0.005,
+             pattern_spheres=True, repeat_per_rotation=3, apply_force=False):
+
     """Drop the ball and find the pouring points.
 
     Parameters
@@ -326,6 +328,8 @@ def generate(urdf_file, required_points_num,
         viz obj with contactpoints
     save_dir : str
         save dir path
+    radius : float, optional
+        shapere radius, by default 0.005
     pattern_spheres : bool, optional
         by default True
     repeat_per_rotation : int, optional
@@ -372,7 +376,7 @@ def generate(urdf_file, required_points_num,
 
                 if pattern_spheres:
                     sphere_ids, pos_list = make_2daabb_pattern_spheres(
-                        object_id, radius=0.005, space=0.01, z_space=0.1)
+                        object_id, radius=radius, space=0.01, z_space=0.1)
                     step(300)
 
                     sphere_ids, pos_in_list, pos_out_list = remove_out_sphere(
