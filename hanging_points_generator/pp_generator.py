@@ -286,7 +286,8 @@ def get_contact_points(
 
 
 def generate(urdf_file, required_points_num,
-             enable_gui, viz_obj, save_dir, pattern_spheres=True):
+             enable_gui, viz_obj, save_dir, pattern_spheres=True,
+             repeat_per_rotation=3):
     """Drop the ball and find the pouring points.
 
     Parameters
@@ -302,6 +303,8 @@ def generate(urdf_file, required_points_num,
         save dir path
     pattern_spheres : bool, optional
         by default True
+    repeat_per_rotation : int, optional
+        How many times to pour per rotation, by default 3
     """
 
     save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'),
@@ -334,60 +337,70 @@ def generate(urdf_file, required_points_num,
 
     try:
         for key_rotation in key_rotations:
-            rotate_object(object_id, key_rotation)
-            sphere_ids = []
-            pybullet.setGravity(0, 0, gravity)
+            for repeat_idx in range(repeat_per_rotation):
+                rotate_object(object_id, key_rotation)
+                sphere_ids = []
+                pybullet.setGravity(0, 0, gravity)
 
-            if pattern_spheres:
-                sphere_ids, pos_list = make_2daabb_pattern_spheres(
-                    object_id, radius=0.005, space=0.01, z_space=0.1)
-                step(300)
-
-                sphere_ids, pos_in_list, pos_out_list = remove_out_sphere(
-                    sphere_ids, pos_list)
-
-                for _ in range(2):
-                    for pos in pos_in_list:
-                        sphere_ids.append(make_sphere(pos=pos))
+                if pattern_spheres:
+                    sphere_ids, pos_list = make_2daabb_pattern_spheres(
+                        object_id, radius=0.005, space=0.01, z_space=0.1)
                     step(300)
 
-                for axis in ['x', 'y', 'z']:
-                    for i in range(4):
-                        rot = rotate_local(
-                            key_rotation, np.pi / 12 / 4 * i, axis)
-                        rotate_object(object_id, rot)
-                        step(20)
-                    for i in range(4):
-                        rot = rotate_local(
-                            key_rotation, -np.pi / 12 / 4 * i, axis)
-                        rotate_object(object_id, rot)
-                        step(20)
+                    sphere_ids, pos_in_list, pos_out_list = remove_out_sphere(
+                        sphere_ids, pos_list)
 
-                for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
-                    pybullet.setGravity(f[0], f[1], gravity)
-                    step(100)
+                    for _ in range(2):
+                        for pos in pos_in_list:
+                            sphere_ids.append(make_sphere(pos=pos))
+                        step(300)
 
-            else:
-                for _ in range(30):
-                    sphere_ids.append(make_sphere(use_random_pos=True))
-                    step(10)
-                    remove_out_sphere(sphere_ids)
+                    for axis in ['x', 'y', 'z']:
+                        for i in range(4):
+                            rot = rotate_local(
+                                key_rotation, np.pi / 12 / 4 * i, axis)
+                            rotate_object(object_id, rot)
+                            step(20)
+                        for i in range(4):
+                            rot = rotate_local(
+                                key_rotation, -np.pi / 12 / 4 * i, axis)
+                            rotate_object(object_id, rot)
+                            step(20)
 
-                for f in [[0, 0], [-5, 0], [5, 0], [0, -5], [0, 5], [0, 0]]:
-                    pybullet.setGravity(f[0], f[1], gravity)
-                    for _ in range(10):
-                        step(1)
+                    for f in [[0, 0], [-5, 0], [5, 0],
+                              [0, -5], [0, 5], [0, 0]]:
+                        pybullet.setGravity(f[0], f[1], gravity)
+                        step(100)
+
+                else:
+                    for _ in range(30):
+                        sphere_ids.append(make_sphere(use_random_pos=True))
+                        step(10)
                         remove_out_sphere(sphere_ids)
 
-            sphere_ids = remove_out_sphere(sphere_ids)
-            pouring_points_list = get_contact_points(
-                object_id, object_center, sphere_ids, pouring_points_list)
-            pouring_points_dict['contact_points'] = pouring_points_list
+                    for f in [[0, 0], [-5, 0], [5, 0],
+                              [0, -5], [0, 5], [0, 0]]:
+                        pybullet.setGravity(f[0], f[1], gravity)
+                        for _ in range(10):
+                            step(1)
+                            remove_out_sphere(sphere_ids)
 
-            save_contact_points(
-                osp.join(save_dir, 'pouring_points.json'), pouring_points_dict)
+                sphere_ids = remove_out_sphere(sphere_ids)
+                pouring_points_list = get_contact_points(
+                    object_id, object_center, sphere_ids, pouring_points_list)
+                pouring_points_dict['contact_points'] = pouring_points_list
 
-            sphere_ids = remove_all_sphere(sphere_ids)
+                save_contact_points(
+                    osp.join(
+                        save_dir,
+                        'pouring_points.json'),
+                    pouring_points_dict)
+
+                if len(sphere_ids) == 0:
+                    print('break')
+                    sphere_ids = remove_all_sphere(sphere_ids)
+                    break
+                sphere_ids = remove_all_sphere(sphere_ids)
 
     except KeyboardInterrupt:
         sys.exit()
