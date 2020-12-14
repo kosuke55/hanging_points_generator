@@ -275,29 +275,6 @@ def get_contact_points(
             x_axis, y_axis, use_min_height)
         if pose is None:
             continue
-        # contact_points = pybullet.getContactPoints(object_id, sphere_id)
-        # if len(contact_points) == 0:
-        #     continue
-
-        # if use_min_height:
-        #     contact_point = sorted(
-        #         contact_points, key=lambda x: x[5][2])[0][5]
-        # else:
-        #     contact_point = sorted(
-        #         contact_points, key=lambda x: x[5][2], reverse=True)[0][5]
-
-        # rot = skrobot.coordinates.math.rotation_matrix_from_axis(
-        #     x_axis, y_axis)
-
-        # contact_point = skrobot.coordinates.Coordinates(
-        #     pos=contact_point, rot=rot)
-
-        # contact_point_obj = obj_coords.inverse_transformation().transform(
-        #     contact_point).translate(object_center, 'world')
-
-        # pose = np.concatenate(
-        #     [contact_point_obj.T()[:3, 3][None, :],
-        #      contact_point_obj.T()[:3, :3]]).tolist()
 
         contact_points_list.append(pose)
 
