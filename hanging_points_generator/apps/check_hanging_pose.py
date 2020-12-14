@@ -49,6 +49,9 @@ def main():
     parser.add_argument('--large-axis', '-la', type=int,
                         help='use large axis as visulaizing marker',
                         default=0)
+    parser.add_argument('--just-check-num-points', '-jcnp', type=int,
+                        help='just check nuber of points without visualiziong',
+                        default=0)
 
     args = parser.parse_args()
     input_file_name = args.input_file_name
@@ -73,7 +76,8 @@ def main():
                              use_filter_penetration=args.filter_penetration,
                              inf_penetration_check=args.inf_penetration_check,
                              align=args.align, average=args.average,
-                             average_pos=args.average_pos, large_axis=args.large_axis)
+                             average_pos=args.average_pos, large_axis=args.large_axis,
+                             just_check_num_points=args.just_check_num_points)
     else:
         base_dir = args.input
         pose_path = list(Path(base_dir).glob('*/%s' % pose_file_name))
@@ -108,7 +112,8 @@ def main():
                     align=args.align,
                     average=args.average,
                     average_pos=args.average_pos,
-                    large_axis=args.large_axis)
+                    large_axis=args.large_axis,
+                    just_check_num_points=args.just_check_num_points)
         except KeyboardInterrupt:
             pass
 

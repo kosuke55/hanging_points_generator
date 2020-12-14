@@ -308,7 +308,7 @@ def shake(object_id, base_rotation, shake_step, shake_angle_max):
         for shake_angle in shake_angle_list:
             rot = rotate_local(base_rotation, shake_angle, axis)
             rotate_object(object_id, rot)
-            step(20)
+            step(1)
 
 
 def generate(urdf_file, required_points_num,
@@ -387,7 +387,8 @@ def generate(urdf_file, required_points_num,
                                 make_sphere(radius=radius, pos=pos))
                         step(300)
                     shake(object_id, key_rotation,
-                          shake_step=4, shake_angle_max=np.pi / 6)
+                          shake_step=100, shake_angle_max=np.pi / 6)
+                    step(300)
 
                     if apply_force:
                         for f in [[0, 0], [-5, 0], [5, 0],

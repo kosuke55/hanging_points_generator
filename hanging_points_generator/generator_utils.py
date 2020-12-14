@@ -25,7 +25,8 @@ def check_contact_points(
         contact_points_path, urdf_file='', json_name='contact_points.json',
         cluster_min_points=2, eps=0.03, use_filter_penetration=True,
         inf_penetration_check=True, align=True, average=True,
-        average_pos=False, _test=False, image_name=None, large_axis=False):
+        average_pos=False, _test=False, image_name=None, large_axis=False,
+        just_check_num_points=False):
     """Chaeck contact points with urdf
 
     Parameters
@@ -43,6 +44,8 @@ def check_contact_points(
         by default True
     inf_penetration_check : bool, optional
         by default True
+    just_check_num_points : bool, optional
+        by default False
 
     """
     if osp.isdir(contact_points_path):
@@ -56,6 +59,8 @@ def check_contact_points(
 
     contact_points = contact_points_dict['contact_points']
     print('Load %d points' % len(contact_points))
+    if just_check_num_points:
+        return True
     urdf_file = str(urdf_file or contact_points_dict['urdf_file'])
 
     if use_filter_penetration:
