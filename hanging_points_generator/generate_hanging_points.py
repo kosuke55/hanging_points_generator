@@ -27,7 +27,7 @@ parser.add_argument('--required-points-num', '-n', type=int,
 parser.add_argument('--try-num', '-tn', type=int,
                     help='number of try', default=1000)
 parser.add_argument('--existed-points-num', '-en', type=int,
-                    help='required points number',
+                    help='threshold for the number of points already generated. Skip more than this number.',
                     default=100)
 parser.add_argument('--gui', '-g', type=int,
                     help='gui', default=0)
