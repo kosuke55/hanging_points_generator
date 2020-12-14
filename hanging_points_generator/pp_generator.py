@@ -178,6 +178,9 @@ def remove_out_sphere(sphere_ids, pos_list=None):
             pos, _ = pybullet.getBasePositionAndOrientation(sphere_id)
             if pos[2] < -0.1:
                 pybullet.removeBody(sphere_id)
+            else:
+                remained_sphere_ids.append(sphere_id)
+        return remained_sphere_ids
 
     else:
         for sphere_id, pos_init in zip(sphere_ids, pos_list):
@@ -376,6 +379,7 @@ def generate(urdf_file, required_points_num,
                         step(1)
                         remove_out_sphere(sphere_ids)
 
+            sphere_ids = remove_out_sphere(sphere_ids)
             pouring_points_list = get_contact_points(
                 object_id, object_center, sphere_ids, pouring_points_list)
             pouring_points_dict['contact_points'] = pouring_points_list
