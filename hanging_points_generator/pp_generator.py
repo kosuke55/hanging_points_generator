@@ -287,7 +287,7 @@ def get_contact_points(
 
 def generate(urdf_file, required_points_num,
              enable_gui, viz_obj, save_dir, pattern_spheres=True,
-             repeat_per_rotation=3):
+             repeat_per_rotation=3, apply_force=False):
     """Drop the ball and find the pouring points.
 
     Parameters
@@ -305,6 +305,9 @@ def generate(urdf_file, required_points_num,
         by default True
     repeat_per_rotation : int, optional
         How many times to pour per rotation, by default 3
+    apply_force : bool, optional
+        Whether to apply an external force to check the stability.
+        by default False
     """
 
     save_dir = make_fancy_output_dir(osp.join(save_dir, 'contact_points'),
@@ -352,25 +355,29 @@ def generate(urdf_file, required_points_num,
 
                     for _ in range(2):
                         for pos in pos_in_list:
-                            sphere_ids.append(make_sphere(pos=pos))
+                            sphere_ids.append(make_sphere(radius=radius, pos=pos))
                         step(300)
 
+                    shake_step = 4
+                    shake_angle_max = np.pi / 6
+                    shake_angle_list = np.arange(0, shake_angle_max, shake_angle_max / shake_step)
+                    shake_angle_list = np.hstack((shake_angle_list, shake_angle_list[::-1]))
+                    shake_angle_list = np.hstack((shake_angle_list, -shake_angle_list))
+
                     for axis in ['x', 'y', 'z']:
-                        for i in range(4):
+                        for shake_angle in shake_angle_list:
                             rot = rotate_local(
-                                key_rotation, np.pi / 12 / 4 * i, axis)
-                            rotate_object(object_id, rot)
-                            step(20)
-                        for i in range(4):
-                            rot = rotate_local(
-                                key_rotation, -np.pi / 12 / 4 * i, axis)
+                                key_rotation, shake_angle, axis)
+                            print(rot)
                             rotate_object(object_id, rot)
                             step(20)
 
-                    for f in [[0, 0], [-5, 0], [5, 0],
-                              [0, -5], [0, 5], [0, 0]]:
-                        pybullet.setGravity(f[0], f[1], gravity)
-                        step(100)
+                    if apply_force:
+                        for f in [[0, 0], [-5, 0], [5, 0],
+                                  [0, -5], [0, 5], [0, 0]]:
+
+                            pybullet.setGravity(f[0], f[1], gravity)
+                            step(100)
 
                 else:
                     for _ in range(30):
