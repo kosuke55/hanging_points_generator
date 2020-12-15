@@ -15,6 +15,17 @@ def download_sample_data(output_dir=None, rosbag=True):
         md5='ab9f0c690c79e1959742ec0dbfc162d3',
         postprocess=gdown.extractall)
 
+    # urdf
+    if output_dir is None:
+        output = 'urdf.tgz'
+    else:
+        output = osp.join(output_dir, 'urdf.tgz')
+    gdown.cached_download(
+        'https://drive.google.com/uc?export=download&id=1alkc-v-GQnAbpoIxxCBQ3fLOEpmRoN2Y',
+        output,
+        md5='b8d53e7315df1fad833676ef07b874d5',
+        postprocess=gdown.extractall)
+
     if rosbag:
         if output_dir is None:
             output = 'create_mesh_sample_rosbag.tgz'
