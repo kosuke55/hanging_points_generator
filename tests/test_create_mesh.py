@@ -16,7 +16,8 @@ class TestCreateMesh(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        download_sample_data(osp.abspath(osp.dirname(__file__)), rosbag=False)
+        download_sample_data(osp.abspath(osp.dirname(__file__)),
+                             rgbd=True, urdf=True, rosbag=False)
         cls.test_data_tgz = osp.join(
             osp.abspath(osp.dirname(__file__)), 'sample_data.tgz')
         cls.test_data_dir = osp.join(
