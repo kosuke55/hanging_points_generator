@@ -59,13 +59,13 @@ skip_list = []
 skip_file = osp.join(
     input_dir, 'finish_list.txt') if args.skip_list == '' else args.skip_list
 
-if osp.isfile(skip_file):
-    skip_list = load_list(skip_file)
-print('skip list: ', skip_list)
-
 for file in tqdm(files):
     # if 'bowl' not in file:
     #     continue
+    if osp.isfile(skip_file):
+        skip_list = load_list(skip_file)
+        # print('skip list: ', skip_list)
+        print('skip list length : ', len(skip_list))
 
     dirname, filename = osp.split(file)
     category_name = Path(dirname).name
