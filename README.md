@@ -14,7 +14,7 @@ If you use ubuntu 18.04 and python3, just
 
 ## Mesh Reconstruction demo
 ```
-python donwload_sample_data.py --rosbag 0  # If you want to run the ros sample, set --rosbag 1.
+python donwload_sample_data.py --rgbd 1
 cd examples/
 python icp_camera_pose_estimation.py
 python create_mesh_from_data.py
