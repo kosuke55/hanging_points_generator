@@ -17,9 +17,16 @@ def main():
                         help='nuber of sampling ponts after processing,'
                         + 'If -1 remain all points',
                         default=30)
+    parser.add_argument('--filter-penetration', '-f', type=int,
+                        help='filter penetration', default=1)
+    parser.add_argument('--inf-penetration-check', '-ipc', type=int,
+                        help='infinity penetration check ', default=1)
     args = parser.parse_args()
 
-    filter_contact_points_dir(args.input, args.rate_thresh, args.num_samples)
+    filter_contact_points_dir(
+        args.input, args.rate_thresh, args.num_samples,
+        use_filter_penetration=args.filter_penetration,
+        inf_penetration_check=args.inf_penetration_check)
 
 
 if __name__ == '__main__':

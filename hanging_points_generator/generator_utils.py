@@ -787,7 +787,8 @@ def set_contact_points_urdf_path(contact_points_path):
 
 
 def filter_contact_points(
-        contact_points_dict, cluster_min_points=-1, eps=0.01, num_samples=30):
+        contact_points_dict, cluster_min_points=-1, eps=0.01, num_samples=30,
+        use_filter_penetration=True, inf_penetration_check=True):
     """Filter contact points by clustering, aligning, averageing
 
     Parameters
@@ -798,6 +799,13 @@ def filter_contact_points(
 
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.01
+    num_samples : int, optional
+        sampling contact points with this value.
+        if -1 remain all points.
+    use_filter_penetration : bool, optional
+        by default True
+    inf_penetration_check : bool, optional
+        by default True
 
     Returns
     -------
@@ -807,12 +815,19 @@ def filter_contact_points(
     """
     urdf_file = str(contact_points_dict['urdf_file'])
     contact_points = contact_points_dict['contact_points']
-    contact_points, _ = filter_penetration(
-        urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
-    print('penetration contact_points :%d' % len(contact_points))
-    if len(contact_points) == 0:
-        print('No points after penetration check')
-        return False
+
+    if use_filter_penetration or inf_penetration_check:
+        if inf_penetration_check:
+            contact_points, _ = filter_penetration(
+                urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
+        else:
+            contact_points, _ = filter_penetration(
+                urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
+        print('penetration contact_points :%d' % len(contact_points))
+        if len(contact_points) == 0:
+            print('No points after penetration check')
+            return False
+
     contact_points = cluster_contact_points(
         contact_points, min_samples=cluster_min_points, eps=eps)
     print('clusterring contact_points :%d' % len(contact_points))
@@ -826,6 +841,7 @@ def filter_contact_points(
         contact_points_coords, dbscan)
     if not labels:
         return False
+
     aligned_contact_points_coords \
         = align_coords(contact_points_coords, labels)
     average_aligned_contact_points_coords = make_average_coords_list(
@@ -841,13 +857,24 @@ def filter_contact_points(
     return average_aligned_contact_points_coord_dict
 
 
-def filter_contact_points_dir(input_dir, rate_thresh=0.1, num_samples=30):
+def filter_contact_points_dir(
+        input_dir, rate_thresh=0.1, num_samples=30,
+        use_filter_penetration=True, inf_penetration_check=True):
     """Filter all contact points in the directory
 
     Parameters
     ----------
     input_dir : str
         hanging_object of hanging_object/category/contact_points/<fancy_dir>/contact_points.json # noqa
+    rate_thresh : float
+        Objects whose rate of the number of remaining points is greater than this value are skipped.
+    num_samples : int, optional
+        sampling contact points with this value
+        if -1 remain all points.
+    use_filter_penetration : bool, optional
+        by default True
+    inf_penetration_check : bool, optional
+        by default True
     """
     contact_points_path_list = list(Path(input_dir).glob('*/contact_points'))
     skip_list_file = osp.join(input_dir, 'filter_skip_list.txt')
@@ -865,7 +892,10 @@ def filter_contact_points_dir(input_dir, rate_thresh=0.1, num_samples=30):
         pre_points_num = len(contact_points['contact_points'])
         print('contact points :%d' % pre_points_num)
         filtered_contact_points \
-            = filter_contact_points(contact_points, num_samples=num_samples)
+            = filter_contact_points(
+                contact_points, num_samples=num_samples,
+                use_filter_penetration=use_filter_penetration,
+                inf_penetration_check=inf_penetration_check)
         if not filtered_contact_points:
             print('Skip %s ' % str(contact_points_path))
             add_list(skip_list_file, category_name)
