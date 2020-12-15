@@ -102,7 +102,7 @@ optional arguments:
 
 example
 ```
-cd urdf/03_scissors
+cd urdf/037_scissors
 check-hanging-pose -i textured.urdf -p contact_points
 check-hanging-pose -i textured.urdf -p contact_points -c -1 -ipc 1 --align 1 --average 1
 ```
