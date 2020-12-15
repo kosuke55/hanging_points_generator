@@ -30,17 +30,17 @@ python donwload_sample_data.py --rosbag 1
 ```
 roslaunch hanging_points_generator sample_create_mesh.launch
 ```
-<img src="https://user-images.githubusercontent.com/39142679/92908721-775fe600-f461-11ea-907a-f56375f6be99.gif" height="200"> <img src="https://user-images.githubusercontent.com/39142679/92987591-dd4e7b00-f4fe-11ea-9730-efeac0674b7f.gif" height="200">  
+<img src="https://user-images.githubusercontent.com/39142679/92908721-775fe600-f461-11ea-907a-f56375f6be99.gif" height="300"> <img src="https://user-images.githubusercontent.com/39142679/92987591-dd4e7b00-f4fe-11ea-9730-efeac0674b7f.gif" height="300">  
 
 ### handeye
 ```
 roslaunch hanging_points_generator sample_create_mesh_handeye.launch
 ```
-<img src="https://user-images.githubusercontent.com/39142679/92906978-e0465e80-f45f-11ea-976d-a3dd0f3c1f3f.gif" height="200"> <img src="https://user-images.githubusercontent.com/39142679/92907012-edfbe400-f45f-11ea-8b3f-cc93dce589f9.gif" height="200">  
+<img src="https://user-images.githubusercontent.com/39142679/92906978-e0465e80-f45f-11ea-976d-a3dd0f3c1f3f.gif" height="300"> <img src="https://user-images.githubusercontent.com/39142679/92907012-edfbe400-f45f-11ea-8b3f-cc93dce589f9.gif" height="300">  
 
 ### texture mapping
 Use [this](https://github.com/iory/texture-mapping) for texture mapping  
-<img src="https://github.com/iory/texture-mapping/blob/master/docs/image/textured.gif?raw=true" width="200">  
+<img src="https://github.com/iory/texture-mapping/blob/master/docs/image/textured.gif?raw=true" width="300">  
 
 
 ## When using with ros (just an example in my environment)
@@ -65,11 +65,11 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 
 ### Mesh reconstruction and Generating hanging points Result
 **1.** Collect rgbd images.  
-<img src="https://user-images.githubusercontent.com/39142679/80790397-ae77de00-8bc9-11ea-95cf-46130f707e6d.gif" width="200">  
+<img src="https://user-images.githubusercontent.com/39142679/80790397-ae77de00-8bc9-11ea-95cf-46130f707e6d.gif" width="300">  
 **2.** Create mesh. (Left: ICP->TSDF Right: ICP->Voxelization-> Marching cubes)  
-<img src="https://user-images.githubusercontent.com/39142679/80790404-b2a3fb80-8bc9-11ea-9b52-246e1c4273fe.gif"  alt="hoge" width="200" height="200" >  <img src="https://user-images.githubusercontent.com/39142679/80790323-7c667c00-8bc9-11ea-915c-bb51b1be854e.gif" width="200" height="200">  
+<img src="https://user-images.githubusercontent.com/39142679/80790404-b2a3fb80-8bc9-11ea-9b52-246e1c4273fe.gif"  alt="hoge" width="300" height="300" >  <img src="https://user-images.githubusercontent.com/39142679/80790323-7c667c00-8bc9-11ea-915c-bb51b1be854e.gif" width="300" height="300">  
 **3.** Find hanging points in pybullet.  
-<img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="200" height="200"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="200" height="200">  
+<img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">  
 
 ### How to check contact points
 ```
@@ -99,6 +99,16 @@ optional arguments:
   --average-pos AVERAGE_POS
                         average coords pos (default: 0)
 ```
+
+example
+```
+cd urdf/03_scissors
+check-hanging-pose -i textured.urdf -p contact_points
+check-hanging-pose -i textured.urdf -p contact_points -c -1 -ipc 1 --align 1 --average 1
+```
+<img src="https://user-images.githubusercontent.com/39142679/102206051-5fd84380-3f0f-11eb-87c3-796142f8b742.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/102206130-7b434e80-3f0f-11eb-96b6-db7c4c319c9b.gif" width="300" height="300">  
+left:before filtering right:after filtering
+
 
 ### Externals
 [andyzeng/tsdf-fusion-python](https://github.com/andyzeng/tsdf-fusion-python)  
