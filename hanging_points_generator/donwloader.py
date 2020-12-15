@@ -18,7 +18,10 @@ def download_sample_data(output_dir=None, rgbd=True, urdf=True, rosbag=True):
 
     # urdf
     if urdf:
-        urdf_path = osp.join(osp.dirname(osp.dirname(osp.abspath(__file__))), 'urdf.tgz')
+        if output_dir is None:
+            urdf_path = 'urdf.tgz'
+        else:
+            urdf_path = osp.join(output_dir, 'urdf.tgz')
         gdown.cached_download(
             'https://drive.google.com/uc?export=download&id=1alkc-v-GQnAbpoIxxCBQ3fLOEpmRoN2Y',
             urdf_path,
