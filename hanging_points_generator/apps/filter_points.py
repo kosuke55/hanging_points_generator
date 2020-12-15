@@ -21,12 +21,21 @@ def main():
                         help='filter penetration', default=1)
     parser.add_argument('--inf-penetration-check', '-ipc', type=int,
                         help='infinity penetration check ', default=1)
+    parser.add_argument('--points-path-name', '-ppn', type=str,
+                        help='points path name. contact_points is for hanging.'
+                        'pouring_points is for pouring',
+                        default='contact_points')
+    parser.add_argument('--suffix', '-s', type=str,
+                        help='output file suffix',
+                        default='')
     args = parser.parse_args()
 
     filter_contact_points_dir(
         args.input, args.rate_thresh, args.num_samples,
         use_filter_penetration=args.filter_penetration,
-        inf_penetration_check=args.inf_penetration_check)
+        inf_penetration_check=args.inf_penetration_check,
+        points_path_name=args.points_path_name,
+        suffix=args.suffix)
 
 
 if __name__ == '__main__':

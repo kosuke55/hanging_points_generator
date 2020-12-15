@@ -815,6 +815,9 @@ def filter_contact_points(
     """
     urdf_file = str(contact_points_dict['urdf_file'])
     contact_points = contact_points_dict['contact_points']
+    if len(contact_points) == 0:
+        print('No points')
+        return False
 
     if use_filter_penetration or inf_penetration_check:
         if inf_penetration_check:
@@ -827,13 +830,13 @@ def filter_contact_points(
         if len(contact_points) == 0:
             print('No points after penetration check')
             return False
-
-    contact_points = cluster_contact_points(
-        contact_points, min_samples=cluster_min_points, eps=eps)
-    print('clusterring contact_points :%d' % len(contact_points))
-    if len(contact_points) == 0:
-        print('No points after clustering')
-        return False
+    if cluster_min_points or cluster_min_points == -1:
+        contact_points = cluster_contact_points(
+            contact_points, min_samples=cluster_min_points, eps=eps)
+        print('clusterring contact_points :%d' % len(contact_points))
+        if len(contact_points) == 0:
+            print('No points after clustering')
+            return False
 
     contact_points_coords = make_contact_points_coords(contact_points)
     dbscan = dbscan_coords(contact_points_coords, eps=eps)
@@ -859,7 +862,8 @@ def filter_contact_points(
 
 def filter_contact_points_dir(
         input_dir, rate_thresh=0.1, num_samples=30,
-        use_filter_penetration=True, inf_penetration_check=True):
+        use_filter_penetration=True, inf_penetration_check=True,
+        points_path_name='contact_points', suffix=''):
     """Filter all contact points in the directory
 
     Parameters
@@ -875,14 +879,23 @@ def filter_contact_points_dir(
         by default True
     inf_penetration_check : bool, optional
         by default True
+    suffix : str, optional
+        if '_pouring' output file name is filtered_contact_points_pouring.json etc.
+        by default ''
     """
-    contact_points_path_list = list(Path(input_dir).glob('*/contact_points'))
-    skip_list_file = osp.join(input_dir, 'filter_skip_list.txt')
-    remain_list_file = osp.join(input_dir, 'filter_remain_list.txt')
+    if points_path_name == 'p' or points_path_name == 'pouring':
+        points_path_name = 'pouring_points'
+        json_name = 'pouring_points.json'
+
+    contact_points_path_list = list(
+        Path(input_dir).glob('*/{}'.format(points_path_name)))
+    skip_list_file = osp.join(input_dir, 'filter_skip_list{}.txt'.format(suffix))
+    remain_list_file = osp.join(input_dir, 'filter_remain_list{}.txt'.format(suffix))
     result_dict = {}
     for contact_points_path in contact_points_path_list:
         print('-----')
-        contact_points = load_multiple_contact_points(str(contact_points_path))
+        contact_points = load_multiple_contact_points(
+            str(contact_points_path), json_name=json_name)
         category_name = contact_points_path.parent.name
         print(category_name)
         if not contact_points:
@@ -914,12 +927,14 @@ def filter_contact_points_dir(
             continue
         add_list(remain_list_file, category_name)
         save_contact_points(
-            str(contact_points_path.parent / 'filtered_contact_points.json'),
+            str(contact_points_path.parent / 'filtered_contact_points{}.json'.format(suffix)),
             filtered_contact_points)
         result_dict[category_name] = {'pre_points_num': pre_points_num,
                                       'post_points_num': post_points_num,
                                       'rate': rate}
-    save_json(osp.join(input_dir, 'filtering_result.json'), result_dict)
+    save_json(
+        osp.join(input_dir,
+                 'filtering_result{}.json'.format(suffix)), result_dict)
 
 
 def add_list(path, item):
