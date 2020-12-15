@@ -63,7 +63,7 @@ def check_contact_points(
         return True
     urdf_file = str(urdf_file or contact_points_dict['urdf_file'])
 
-    if use_filter_penetration:
+    if use_filter_penetration or inf_penetration_check:
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
