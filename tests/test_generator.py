@@ -19,8 +19,7 @@ class TestGenerator(unittest.TestCase):
     def setUpClass(cls):
         cls.current_dir = os.path.dirname(os.path.abspath(__file__))
         cls.package_dir = os.path.dirname(cls.current_dir)
-        download_sample_data(cls.package_dir,
-                             rgbd=False, urdf=True, rosbag=False)
+        download_sample_data(rgbd=False, urdf=True, rosbag=False)
         cls.contact_points_file = osp.join(
             cls.package_dir, 'urdf/scissors/contact_points.json')
         cls.urdf_file = osp.join(
