@@ -9,7 +9,13 @@ if __name__ == '__main__':
     parser.add_argument('--output-dir', '-o', type=str,
                         help='output dir',
                         default=None)
-    parser.add_argument('--rosbag', '-r', type=int,
+    parser.add_argument('--rgbd', type=int,
+                        help='Download sample rgbd and camera pose file.',
+                        default=0)
+    parser.add_argument('--urdf', type=int,
+                        help='Download urdf file.',
+                        default=1)
+    parser.add_argument('--rosbag', type=int,
                         help='Download sample bag file.',
                         default=0)
     args = parser.parse_args()
