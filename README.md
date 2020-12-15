@@ -100,15 +100,14 @@ optional arguments:
                         average coords pos (default: 0)
 ```
 
-example
+#### example
 ```
 cd urdf/037_scissors
 check-hanging-pose -i textured.urdf -p contact_points
 check-hanging-pose -i textured.urdf -p contact_points -c -1 -ipc 1 --align 1 --average 1
 ```
 <img src="https://user-images.githubusercontent.com/39142679/102206051-5fd84380-3f0f-11eb-87c3-796142f8b742.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/102206130-7b434e80-3f0f-11eb-96b6-db7c4c319c9b.gif" width="300" height="300">  
-left:before filtering right:after filtering
-
+Left:Before filtering &ensp; Right:After filtering
 
 ### Externals
 [andyzeng/tsdf-fusion-python](https://github.com/andyzeng/tsdf-fusion-python)  
