@@ -5,6 +5,7 @@ import argparse
 import os
 import os.path as osp
 import sys
+from pathlib import Path
 
 import numpy as np
 import pybullet
@@ -12,6 +13,7 @@ import skrobot
 import six
 from eos import make_fancy_output_dir
 
+from hanging_points_generator.generator_utils import add_list
 from hanging_points_generator.generator_utils import get_contact_point
 from hanging_points_generator.generator_utils import get_urdf_center
 from hanging_points_generator.generator_utils import load_static_urdf
@@ -337,11 +339,13 @@ def generate(urdf_file, required_points_num,
         Whether to apply an external force to check the stability.
         by default False
     """
-
+    category_name = Path(urdf_file).parent.name
+    base_save_dir = Path(save_dir).parent
     save_dir = make_fancy_output_dir(osp.join(save_dir, 'pouring_points'),
                                      save_environ=False, save_command=False,
                                      save_git=False, save_gitignore=False,
                                      save_pip=False)
+    add_list(osp.join(base_save_dir, 'finish_list.txt'), category_name)
 
     pouring_points_list = []
     pouring_points_dict = {'urdf_file': urdf_file, 'contact_points': []}
