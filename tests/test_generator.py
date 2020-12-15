@@ -17,13 +17,14 @@ class TestGenerator(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        download_sample_data(osp.abspath(osp.dirname(__file__)),
-                             rgbd=False, urdf=True, rosbag=False)
         cls.current_dir = os.path.dirname(os.path.abspath(__file__))
+        cls.package_dir = os.path.dirname(cls.current_dir)
+        download_sample_data(cls.package_dir,
+                             rgbd=False, urdf=True, rosbag=False)
         cls.contact_points_file = osp.join(
-            cls.current_dir, '../urdf/scissors/contact_points.json')
+            cls.package_dir, 'urdf/scissors/contact_points.json')
         cls.urdf_file = osp.join(
-            cls.current_dir, '../urdf/scissors/base.urdf')
+            cls.package_dir, 'urdf/scissors/base.urdf')
         set_contact_points_urdf_path(cls.contact_points_file)
 
     def test_check_contact_points(self):
