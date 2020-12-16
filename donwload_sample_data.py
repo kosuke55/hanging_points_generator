@@ -9,7 +9,7 @@ if __name__ == '__main__':
     parser.add_argument('--output-dir', '-o', type=str,
                         help='output dir',
                         default=None)
-    parser.add_argument('--rgbd', action='store_true',,
+    parser.add_argument('--rgbd', action='store_true',
                         help='Download sample rgbd and camera pose file.')
     parser.add_argument('--urdf', action='store_true',
                         help='Download urdf file.')
