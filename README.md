@@ -14,7 +14,7 @@ If you use ubuntu 18.04 and python3, just
 
 ## Mesh Reconstruction demo
 ```
-python donwload_sample_data.py --rgbd 1
+python donwload_sample_data.py --rgbd --urdf
 cd examples/
 python icp_camera_pose_estimation.py
 python create_mesh_from_data.py
@@ -23,7 +23,7 @@ python create_mesh_voxelize_marching_cubes.py
 
 ## Mesh Reconstruction demo(ROS)
 ```
-python donwload_sample_data.py --rosbag 1
+python donwload_sample_data.py --rosbag
 ```
 
 ### inhand
