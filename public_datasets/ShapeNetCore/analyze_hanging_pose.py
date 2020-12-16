@@ -16,7 +16,7 @@ from shapenet_utils import manipulation_synset
 from shapenet_utils import synset_to_label
 
 
-def make_graph(points, filename):
+def make_graph(points, filename, task_type='hanging'):
 
     synset = [k for k, v in points.items()]
     value = [v for k, v in points.items()]
@@ -27,14 +27,15 @@ def make_graph(points, filename):
     label = [synset_to_label[s] for s in synset]
     plt.rcParams["font.size"] = 10
     plt.barh(label, value, height=0.5)
-    plt.xlabel('number of hanging points')
+    plt.xlabel('number of {} points'.format(task_type))
     plt.ylabel('category')
     plt.tight_layout()
     plt.savefig(filename, format='png', dpi=200)
     plt.close()
 
 
-def make_graph_with_filtering_rate(data, points, filename):
+def make_graph_with_filtering_rate(
+    data, points, filename, task_type='hanging'):
     if isinstance(data, dict):
         label, value = make_category_filling_rate(data, to_label=True)
     elif isinstance(data, list):
@@ -62,7 +63,7 @@ def make_graph_with_filtering_rate(data, points, filename):
     color = 'tab:red'
     bar2 = ax2.barh(
         y2, num_points, height=0.5, color=color, label='number of points')
-    ax2.set_xlabel('number of points')
+    ax2.set_xlabel('number of {} points'.format(task_type))
     plt.yticks((y1 + y2) / 2, label)
     ax1.legend(
         (bar1[0], bar2[0]), ['filling rate', 'number of points'],
@@ -76,21 +77,37 @@ def make_graph_with_filtering_rate(data, points, filename):
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--file', '-f', type=str,
-    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10/filtering_result.json',
+    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10/filtering_result.json',
+    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10_copy/filtering_result_pouring.json',
     help='filtering result file path')
 parser.add_argument(
     '--out-file', '-o', type=str,
-    default='shapenet_hanging_points.png',
+    # default='shapenet_hanging_points.png',
+    default='shapenet_pouring_points.png',
     help='output graph image file name')
+parser.add_argument(
+    '--task-type', '-t', type=str,
+    default=None,
+    help='if None, set it automaticaly from outfile')
 args = parser.parse_args()
 
 filtering_result = load_json(args.file)
+out_file = args.out_file
+
+if args.task_type is not None:
+    task_type = args.task_type
+else:
+    if 'hanging' in out_file:
+        task_type = 'hanging'
+    elif 'pouring' in out_file:
+        task_type = 'pouring'
+print('task_type ', task_type)
 
 points_list = {}
 for key in filtering_result:
     synset = key.split('_')[0]
     num_points = filtering_result[key]['post_points_num']
-    print(synset, num_points)
+    # print(synset, num_points)
     if synset not in points_list:
         points_list[synset] = []
     points_list[synset].append(num_points)
@@ -107,10 +124,11 @@ for key in target_synsets:
 data = filling_rate()
 data = dict(filter(lambda item: item[0] in target_synsets, data.items()))
 
-make_graph(points, args.out_file)
+make_graph(points, out_file, task_type)
 make_graph_with_filtering_rate(
     data, points,
-    str(Path(args.out_file).stem) + '_with_filtering_rate.png')
+    str(Path(out_file).stem) + '_with_filtering_rate.png',
+    task_type)
 
 points_list_label = {}
 for key in points_list:
@@ -130,6 +148,7 @@ synset = [synset[i] for i in idx]
 label = [synset_to_label[s] for s in synset]
 value_list = [hp_dict[key] for key in label]
 
-for l, vl, v in zip(label, value_list, value):
+for l, vl, v in zip(label, value_list, value): # noqa
     print('{}   &{} &{} &{} &{} &{} &{} &{} &{} &{} &{}   &{}'.format(
-        l, vl[0], vl[1], vl[2], vl[3], vl[4], vl[5], vl[6], vl[7], vl[8], vl[9], v))
+        l, vl[0], vl[1], vl[2], vl[3], vl[4],
+        vl[5], vl[6], vl[7], vl[8], vl[9], v))
