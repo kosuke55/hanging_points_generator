@@ -24,7 +24,7 @@ parser.add_argument(
     help='input directory',
     default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10')
 parser.add_argument('--required-points-num', '-n', type=int,
-                    help='required points number',
+                    help='required points number. do not use this option now',
                     default=1)
 parser.add_argument(
     '--existed-points-num',

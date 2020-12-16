@@ -324,7 +324,7 @@ def generate(urdf_file, required_points_num,
     urdf_file : str
         udfr file path
     required_points_num : int
-        required points number
+        required points number. do not use now.
     enable_gui : bool
     viz_obj : bool
         viz obj with contactpoints
