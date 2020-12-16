@@ -47,6 +47,8 @@ parser.add_argument('--skip-list', '-s', type=str,
 parser.add_argument('--shuffle-files', '-sf', type=str,
                     help='shuffle files',
                     default=1)
+parser.add_argument('--skip', action='store_true',
+                    help='use skip file')
 
 args = parser.parse_args()
 input_dir = args.input_dir
@@ -70,9 +72,11 @@ for file in tqdm(files):
     dirname, filename = osp.split(file)
     category_name = Path(dirname).name
 
-    if category_name in skip_list:
-        print('Skipped %s because it is in skip_list' % file)
-        continue
+    if args.skip:
+        if category_name in skip_list:
+            print('Skipped %s because it is in skip_list' % file)
+            continue
+
     print('-----------------------')
     num_cp = 0
     contact_points_path = osp.join(dirname, 'pouring_points')
