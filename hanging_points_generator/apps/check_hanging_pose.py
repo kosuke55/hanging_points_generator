@@ -69,8 +69,8 @@ def main():
     elif pose_file_name == 'f':
         pose_file_name = 'filtered_contact_points.json'
 
+    json_name = Path(pose_file_name).with_suffix('.json').name
     if osp.isfile(args.input):
-        json_name = Path(pose_file_name).with_suffix('.json').name
         check_contact_points(args.pose, args.input, json_name=json_name,
                              cluster_min_points=args.clustering,
                              use_filter_penetration=args.filter_penetration,
@@ -105,6 +105,7 @@ def main():
                 check_contact_points(
                     pose,
                     urdf,
+                    json_name=json_name,
                     cluster_min_points=args.clustering,
                     eps=args.eps,
                     use_filter_penetration=args.filter_penetration,
