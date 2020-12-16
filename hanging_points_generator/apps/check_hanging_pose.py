@@ -33,8 +33,9 @@ def main():
                         help='dbscan clustering min points', default=0)
     parser.add_argument('--eps', '-e', type=float,
                         help='dbscan eps params', default=0.01)
-    parser.add_argument('--filter-penetration', '-f', type=int,
-                        help='filter penetration', default=0)
+    parser.add_argument('--filter-penetration', '-f',
+                        action='store_true',
+                        help='filter penetration')
     parser.add_argument('--inf-penetration-check', '-ipc', action='store_true',
                         help='infinity penetration check ')
     parser.add_argument('--align', action='store_true',

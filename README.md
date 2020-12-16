@@ -98,8 +98,8 @@ optional arguments:
   --clustering CLUSTERING, -c CLUSTERING
                         dbscan clustering min points (default: 0)
   --eps EPS, -e EPS     dbscan eps params (default: 0.01)
-  --filter-penetration FILTER_PENETRATION, -f FILTER_PENETRATION
-                        filter penetration (default: 0)
+  --filter-penetration, -f
+                        filter penetration (default: False)
   --inf-penetration-check, -ipc
                         infinity penetration check (default: False)
   --align               align coords (default: False)
