@@ -73,38 +73,52 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 
 ### How to check contact points
 ```
-check_hanging_pose -i base.urdf -p contact_points -c 5 -f 1 -ipc 0
-# If contact_points is dir, load multiple contact_points.
-
-usage: check_hanging_pose [-h] [--input INPUT] --pose POSE
-                          [--clustering CLUSTERING]
+usage: check-hanging-pose [-h] [--input INPUT]
+                          [--input-file-name INPUT_FILE_NAME] [--idx IDX]
+                          [--pose POSE] [--pose-file-name POSE_FILE_NAME]
+                          [--clustering CLUSTERING] [--eps EPS]
                           [--filter-penetration FILTER_PENETRATION]
-                          [--inf-penetration-check INF_PENETRATION_CHECK]
-                          [--align ALIGN] [--average AVERAGE]
-                          [--average-pos AVERAGE_POS]
+                          [--inf-penetration-check] [--align] [--average]
+                          [--average-pos] [--skip-list-file SKIP_LIST_FILE]
+                          [--large-axis] [--just-check-num-points]
 
 optional arguments:
   -h, --help            show this help message and exit
   --input INPUT, -i INPUT
                         input urdf (default: )
-  --pose POSE, -p POSE  input pose (default: None)
+  --input-file-name INPUT_FILE_NAME, -ifn INPUT_FILE_NAME
+                        input object file name. base.urdf or textured.urdf
+                        (default: base.urdf)
+  --idx IDX             data idx (default: 0)
+  --pose POSE, -p POSE  input pose (default: )
+  --pose-file-name POSE_FILE_NAME, -pfn POSE_FILE_NAME
+                        input pose file name. This is needed only when input
+                        is directoryex)contact_points,
+                        filtered_contact_points.json (default: contact_points)
   --clustering CLUSTERING, -c CLUSTERING
                         dbscan clustering min points (default: 0)
+  --eps EPS, -e EPS     dbscan eps params (default: 0.01)
   --filter-penetration FILTER_PENETRATION, -f FILTER_PENETRATION
                         filter penetration (default: 0)
-  --inf-penetration-check INF_PENETRATION_CHECK, -ipc INF_PENETRATION_CHECK
-                        infinity penetration check (default: 1)
-  --align ALIGN         align coords (default: 0)
-  --average AVERAGE     average coords rot (default: 0)
-  --average-pos AVERAGE_POS
-                        average coords pos (default: 0)
+  --inf-penetration-check, -ipc
+                        infinity penetration check (default: False)
+  --align               align coords (default: False)
+  --average             average coords rot (default: False)
+  --average-pos         average coords pos (default: False)
+  --skip-list-file SKIP_LIST_FILE, -slf SKIP_LIST_FILE
+                        slip obect list file (default: skip-list-file)
+  --large-axis, -la     use large axis as visulaizing marker (default: False)
+  --just-check-num-points, -jcnp
+                        just check nuber of points without visualiziong
+                        (default: False)
 ```
 
 #### example
 ```
+# If contact_points is dir, load multiple contact_points.
 cd urdf/037_scissors
 check-hanging-pose -i textured.urdf -p contact_points
-check-hanging-pose -i textured.urdf -p contact_points -c -1 -ipc 1 --align 1 --average 1
+check-hanging-pose -i textured.urdf -p contact_points -c -1 --ipc --align --average -la
 ```
 <img src="https://user-images.githubusercontent.com/39142679/102206051-5fd84380-3f0f-11eb-87c3-796142f8b742.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/102206130-7b434e80-3f0f-11eb-96b6-db7c4c319c9b.gif" width="300" height="300">  
 Left:Before filtering &ensp; Right:After filtering

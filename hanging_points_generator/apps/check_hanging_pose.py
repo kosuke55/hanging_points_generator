@@ -35,23 +35,22 @@ def main():
                         help='dbscan eps params', default=0.01)
     parser.add_argument('--filter-penetration', '-f', type=int,
                         help='filter penetration', default=0)
-    parser.add_argument('--inf-penetration-check', '-ipc', type=int,
-                        help='infinity penetration check ', default=1)
-    parser.add_argument('--align', type=int,
-                        help='align coords', default=0)
-    parser.add_argument('--average', type=int,
-                        help='average coords rot', default=0)
-    parser.add_argument('--average-pos', type=int,
-                        help='average coords pos', default=0)
+    parser.add_argument('--inf-penetration-check', '-ipc', action='store_true',
+                        help='infinity penetration check ')
+    parser.add_argument('--align', action='store_true',
+                        help='align coords')
+    parser.add_argument('--average', action='store_true',
+                        help='average coords rot')
+    parser.add_argument('--average-pos', action='store_true',
+                        help='average coords pos')
     parser.add_argument('--skip-list-file', '-slf', type=str,
                         help='slip obect list file ',
                         default='skip-list-file')
-    parser.add_argument('--large-axis', '-la', type=int,
-                        help='use large axis as visulaizing marker',
-                        default=0)
-    parser.add_argument('--just-check-num-points', '-jcnp', type=int,
-                        help='just check nuber of points without visualiziong',
-                        default=0)
+    parser.add_argument('--large-axis', '-la', action='store_true',
+                        help='use large axis as visulaizing marker')
+    parser.add_argument('--just-check-num-points', '-jcnp',
+                        action='store_true',
+                        help='just check nuber of points without visualiziong')
 
     args = parser.parse_args()
     input_file_name = args.input_file_name
