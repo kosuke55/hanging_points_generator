@@ -26,8 +26,6 @@ parser.add_argument(
 parser.add_argument('--required-points-num', '-n', type=int,
                     help='required points number',
                     default=1)
-parser.add_argument('--try-num', '-tn', type=int,
-                    help='number of try', default=1000)
 parser.add_argument(
     '--existed-points-num',
     '-en',
