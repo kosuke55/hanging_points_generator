@@ -21,10 +21,11 @@ def main():
                         help='nuber of sampling ponts after processing,'
                         + 'If -1 remain all points',
                         default=30)
-    parser.add_argument('--filter-penetration', '-f', type=int,
-                        help='filter penetration', default=1)
-    parser.add_argument('--inf-penetration-check', '-ipc', type=int,
-                        help='infinity penetration check ', default=1)
+    parser.add_argument('--filter-penetration', '-f',
+                        action='store_true',
+                        help='filter penetration')
+    parser.add_argument('--inf-penetration-check', '-ipc', action='store_true',
+                        help='infinity penetration check ')
     parser.add_argument('--points-path-name', '-ppn', type=str,
                         help='points path name. contact_points is for hanging.'
                         'pouring_points is for pouring',
