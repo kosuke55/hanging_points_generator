@@ -9,11 +9,10 @@ import matplotlib.pyplot as plt
 
 from hanging_points_generator.generator_utils import load_json
 from shapenet_utils import filling_rate
-from shapenet_utils import hanging_points_dict
 from shapenet_utils import label_to_synset
 from shapenet_utils import make_category_filling_rate
 from shapenet_utils import manipulation_synset
-from shapenet_utils import pouring_points_dict
+from shapenet_utils import points_dict
 from shapenet_utils import synset_to_label
 
 
@@ -92,7 +91,8 @@ parser.add_argument(
     help='if None, set it automaticaly from outfile')
 args = parser.parse_args()
 
-filtering_result = load_json(args.file)
+file_path = args.file
+filtering_result = load_json(file_path)
 out_file = args.out_file
 
 if args.task_type is not None:
@@ -143,10 +143,8 @@ for key in points:
 synset = [k for k, v in points.items()]
 value = [v for k, v in points.items()]
 
-if task_type == 'hanging':
-    _points_dict = hanging_points_dict(to_label=True)
-elif task_type == 'pouring':
-    _points_dict = pouring_points_dict(to_label=True)
+_points_dict = points_dict(to_label=True, file_path=file_path)
+out_file = args.out_file
 
 idx = np.argsort(-np.array(value)).tolist()
 value.sort(reverse=True)
@@ -155,6 +153,6 @@ label = [synset_to_label[s] for s in synset]
 value_list = [_points_dict[key] for key in label]
 
 for l, vl, v in zip(label, value_list, value): # noqa
-    print('{}   &{} &{} &{} &{} &{} &{} &{} &{} &{} &{}   &{}'.format(
+    print('{}   &{} &{} &{} &{} &{} &{} &{} &{} &{} &{}   &{} \\\\'.format(
         l, vl[0], vl[1], vl[2], vl[3], vl[4],
         vl[5], vl[6], vl[7], vl[8], vl[9], v))
