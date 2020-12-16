@@ -38,22 +38,20 @@ parser.add_argument(
     default=-1)
 parser.add_argument('--gui', '-g', action='store_true',
                     help='gui')
-parser.add_argument('--viz_obj', '-v', type=int,
-                    help='viz obj with contactpoints',
-                    default=0)
+parser.add_argument('--viz_obj', '-v', action='store_true',
+                    help='viz obj with contactpoints')
 parser.add_argument('--skip-list', '-s', type=str,
                     help='skip file list',
                     default='')
-parser.add_argument('--shuffle-files', '-sf', type=str,
-                    help='shuffle files',
-                    default=1)
+parser.add_argument('--unable-shuffle-files', '-usf', action='store_true',
+                    help='unabale shuffle files')
 parser.add_argument('--skip', action='store_true',
                     help='use skip file')
 
 args = parser.parse_args()
 input_dir = args.input_dir
 files = glob.glob(osp.join(input_dir, '*/base.urdf'))
-if args.shuffle_files:
+if not args.unable_shuffle_files:
     random.shuffle(files)
 
 existed_points_num = args.existed_points_num

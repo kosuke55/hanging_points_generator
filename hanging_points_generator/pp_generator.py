@@ -427,7 +427,6 @@ def generate(urdf_file, required_points_num,
                     pouring_points_list_this_rotation)
                 num_points = len(pouring_points_list_this_rotation)
                 num_points_list.append(num_points)
-                print('num_points ', num_points_list)
 
                 if save_all_rotation:
                     pouring_points_list += pouring_points_list_this_rotation
