@@ -35,7 +35,7 @@ def make_graph(points, filename, task_type='hanging'):
 
 
 def make_graph_with_filtering_rate(
-    data, points, filename, task_type='hanging'):
+        data, points, filename, task_type='hanging'):
     if isinstance(data, dict):
         label, value = make_category_filling_rate(data, to_label=True)
     elif isinstance(data, list):
@@ -152,7 +152,7 @@ synset = [synset[i] for i in idx]
 label = [synset_to_label[s] for s in synset]
 value_list = [_points_dict[key] for key in label]
 
-for l, vl, v in zip(label, value_list, value): # noqa
+for l, vl, v in zip(label, value_list, value):  # noqa
     print('{}   &{} &{} &{} &{} &{} &{} &{} &{} &{} &{}   &{} \\\\'.format(
         l, vl[0], vl[1], vl[2], vl[3], vl[4],
         vl[5], vl[6], vl[7], vl[8], vl[9], v))
