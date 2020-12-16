@@ -117,7 +117,7 @@ optional arguments:
 ```
 # If contact_points is dir, load multiple contact_points.
 cd urdf/037_scissors
-check-hanging-pose -i textured.urdf -p contact_points
+check-hanging-pose -i textured.urdf -p contact_points -la
 check-hanging-pose -i textured.urdf -p contact_points -c -1 --ipc --align --average -la
 ```
 <img src="https://user-images.githubusercontent.com/39142679/102206051-5fd84380-3f0f-11eb-87c3-796142f8b742.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/102206130-7b434e80-3f0f-11eb-96b6-db7c4c319c9b.gif" width="300" height="300">  

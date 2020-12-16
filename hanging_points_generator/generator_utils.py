@@ -40,10 +40,26 @@ def check_contact_points(
         by default 'contact_points.json'
     cluster_min_points : int, optional
         by default 2
+    eps : float, optional
+        eps paramerter of sklearn dbscan, by default 0.03
     use_filter_penetration : bool, optional
         by default True
     inf_penetration_check : bool, optional
         by default True
+    align : bool, optional
+        by default True
+    average : bool, optional
+        by default True
+    average_pos : bool, optional
+        by default False
+    average_pos : bool, optional
+        by default False
+    _test : bool, optional
+        test mode, by default False
+    image_name, optional
+        if set this, save image with the name, by default None
+    large_axis, by default False
+        visualize points with large axis, by default False
     just_check_num_points : bool, optional
         by default False
 
@@ -788,7 +804,7 @@ def set_contact_points_urdf_path(contact_points_path):
 
 
 def filter_contact_points(
-        contact_points_dict, cluster_min_points=-1, eps=0.01, num_samples=30,
+        contact_points_dict, cluster_min_points=-1, eps=0.03, num_samples=30,
         use_filter_penetration=True, inf_penetration_check=True):
     """Filter contact points by clustering, aligning, averageing
 
@@ -797,9 +813,10 @@ def filter_contact_points(
     contact_points_dict :
         dict{'contact_points' : list[list[list[float], list[float]]]
              'urdf_file' : str}
-
+    cluster_min_points : int, optional
+        by default -1
     eps : float, optional
-        eps paramerter of sklearn dbscan, by default 0.01
+        eps paramerter of sklearn dbscan, by default 0.03
     num_samples : int, optional
         sampling contact points with this value.
         if -1 remain all points.
@@ -862,7 +879,7 @@ def filter_contact_points(
 
 
 def filter_contact_points_dir(
-        input_dir, cluster_min_points=-1,
+        input_dir, cluster_min_points=-1, eps=0.03,
         rate_thresh=0.1, num_samples=30,
         use_filter_penetration=True, inf_penetration_check=True,
         points_path_name='contact_points', suffix=''):
@@ -872,6 +889,10 @@ def filter_contact_points_dir(
     ----------
     input_dir : str
         hanging_object of hanging_object/category/contact_points/<fancy_dir>/contact_points.json # noqa
+    cluster_min_points : int, optional
+        by default -1
+    eps : float, optional
+        eps paramerter of sklearn dbscan, by default 0.03
     rate_thresh : float
         Objects whose rate of the number of remaining points is greater than this value are skipped.
     num_samples : int, optional

@@ -10,6 +10,10 @@ def main():
     parser.add_argument('--input', '-i', type=str,
                         help='input directory',
                         default='')
+    parser.add_argument('--clustering', '-c', type=int,
+                        help='dbscan clustering min points', default=0)
+    parser.add_argument('--eps', '-e', type=int,
+                        help='dbscan clustering eps', default=0.03)
     parser.add_argument('--rate-thresh', '-r', type=float,
                         help='remaining rate threshold',
                         default=0.1)
@@ -31,7 +35,8 @@ def main():
     args = parser.parse_args()
 
     filter_contact_points_dir(
-        args.input, args.rate_thresh, args.num_samples,
+        args.input, args.clustering, args.eps,
+        args.rate_thresh, args.num_samples,
         use_filter_penetration=args.filter_penetration,
         inf_penetration_check=args.inf_penetration_check,
         points_path_name=args.points_path_name,
