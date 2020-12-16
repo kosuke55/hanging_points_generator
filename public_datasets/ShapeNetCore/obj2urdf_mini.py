@@ -3,18 +3,16 @@
 
 import argparse
 import glob
-import logging
 import os
-import os.path as osp
 import random
 import shutil
-from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import open3d as o3d
-from shapenet_utils import synset_to_label
 from shapenet_utils import hanging_synset
+from shapenet_utils import pouring_synset
+from shapenet_utils import synset_to_label
 
 from hanging_points_generator.create_mesh import create_urdf
 from hanging_points_generator.generator_utils import load_list
@@ -36,46 +34,76 @@ parser.add_argument(
     type=str,
     help='save directory',
     # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10')
-    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_hanging_50')
+    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_hanging_50'
+    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_pouring_50')
 parser.add_argument(
     '--num-samples',
     '-n',
     type=int,
     help='number of sampling',
     default=50)
-args = parser.parse_args()
+parser.add_argument(
+    '--existed-files-list',
+    '-efl',
+    type=str,
+    help='If some files already exist, specify the list name of the files. '
+    'Add new objects until the number of total objects becomes num-samples.',
+    default=None)
+    # '/home/kosuke55/snippets/python/shapnet_mini_10_copy/shapenet_mini_10_hanging_list.txt'  # noqa
+parser.add_argument(
+    '--task-type', '-t', type=str,
+    default=None,
+    help='if None, set it automaticaly from outfile')
 
+args = parser.parse_args()
 
 input_dir = args.input_dir
 base_save_dir = args.save_dir
 num_samples = args.num_samples
 os.makedirs(base_save_dir, exist_ok=True)
 
-hanging_object_list = hanging_synset()
-print(hanging_object_list)
+if args.task_type is not None:
+    task_type = args.task_type
+else:
+    if 'hanging' in base_save_dir:
+        task_type = 'hanging'
+    elif 'pouring' in base_save_dir:
+        task_type = 'pouring'
+print('task_type: ', task_type)
+
+if task_type == 'hanging':
+    object_list = hanging_synset()
+elif task_type == 'pouring':
+    object_list = pouring_synset()
+
+print('object_list: ', object_list)
 
 target_length = 0.1
 
 files = []
-exist_files = load_list(
-    '/home/kosuke55/snippets/python/tmp/shapenet_mini_10_hanging_list.txt')
 
-for hanging_object in hanging_object_list:
+exist_files = False
+if args.existed_files_list is not None:
+    exist_files = load_list(args.existed_files_list)
+
+
+for obj in object_list:
     one_category_paths = list(
         sorted(
             Path(input_dir).glob(
-                '{}/*/models/model_normalized.obj'.format(hanging_object))))
+                '{}/*/models/model_normalized.obj'.format(obj))))
     sampled_one_category_files = []
     while len(sampled_one_category_files) < num_samples:
         idx = random.randint(0, len(one_category_paths) - 1)
-        if True in [f.split('_')[1] in str(one_category_paths[idx])
-                    for f in exist_files]:
-            continue
+        if exist_files:
+            if True in [f.split('_')[1] in str(one_category_paths[idx])
+                        for f in exist_files]:
+                continue
         if str(one_category_paths[idx]) not in sampled_one_category_files:
             sampled_one_category_files.append(str(one_category_paths[idx]))
 
     print(
-        hanging_object,
+        obj,
         len(one_category_paths),
         len(sampled_one_category_files))
     files.extend(sampled_one_category_files)
