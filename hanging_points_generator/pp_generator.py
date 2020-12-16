@@ -314,8 +314,9 @@ def shake(object_id, base_rotation, shake_step, shake_angle_max):
 
 
 def generate(urdf_file, required_points_num,
-             enable_gui, viz_obj, save_dir, radius=0.003,
-             pattern_spheres=True, repeat_per_rotation=3, apply_force=True):
+             enable_gui, viz_obj, save_dir, radius=0.005,
+             pattern_spheres=True, repeat_per_rotation=3, apply_force=True,
+             save_all_rotation=False):
     """Drop the ball and find the pouring points.
 
     Parameters
@@ -338,6 +339,8 @@ def generate(urdf_file, required_points_num,
     apply_force : bool, optional
         Whether to apply an external force to check the stability.
         by default False
+    save_all_rotation : bool, optional
+        if true, save all points with all rotations.
     """
     category_name = Path(urdf_file).parent.name
     base_save_dir = Path(save_dir).parent
@@ -363,12 +366,14 @@ def generate(urdf_file, required_points_num,
         pybullet.connect(pybullet.DIRECT)
 
     gravity = -9.8
-    timestep = 240.
+    timestep = 1000.
     pybullet.setTimeStep(1 / timestep)
 
     object_id = load_static_urdf(urdf_file, [0, 0, 0], [0, 0, 0, 1])
 
     key_rotations = get_key_rotatins()
+    num_points_list = []
+    pouring_points_list_all = []
 
     try:
         for key_rotation in key_rotations:
@@ -380,7 +385,7 @@ def generate(urdf_file, required_points_num,
                 if pattern_spheres:
                     sphere_ids, pos_list = make_2daabb_pattern_spheres(
                         object_id, radius=radius, space=0.01, z_space=0.1)
-                    step(300)
+                    step(1000)
 
                     sphere_ids, pos_in_list, pos_out_list = remove_out_sphere(
                         sphere_ids, pos_list)
@@ -389,10 +394,10 @@ def generate(urdf_file, required_points_num,
                         for pos in pos_in_list:
                             sphere_ids.append(
                                 make_sphere(radius=radius, pos=pos))
-                        step(300)
+                        step(1000)
                     shake(object_id, key_rotation,
                           shake_step=100, shake_angle_max=np.pi / 6)
-                    step(300)
+                    step(1000)
 
                     if apply_force:
                         for f in [[0, 0], [-5, 0], [5, 0],
@@ -404,36 +409,51 @@ def generate(urdf_file, required_points_num,
                 else:
                     for _ in range(30):
                         sphere_ids.append(make_sphere(use_random_pos=True))
-                        step(10)
+                        step(100)
                         remove_out_sphere(sphere_ids)
 
                     for f in [[0, 0], [-5, 0], [5, 0],
                               [0, -5], [0, 5], [0, 0]]:
                         pybullet.setGravity(f[0], f[1], gravity)
-                        for _ in range(10):
-                            step(1)
-                            remove_out_sphere(sphere_ids)
+                        step(100)
+                        # for _ in range(100):
+                        #     step(1)
+                        remove_out_sphere(sphere_ids)
 
                 sphere_ids = remove_out_sphere(sphere_ids)
-                pouring_points_list = get_contact_points(
-                    object_id, object_center, sphere_ids, pouring_points_list)
-                pouring_points_dict['contact_points'] = pouring_points_list
+                pouring_points_list_this_rotation = get_contact_points(
+                    object_id, object_center, sphere_ids)
+                pouring_points_list_all.append(
+                    pouring_points_list_this_rotation)
+                num_points = len(pouring_points_list_this_rotation)
+                num_points_list.append(num_points)
+                print('num_points ', num_points_list)
 
-                save_contact_points(
-                    osp.join(
-                        save_dir,
-                        'pouring_points.json'),
-                    pouring_points_dict)
+                if save_all_rotation:
+                    pouring_points_list += pouring_points_list_this_rotation
+                    pouring_points_dict['contact_points'] = pouring_points_list
+                    save_contact_points(
+                        osp.join(save_dir, 'pouring_points.json'),
+                        pouring_points_dict)
 
                 if len(sphere_ids) == 0:
                     sphere_ids = remove_all_sphere(sphere_ids)
                     break
+                break
                 sphere_ids = remove_all_sphere(sphere_ids)
+
+        if not save_all_rotation:
+            pouring_points_dict['contact_points'] \
+                = pouring_points_list_all[np.argmax(num_points_list)]
+            save_contact_points(
+                osp.join(save_dir, 'pouring_points.json'),
+                pouring_points_dict)
 
     except KeyboardInterrupt:
         sys.exit()
 
     pybullet.disconnect()
+
     return pouring_points_list
 
 

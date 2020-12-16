@@ -36,8 +36,8 @@ parser.add_argument(
     'Skip more than this number.'
     'If this number is -1, do not skip any file',
     default=-1)
-parser.add_argument('--gui', '-g', type=int,
-                    help='gui', default=0)
+parser.add_argument('--gui', '-g', action='store_true',
+                    help='gui')
 parser.add_argument('--viz_obj', '-v', type=int,
                     help='viz obj with contactpoints',
                     default=0)
