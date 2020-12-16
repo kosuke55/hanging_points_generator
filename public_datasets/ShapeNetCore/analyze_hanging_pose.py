@@ -13,6 +13,7 @@ from shapenet_utils import hanging_points_dict
 from shapenet_utils import label_to_synset
 from shapenet_utils import make_category_filling_rate
 from shapenet_utils import manipulation_synset
+from shapenet_utils import pouring_points_dict
 from shapenet_utils import synset_to_label
 
 
@@ -141,12 +142,17 @@ for key in points:
 # for table
 synset = [k for k, v in points.items()]
 value = [v for k, v in points.items()]
-hp_dict = hanging_points_dict(to_label=True)
+
+if task_type == 'hanging':
+    _points_dict = hanging_points_dict(to_label=True)
+elif task_type == 'pouring':
+    _points_dict = pouring_points_dict(to_label=True)
+
 idx = np.argsort(-np.array(value)).tolist()
 value.sort(reverse=True)
 synset = [synset[i] for i in idx]
 label = [synset_to_label[s] for s in synset]
-value_list = [hp_dict[key] for key in label]
+value_list = [_points_dict[key] for key in label]
 
 for l, vl, v in zip(label, value_list, value): # noqa
     print('{}   &{} &{} &{} &{} &{} &{} &{} &{} &{} &{}   &{}'.format(
