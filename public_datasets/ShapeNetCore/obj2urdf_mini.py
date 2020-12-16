@@ -76,7 +76,8 @@ if task_type == 'hanging':
 elif task_type == 'pouring':
     object_list = pouring_synset()
 
-print('object_list: ', object_list)
+print('object_list: ',
+      [synset_to_label[o] for o in object_list])
 
 target_length = 0.1
 
@@ -103,7 +104,7 @@ for obj in object_list:
             sampled_one_category_files.append(str(one_category_paths[idx]))
 
     print(
-        obj,
+        synset_to_label[obj],
         len(one_category_paths),
         len(sampled_one_category_files))
     files.extend(sampled_one_category_files)
