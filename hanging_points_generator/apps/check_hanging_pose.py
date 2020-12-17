@@ -52,11 +52,16 @@ def main():
     parser.add_argument('--just-check-num-points', '-jcnp',
                         action='store_true',
                         help='just check nuber of points without visualiziong')
+    parser.add_argument('--keyword', '-k', type=str,
+                        help='skip files that do not inculude this keyword',
+                        default=None)
 
     args = parser.parse_args()
     input_file_name = args.input_file_name
     pose_file_name = args.pose_file_name
     skip_list_file = args.skip_list_file
+    keyword = args.keyword
+
     if input_file_name == 'b':
         input_file_name = 'base.urdf'
     elif input_file_name == 't':
@@ -89,6 +94,8 @@ def main():
         try:
             idx = -1
             for path in pose_path:
+                if keyword not in str(path):
+                    continue
                 idx += 1
                 print('-----------------------')
                 print('%s : %d' % (str(path), idx))
@@ -102,6 +109,7 @@ def main():
                     continue
                 pose = str(path)
                 urdf = str(path.parent / input_file_name)
+                print('Press [q] on the window to move the next object.')
                 check_contact_points(
                     pose,
                     urdf,
