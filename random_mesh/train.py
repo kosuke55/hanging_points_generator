@@ -20,6 +20,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 from shapenet_utils import hanging_label
+from shapenet_utils import pouring_label
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -57,12 +58,12 @@ parser.add_argument(
 parser.add_argument(
     '--logdir',
     type=str,
-    default='/media/kosuke55/SANDISK/random_mesh_gan/log_hanging',
+    default='/media/kosuke55/SANDISK/random_mesh_gan/log_pouring',
     help='Directory to log data to.')
 parser.add_argument(
     '--save-interval',
     type=int,
-    default='50',
+    default='200',
     help='save model interval')
 parser.add_argument(
     '--resume-idx',
@@ -74,7 +75,7 @@ parser.add_argument(
     '--dataset-type',
     type=str,
     help='dataset_type. mdoelnet, shapenet or ycb',
-    default='shapenet')
+    default='shapenet_pouring')
 parser.add_argument(
     '--modelnet-root',
     type=str,
@@ -99,8 +100,13 @@ os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 #     train_set = kal.datasets.modelnet.ModelNetVoxels(
 #         basedir=args.modelnet_root, cache_dir=args.cache_dir,
 #         categories=categories, resolutions=[30])
-if args.dataset_type == 'shapenet':
+if args.dataset_type == 'shapenet_hanging':
     categories = hanging_label()
+    train_set = kal.datasets.shapenet.ShapeNet_Voxels(
+        root=args.shapenet_root, cache_dir=args.cache_dir,
+        categories=categories, resolutions=[30], voxel_range=1.)
+elif args.dataset_type == 'shapenet_pouring':
+    categories = pouring_label()
     train_set = kal.datasets.shapenet.ShapeNet_Voxels(
         root=args.shapenet_root, cache_dir=args.cache_dir,
         categories=categories, resolutions=[30], voxel_range=1.)
