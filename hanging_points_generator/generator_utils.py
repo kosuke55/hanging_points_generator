@@ -118,18 +118,18 @@ def check_contact_points(
             = coords_to_dict(contact_points_coords,
                              urdf_file)['contact_points']
 
-    contact_point_marker_list = []
-    for i, cp in enumerate(contact_points):
-        if large_axis:
-            contact_point_marker = skrobot.model.Axis(0.003, 0.05)
-        else:
-            contact_point_marker = skrobot.model.Sphere(
-                0.001, color=[255, 0, 0])
-        contact_point_marker.newcoords(
-            skrobot.coordinates.Coordinates(pos=cp[0], rot=cp[1:]))
-        contact_point_marker_list.append(contact_point_marker)
-
     if not _test:
+        contact_point_marker_list = []
+        for i, cp in enumerate(contact_points):
+            if large_axis:
+                contact_point_marker = skrobot.model.Axis(0.003, 0.05)
+            else:
+                contact_point_marker = skrobot.model.Sphere(
+                    0.001, color=[255, 0, 0])
+            contact_point_marker.newcoords(
+                skrobot.coordinates.Coordinates(pos=cp[0], rot=cp[1:]))
+            contact_point_marker_list.append(contact_point_marker)
+
         viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 640))
         viewer.add(obj_model)
         for contact_point_marker in contact_point_marker_list:
