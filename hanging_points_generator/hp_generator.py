@@ -14,17 +14,11 @@ import pybullet
 import pybullet_data
 import skrobot
 import six
-import trimesh
 import xml.etree.ElementTree as ET
 from eos import make_fancy_output_dir
-from filelock import FileLock
-from sklearn.cluster import DBSCAN
 
 from hanging_points_generator.renderer import Renderer
 from hanging_points_generator.generator_utils import add_list
-from hanging_points_generator.generator_utils import cluster_contact_points
-from hanging_points_generator.generator_utils import filter_penetration
-from hanging_points_generator.generator_utils import load_multiple_contact_points
 from hanging_points_generator.generator_utils import save_contact_points
 
 
