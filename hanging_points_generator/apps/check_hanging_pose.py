@@ -53,7 +53,8 @@ def main():
                         action='store_true',
                         help='just check nuber of points without visualiziong')
     parser.add_argument('--keyword', '-k', type=str,
-                        help='skip files that do not inculude this keyword',
+                        help='skip files that do not inculude this keyword. '
+                        'this option works when input is a directory. ',
                         default=None)
 
     args = parser.parse_args()

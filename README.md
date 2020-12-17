@@ -111,6 +111,10 @@ optional arguments:
   --just-check-num-points, -jcnp
                         just check nuber of points without visualiziong
                         (default: False)
+  --keyword KEYWORD, -k KEYWORD
+                        skip files that do not inculude this keyword. this
+                        option works when input is a directory. (default:
+                        None)
 ```
 
 #### example
