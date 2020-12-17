@@ -121,9 +121,9 @@ def check_contact_points(
     contact_point_marker_list = []
     for i, cp in enumerate(contact_points):
         if large_axis:
-            contact_point_marker = skrobot.models.Axis(0.003, 0.05)
+            contact_point_marker = skrobot.model.Axis(0.003, 0.05)
         else:
-            contact_point_marker = skrobot.models.Sphere(
+            contact_point_marker = skrobot.model.Sphere(
                 0.001, color=[255, 0, 0])
         contact_point_marker.newcoords(
             skrobot.coordinates.Coordinates(pos=cp[0], rot=cp[1:]))
