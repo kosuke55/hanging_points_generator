@@ -82,10 +82,12 @@ def check_contact_points(
     if use_filter_penetration or inf_penetration_check:
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
-                urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
+                urdf_file, contact_points,
+                box_size=[100, 0.0001, 0.0001])
         else:
             contact_points, _ = filter_penetration(
-                urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
+                urdf_file, contact_points,
+                box_size=[0.1, 0.0001, 0.0001])
         print('%d points are left after penetration check' % len(
             contact_points))
 
@@ -721,7 +723,8 @@ def make_aligned_contact_points(contact_points_dict):
 
 
 def filter_penetration(obj_file, hanging_points,
-                       box_size=[0.1, 0.0001, 0.0001]):
+                       box_size=[0.1, 0.0001, 0.0001],
+                       translate=[0, 0.005, 0]):
     """Filter the penetrating hanging points
 
     Parameters
@@ -732,6 +735,9 @@ def filter_penetration(obj_file, hanging_points,
         list of hanging points(=contact points)
     box_size : list[float]
         penetration check box of size [length, width, width] order
+    translate : list, optional
+        translate a box for penetration check,
+        by default [0, 0.005, 0]
 
     Returns
     -------
@@ -757,7 +763,7 @@ def filter_penetration(obj_file, hanging_points,
             box_size,
             face_colors=[255, 0, 0],
             pos=hp[0], rot=hp[1:])
-        penetration_check_box.translate([0, 0.005, 0])
+        penetration_check_box.translate(translate)
 
         penetration = collision_manager.in_collision_single(
             penetration_check_box.visual_mesh, penetration_check_box.T())
@@ -805,7 +811,8 @@ def set_contact_points_urdf_path(contact_points_path):
 
 def filter_contact_points(
         contact_points_dict, cluster_min_points=-1, eps=0.03, num_samples=30,
-        use_filter_penetration=True, inf_penetration_check=True):
+        use_filter_penetration=True, inf_penetration_check=True,
+        translate=[0, 0.005, 0]):
     """Filter contact points by clustering, aligning, averageing
 
     Parameters
@@ -824,6 +831,9 @@ def filter_contact_points(
         by default True
     inf_penetration_check : bool, optional
         by default True
+    translate : list, optional
+        translate a box for penetration check,
+        by default [0, 0.005, 0]
 
     Returns
     -------
@@ -840,10 +850,14 @@ def filter_contact_points(
     if use_filter_penetration or inf_penetration_check:
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
-                urdf_file, contact_points, box_size=[100, 0.0001, 0.0001])
+                urdf_file, contact_points,
+                box_size=[100, 0.0001, 0.0001],
+                translate=translate)
         else:
             contact_points, _ = filter_penetration(
-                urdf_file, contact_points, box_size=[0.1, 0.0001, 0.0001])
+                urdf_file, contact_points,
+                box_size=[0.1, 0.0001, 0.0001],
+                translate=translate)
         print('penetration contact_points :%d' % len(contact_points))
         if len(contact_points) == 0:
             print('No points after penetration check')
