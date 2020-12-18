@@ -18,7 +18,7 @@ def visualize_objects_dir(input_dir, filename='base.urdf'):
 
         if 'obj' in ext.lower() or 'off' in ext.lower() \
                 or 'ply' in ext.lower() or 'stl' in ext.lower():
-            obj = skrobot.models.MeshLink(str(path))
+            obj = skrobot.model.MeshLink(str(path))
 
         elif 'urdf' in ext.lower():
             obj = skrobot.models.urdf.RobotModelFromURDF(
@@ -28,11 +28,10 @@ def visualize_objects_dir(input_dir, filename='base.urdf'):
         if init:
             viewer.show()
             init = False
-        input('')
+        input('Next data?: [ENTER]')
 
 
 def main():
-    # current_dir = os.path.dirname(os.path.abspath(__file__))
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--input', '-i', type=str,

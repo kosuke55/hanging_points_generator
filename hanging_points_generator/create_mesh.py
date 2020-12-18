@@ -1247,7 +1247,7 @@ def save_obj_image(obj, filename, resolution=(640, 640)):
         image resolution, by default (640, 640)
     """
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=resolution)
-    viewer.add(skrobot.models.MeshLink(obj))
+    viewer.add(skrobot.model.MeshLink(obj))
     loop = True
     while loop:
         try:
