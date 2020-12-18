@@ -23,10 +23,10 @@ from sklearn.cluster import DBSCAN
 
 def check_contact_points(
         contact_points_path, urdf_file='', json_name='contact_points.json',
-        cluster_min_points=2, eps=0.03, use_filter_penetration=True,
-        inf_penetration_check=True, align=True, average=True,
-        average_pos=False, _test=False, image_name=None, large_axis=False,
-        just_check_num_points=False):
+        cluster_min_points=0, eps=0.03, use_filter_penetration=False,
+        inf_penetration_check=False, half_inf_penetration_check=False,
+        align=False, average=False, average_pos=False, _test=False,
+        image_name=None, large_axis=False, just_check_num_points=False):
     """Chaeck contact points with urdf
 
     Parameters
@@ -39,17 +39,21 @@ def check_contact_points(
         'contact_points.json' or 'pouring_points.json',
         by default 'contact_points.json'
     cluster_min_points : int, optional
-        by default 2
+        by default 0
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.03
     use_filter_penetration : bool, optional
-        by default True
+        by default False
     inf_penetration_check : bool, optional
-        by default True
+        for hanging.
+        by default False.
+    half_penetration_check : bool, optional
+        for pouring.
+        by default False
     align : bool, optional
-        by default True
+        by default False
     average : bool, optional
-        by default True
+        by default False
     average_pos : bool, optional
         by default False
     average_pos : bool, optional
@@ -79,11 +83,21 @@ def check_contact_points(
         return True
     urdf_file = str(urdf_file or contact_points_dict['urdf_file'])
 
-    if use_filter_penetration or inf_penetration_check:
+    if use_filter_penetration \
+        or inf_penetration_check \
+            or half_inf_penetration_check:
+        # for hanging
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points,
-                box_size=[100, 0.0001, 0.0001])
+                box_size=[100, 0.0001, 0.0001],
+                translate=[0, 0.005, 0])
+        # for pouring
+        elif half_inf_penetration_check:
+            contact_points, _ = filter_penetration(
+                urdf_file, contact_points,
+                box_size=[100, 0.0001, 0.0001],
+                translate=[-50.005, 0, 0])
         else:
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points,
@@ -753,13 +767,13 @@ def filter_penetration(obj_file, hanging_points,
         obj_file = path_without_ext + '.stl'
         if not osp.isfile(obj_file):
             obj_file = path_without_ext + '.obj'
-    obj = skrobot.models.MeshLink(obj_file)
+    obj = skrobot.model.MeshLink(obj_file)
 
     collision_manager = trimesh.collision.CollisionManager()
     collision_manager.add_object('obj', obj.visual_mesh)
 
     for hp in hanging_points:
-        penetration_check_box = skrobot.models.Box(
+        penetration_check_box = skrobot.model.Box(
             box_size,
             face_colors=[255, 0, 0],
             pos=hp[0], rot=hp[1:])
@@ -811,9 +825,11 @@ def set_contact_points_urdf_path(contact_points_path):
 
 def filter_contact_points(
         contact_points_dict, cluster_min_points=-1, eps=0.03, num_samples=30,
-        use_filter_penetration=True, inf_penetration_check=True,
-        translate=[0, 0.005, 0]):
+        use_filter_penetration=False, inf_penetration_check=False,
+        half_inf_penetration_check=False, translate=[0, 0.005, 0]):
     """Filter contact points by clustering, aligning, averageing
+
+    This function is similar to check_contact_points so should be merged.
 
     Parameters
     ----------
@@ -828,9 +844,13 @@ def filter_contact_points(
         sampling contact points with this value.
         if -1 remain all points.
     use_filter_penetration : bool, optional
-        by default True
+        by default False
     inf_penetration_check : bool, optional
-        by default True
+        for hanging.
+        by default False.
+    half_penetration_check : bool, optional
+        for pouring.
+        by default False
     translate : list, optional
         translate a box for penetration check,
         by default [0, 0.005, 0]
@@ -847,12 +867,21 @@ def filter_contact_points(
         print('No points')
         return False
 
-    if use_filter_penetration or inf_penetration_check:
+    if use_filter_penetration \
+        or inf_penetration_check \
+            or half_inf_penetration_check:
+        # for hanging
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points,
                 box_size=[100, 0.0001, 0.0001],
                 translate=translate)
+        # for pouring
+        elif half_inf_penetration_check:
+            contact_points, _ = filter_penetration(
+                urdf_file, contact_points,
+                box_size=[100, 0.0001, 0.0001],
+                translate=[-50.005, 0, 0])
         else:
             contact_points, _ = filter_penetration(
                 urdf_file, contact_points,
@@ -895,7 +924,8 @@ def filter_contact_points(
 def filter_contact_points_dir(
         input_dir, cluster_min_points=-1, eps=0.03,
         rate_thresh=0.1, num_samples=30,
-        use_filter_penetration=True, inf_penetration_check=True,
+        use_filter_penetration=False, inf_penetration_check=False,
+        half_inf_penetration_check=False,
         points_path_name='contact_points', suffix=''):
     """Filter all contact points in the directory
 
@@ -915,7 +945,11 @@ def filter_contact_points_dir(
     use_filter_penetration : bool, optional
         by default True
     inf_penetration_check : bool, optional
-        by default True
+        for hanging.
+        by default False.
+    half_penetration_check : bool, optional
+        for pouring.
+        by default False
     suffix : str, optional
         if '_pouring' output file name is filtered_contact_points_pouring.json etc.
         by default ''
@@ -926,8 +960,10 @@ def filter_contact_points_dir(
 
     contact_points_path_list = list(
         Path(input_dir).glob('*/{}'.format(points_path_name)))
-    skip_list_file = osp.join(input_dir, 'filter_skip_list{}.txt'.format(suffix))
-    remain_list_file = osp.join(input_dir, 'filter_remain_list{}.txt'.format(suffix))
+    skip_list_file = osp.join(
+        input_dir, 'filter_skip_list{}.txt'.format(suffix))
+    remain_list_file = osp.join(
+        input_dir, 'filter_remain_list{}.txt'.format(suffix))
     result_dict = {}
     for contact_points_path in contact_points_path_list:
         print('-----')
@@ -947,7 +983,8 @@ def filter_contact_points_dir(
                 cluster_min_points=cluster_min_points,
                 num_samples=num_samples,
                 use_filter_penetration=use_filter_penetration,
-                inf_penetration_check=inf_penetration_check)
+                inf_penetration_check=inf_penetration_check,
+                half_inf_penetration_check=half_inf_penetration_check)
         if not filtered_contact_points:
             print('Skip %s ' % str(contact_points_path))
             add_list(skip_list_file, category_name)
@@ -966,7 +1003,8 @@ def filter_contact_points_dir(
             continue
         add_list(remain_list_file, category_name)
         save_contact_points(
-            str(contact_points_path.parent / 'filtered_contact_points{}.json'.format(suffix)),
+            str(contact_points_path.parent /
+                'filtered_contact_points{}.json'.format(suffix)),
             filtered_contact_points)
         result_dict[category_name] = {'pre_points_num': pre_points_num,
                                       'post_points_num': post_points_num,

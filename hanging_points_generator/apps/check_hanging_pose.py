@@ -38,6 +38,9 @@ def main():
                         help='filter penetration')
     parser.add_argument('--inf-penetration-check', '-ipc', action='store_true',
                         help='infinity penetration check ')
+    parser.add_argument('--half-inf-penetration-check', '-hipc',
+                        action='store_true',
+                        help='half infinity penetration check ')
     parser.add_argument('--align', action='store_true',
                         help='align coords')
     parser.add_argument('--average', action='store_true',
@@ -81,6 +84,7 @@ def main():
                              cluster_min_points=args.clustering,
                              use_filter_penetration=args.filter_penetration,
                              inf_penetration_check=args.inf_penetration_check,
+                             half_inf_penetration_check=args.half_inf_penetration_check,
                              align=args.align, average=args.average,
                              average_pos=args.average_pos,
                              large_axis=args.large_axis,
@@ -120,6 +124,7 @@ def main():
                     eps=args.eps,
                     use_filter_penetration=args.filter_penetration,
                     inf_penetration_check=args.inf_penetration_check,
+                    half_inf_penetration_check=args.half_inf_penetration_check,
                     align=args.align,
                     average=args.average,
                     average_pos=args.average_pos,
