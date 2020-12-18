@@ -89,8 +89,12 @@ parser.add_argument(
     type=str,
     default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf',
     help='Root directory of the ycb dataset.')
-
-parser.add_argument('-g', '--gpu', type=int, required=True, help='gpu id')
+parser.add_argument(
+    '-g', '--gpu', type=int,
+    help='gpu id. '
+    'if this option do not work, '
+    'run `CUDA_VISIBLE_DEVICES={gpu id} python train.py`',
+    default=0)
 
 args = parser.parse_args()
 
