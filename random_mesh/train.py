@@ -92,7 +92,7 @@ parser.add_argument(
 parser.add_argument(
     '-g', '--gpu', type=int,
     help='gpu id. '
-    'if this option do not work, '
+    'if this option does not work, '
     'run `CUDA_VISIBLE_DEVICES={gpu id} python train.py`',
     default=0)
 
