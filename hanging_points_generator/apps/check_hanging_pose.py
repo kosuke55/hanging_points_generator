@@ -80,15 +80,16 @@ def main():
 
     json_name = Path(pose_file_name).with_suffix('.json').name
     if osp.isfile(args.input):
-        check_contact_points(args.pose, args.input, json_name=json_name,
-                             cluster_min_points=args.clustering,
-                             use_filter_penetration=args.filter_penetration,
-                             inf_penetration_check=args.inf_penetration_check,
-                             half_inf_penetration_check=args.half_inf_penetration_check,
-                             align=args.align, average=args.average,
-                             average_pos=args.average_pos,
-                             large_axis=args.large_axis,
-                             just_check_num_points=args.just_check_num_points)
+        check_contact_points(
+            args.pose, args.input, json_name=json_name,
+            cluster_min_points=args.clustering,
+            use_filter_penetration=args.filter_penetration,
+            inf_penetration_check=args.inf_penetration_check,
+            half_inf_penetration_check=args.half_inf_penetration_check,
+            align=args.align, average=args.average,
+            average_pos=args.average_pos,
+            large_axis=args.large_axis,
+            just_check_num_points=args.just_check_num_points)
     else:
         base_dir = args.input
         pose_path = list(Path(base_dir).glob('*/%s' % pose_file_name))
