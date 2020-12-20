@@ -913,6 +913,7 @@ def filter_contact_points(
     if num_samples > 0:
         average_aligned_contact_points_coords = sample_contact_points(
             average_aligned_contact_points_coords, num_samples=num_samples)
+        print('sampled points: ', len(average_aligned_contact_points_coords))
 
     average_aligned_contact_points_coord_dict \
         = coords_to_dict(
