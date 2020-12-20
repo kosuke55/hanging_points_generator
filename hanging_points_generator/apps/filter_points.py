@@ -26,9 +26,15 @@ def main():
                         help='filter penetration')
     parser.add_argument('--inf-penetration-check', '-ipc', action='store_true',
                         help='infinity penetration check ')
+    parser.add_argument('--half-inf-penetration-check', '-hipc',
+                        action='store_true',
+                        help='half infinity penetration check ')
     parser.add_argument('--points-path-name', '-ppn', type=str,
                         help='points path name. contact_points is for hanging.'
-                        'pouring_points is for pouring',
+                        'contact_points is for hanging.'
+                        'pouring_points is for pouring.'
+                        'if you give nothing, use default value hanging'
+                        'else if you give p, it becanes pouring',
                         default='contact_points')
     parser.add_argument('--suffix', '-s', type=str,
                         help='output file suffix',
@@ -40,6 +46,7 @@ def main():
         args.rate_thresh, args.num_samples,
         use_filter_penetration=args.filter_penetration,
         inf_penetration_check=args.inf_penetration_check,
+        half_inf_penetration_check=args.half_inf_penetration_check,
         points_path_name=args.points_path_name,
         suffix=args.suffix)
 
