@@ -1038,6 +1038,7 @@ def add_list(path, item):
             with open(path, mode='a') as f:
                 f.writelines(item + '\n')
 
+
 def load_list(path):
     """Load list txt
 
