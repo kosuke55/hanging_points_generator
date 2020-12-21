@@ -1037,8 +1037,6 @@ def add_list(path, item):
         else:
             with open(path, mode='a') as f:
                 f.writelines(item + '\n')
-    os.remove(filelock_path)
-
 
 def load_list(path):
     """Load list txt
@@ -1054,6 +1052,5 @@ def load_list(path):
         if osp.isfile(path):
             with open(path) as f:
                 list_ = [s.strip() for s in f.readlines()]
-    os.remove(filelock_path)
 
     return list_
