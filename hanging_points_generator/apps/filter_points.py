@@ -11,7 +11,9 @@ def main():
                         help='input directory',
                         default='')
     parser.add_argument('--clustering', '-c', type=int,
-                        help='dbscan clustering min points', default=0)
+                        help='dbscan clustering min points. '
+                        'if -1, set 1/5 of the nuber all the points.',
+                        default=0)
     parser.add_argument('--eps', '-e', type=int,
                         help='dbscan clustering eps', default=0.03)
     parser.add_argument('--rate-thresh', '-r', type=float,

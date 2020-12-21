@@ -39,7 +39,7 @@ def check_contact_points(
         'contact_points.json' or 'pouring_points.json',
         by default 'contact_points.json'
     cluster_min_points : int, optional
-        by default 0
+        if -1, set 1/5 of the nuber all the points. by default 0
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.03
     use_filter_penetration : bool, optional
@@ -837,7 +837,7 @@ def filter_contact_points(
         dict{'contact_points' : list[list[list[float], list[float]]]
              'urdf_file' : str}
     cluster_min_points : int, optional
-        by default -1
+        if -1, set 1/5 of the nuber all the points. by default -1
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.03
     num_samples : int, optional
@@ -935,7 +935,7 @@ def filter_contact_points_dir(
     input_dir : str
         hanging_object of hanging_object/category/contact_points/<fancy_dir>/contact_points.json # noqa
     cluster_min_points : int, optional
-        by default -1
+        if -1, set 1/5 of the nuber all the points. by default -1
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.03
     rate_thresh : float
@@ -1010,9 +1010,9 @@ def filter_contact_points_dir(
         result_dict[category_name] = {'pre_points_num': pre_points_num,
                                       'post_points_num': post_points_num,
                                       'rate': rate}
-    save_json(
-        osp.join(input_dir,
-                 'filtering_result{}.json'.format(suffix)), result_dict)
+    out_file = osp.join(input_dir, 'filtering_result{}.json'.format(suffix))
+    print('save: ', out_file)
+    save_json(out_file, result_dict)
 
 
 def add_list(path, item):

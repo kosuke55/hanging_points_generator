@@ -30,7 +30,9 @@ def main():
                         + 'ex)contact_points, filtered_contact_points.json',
                         default='contact_points')
     parser.add_argument('--clustering', '-c', type=int,
-                        help='dbscan clustering min points', default=0)
+                        help='dbscan clustering min points. '
+                        'if -1, set 1/5 of the nuber all the points.',
+                        default=0)
     parser.add_argument('--eps', '-e', type=float,
                         help='dbscan eps params', default=0.01)
     parser.add_argument('--filter-penetration', '-f',

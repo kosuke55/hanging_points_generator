@@ -30,18 +30,49 @@ parser.add_argument(
     help='Device to use.')
 parser.add_argument(
     '--batchsize', type=int, default=512, help='Batch size.')
+parser.add_argument(
+    '--gui', '-g',
+    action='store_true', help='Show mesh')
+parser.add_argument(
+    '--min-length',
+    type=float,
+    help='max lenth of generated mesh.'
+    'The unit is m',
+    default=0.1)
+parser.add_argument(
+    '--max-length',
+    type=float,
+    help='max lenth of generated mesh.'
+    'The unit is m',
+    default=0.15)
+parser.add_argument(
+    '--num', '-n',
+    type=int,
+    help='The number of objects you want to generate.',
+    default=10000)
+parser.add_argument(
+    '-filling-rate', '-fr',
+    type=int,
+    help='Remain only objects with a filling rate under this value. ',
+    default=0)
+parser.add_argument(
+    '--save-image', '-si',
+    action='store_true', help='Save images of generated objects')
+
 args = parser.parse_args()
 
 gen = Generator().to(args.device)
 gen.load_state_dict(torch.load(args.pretrained_model))
 gen.eval()
 
-obj_id = 0
-min_length = 0.1
-max_length = 0.15
-required_num = 4000
+
+min_length = args.min_length
+max_length = args.max_length
+required_num = args.num
+filling_rate_thresh = args.filling_rate
 
 filling_rate_dict = {}
+obj_id = 0
 while obj_id < required_num:
     z = torch.normal(
         torch.zeros(args.batchsize, 200),
@@ -92,26 +123,35 @@ while obj_id < required_num:
         mesh.save_mesh(obj_file)
 
         mesh = trimesh.load(obj_file)
-        # voxel = mesh.voxelized(0.001)
-        # voxel.fill()
-        # filling_rate = voxel.volume / mesh.convex_hull.volume
-        # print(obj_id, filling_rate)
-        # if filling_rate > 0.5:
-        #     continue
+
+        if filling_rate_thresh > 0:
+            voxel = mesh.voxelized(0.001)
+            voxel.fill()
+            filling_rate = voxel.volume / mesh.convex_hull.volume
+            print(obj_id, filling_rate)
+            if filling_rate > filling_rate_thresh:
+                continue
+            filling_rate_dict[obj_dir] = filling_rate
+
         mesh_invert = mesh.copy()
         mesh_invert.invert()
         mesh += mesh_invert
         mesh.merge_vertices()
         if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
+            print('save: {}'.format(obj_dir))
             create_urdf(mesh, obj_dir, init_texture=True)
-            # filling_rate_dict[obj_dir] = filling_rate
-        # os.makedirs(osp.join(args.savedir, 'images'), exist_ok=True)
-        # mesh.save_image(osp.join(
-        #     args.savedir, 'images', args.prefix + '_{:05}'.format(obj_id)),
-        #     resolution=(640, 640))
-        # 'images/tmp/mesh.png', resolution=(640, 640))
+
+        if args.save_image:
+            os.makedirs(osp.join(args.savedir, 'images'), exist_ok=True)
+            mesh.save_image(osp.join(
+                args.savedir, 'images', args.prefix + '_{:05}'.format(obj_id)),
+                resolution=(640, 640))
+
+        if args.gui:
+            mesh.show()
         obj_id += 1
         if obj_id >= required_num:
             break
 
-save_json(osp.join(args.savedir, 'filling_rate.json'), filling_rate_dict)
+if filling_rate_thresh > 0:
+    save_json(osp.join(args.savedir, 'filling_rate.json'), filling_rate_dict)
