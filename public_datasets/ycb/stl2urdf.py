@@ -1,54 +1,94 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
 import glob
-import open3d as o3d
 import os
-import os.path as osp
 import subprocess
-import trimesh
 import xml.etree.ElementTree as ET
+from pathlib import Path
+
+import open3d as o3d
+import trimesh
 
 from hanging_points_generator import create_mesh
 
-input_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16'
-# example
-# /media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16/019_pitcher_base/google_16k/nontextured.stl
-files = glob.glob(osp.join(input_dir, '*/*/*'))
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--input-dir', '-i', type=str,
+    # default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16,
+    default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16',
+    help='input ycb mesh directory')
+parser.add_argument(
+    '--task-type', '-t', type=str,
+    default=None,
+    help='h -> hanging, p -> pouring. Otherwise, '
+    'it will be guessed automatically from the input.')
+parser.add_argument(
+    '--init-texture', '-it',
+    action='store_true',
+    help='initialize texture ')
+args = parser.parse_args()
 
-init_texture = True
-if init_texture:
-    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/textured_urdf"
+input_dir = args.input_dir
+
+if args.task_type == 'p':
+    task_type = 'pouring'
+elif args.task_type == 'h':
+    task_type = 'hanging'
 else:
-    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf"
+    if 'hanging' in input_dir:
+        task_type = 'hanging'
+    elif 'pouring' in input_dir:
+        task_type = 'pouring'
+    else:
+        raise ValueError('specify task_type hanging or pouring')
 
+init_texture = args.init_texture
+print('task type: {}'.format(task_type))
+
+if task_type == 'hanging':
+    # http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/
+    object_list = [
+        "019_pitcher_base",
+        "022_windex_bottle",
+        "025_mug",
+        "033_spatula",
+        "035_power_drill",
+        "037_scissors",
+        "042_adjustable_wrench",
+        "048_hammer",
+        "050_medium_clamp",
+        "051_large_clamp",
+        "052_extra_large_clamp"
+    ]
+
+elif task_type == 'pouring':
+    object_list = [
+        "019_pitcher_base",
+        "024_bowl",
+        "025_mug",
+        "031_spoon",
+        "029_plate",
+    ]
+
+if init_texture:
+    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_{}_object/textured_urdf".format(task_type)  # noqa
+else:
+    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_{}_object/urdf".format(task_type)  # noqa
+
+files = list(Path(input_dir).glob('*/*/nontextured.stl'))
 os.makedirs(save_dir, exist_ok=True)
-
-# http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/
-hanging_object_list = [
-    "019_pitcher_base",
-    "022_windex_bottle",
-    "025_mug",
-    "033_spatula",
-    "035_power_drill",
-    "037_scissors",
-    "042_adjustable_wrench",
-    "048_hammer",
-    "050_medium_clamp",
-    "051_large_clamp",
-    "052_extra_large_clamp"
-]
 
 for file in files:
     dirname, filename = os.path.split(file)
-    filename_without_ext, ext = os.path.splitext(filename)
     category_name = dirname.split('/')[-2]
-    if category_name not in hanging_object_list \
-       or filename != "nontextured.stl":
+
+    if category_name not in object_list:
         continue
 
     try:
-        # mesh = trimesh.load(file)
+        print(file)
         mesh = o3d.io.read_triangle_mesh(file)
         mesh = mesh.simplify_vertex_clustering(
             voxel_size=0.01,
