@@ -448,13 +448,14 @@ def generate(urdf_file, required_points_num,
                 osp.join(save_dir, 'pouring_points.json'),
                 pouring_points_dict)
 
+        pybullet.removeBody(object_id)
+        pybullet.resetSimulation()
+        pybullet.disconnect()
+
+        return pouring_points_list
+
     except KeyboardInterrupt:
         sys.exit()
-
-    pybullet.disconnect()
-
-    return pouring_points_list
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
