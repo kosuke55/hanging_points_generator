@@ -1,13 +1,18 @@
 These are for [The YCB Object and Model Set](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/)  
-Put a symlink for each code under ycb_directry or copy the off directory to this directory.  
-
+Use [ycb_downloader.py](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/scripts_to_publish/ycb_downloader.py) to download ycb mesh object.  
+Change this code like
 ```
-hanging_object_list = [
+output_directory = "./ycb_pouring_object_16"
+files_to_download = ["google_16k"]
+
+# hanging
+objects_to_download = [
     "019_pitcher_base",
     "022_windex_bottle",
     "025_mug",
     "033_spatula",
     "035_power_drill",
+    "037_scissors",
     "042_adjustable_wrench",
     "048_hammer",
     "050_medium_clamp",
@@ -15,23 +20,14 @@ hanging_object_list = [
     "052_extra_large_clamp"
 ]
 
-urdf
-├── 019_pitcher_base
-│   ├── base.stl
-│   ├── base.urdf
-│   ├── contact_points.json
-│   ├── kinbody.xml
-│   ├── nontextured.ply
-│   ├── nontextured.stl
-│   ├── rescale_base.urdf
-│   ├── textured.dae
-│   ├── textured.mtl
-│   ├── textured.obj
-│   ├── textured.urdf
-│   └── texture_map.png
-
-dirname, filename = os.path.split(file)
-filename_without_ext, ext = os.path.splitext(filename)
-category_name = dirname.split("/")[-1]  # 019_pitcher_base
+# pouring
+objects_to_download = [
+    "019_pitcher_base",
+    "024_bowl",
+    "025_mug",
+    "031_spoon",
+    "029_plate",
+]
 ```
 
+And run 'python [stl2urdf.py](./stl2urdf.py) -i <path_to_ycb_dir>' for creating urdf.
