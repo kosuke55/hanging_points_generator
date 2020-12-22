@@ -25,9 +25,9 @@ parser.add_argument(
     help='h -> hanging, p -> pouring. Otherwise, '
     'it will be guessed automatically from the input.')
 parser.add_argument(
-    '--init-texture', '-it',
+    '--unable-init-texture', '-uit',
     action='store_true',
-    help='initialize texture ')
+    help='unable initializing texture ')
 args = parser.parse_args()
 
 input_dir = args.input_dir
@@ -44,7 +44,7 @@ else:
     else:
         raise ValueError('specify task_type hanging or pouring')
 
-init_texture = args.init_texture
+init_texture = not args.unable_init_texture
 print('task type: {}'.format(task_type))
 
 if task_type == 'hanging':
