@@ -65,7 +65,6 @@ if task_type == 'hanging':
 
 elif task_type == 'pouring':
     object_list = [
-        "019_pitcher_base",
         "024_bowl",
         "025_mug",
         "031_spoon",
@@ -73,14 +72,15 @@ elif task_type == 'pouring':
     ]
 
 if init_texture:
-    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_{}_object/textured_urdf".format(task_type)  # noqa
+    save_dir = Path(input_dir) / 'textured_urdf'.format(task_type)  # noqa
 else:
-    save_dir = "/media/kosuke55/SANDISK/meshdata/ycb_{}_object/urdf".format(task_type)  # noqa
+    save_dir = Path(input_dir) / 'urdf'.format(task_type)  # noqa
 
 files = list(Path(input_dir).glob('*/*/nontextured.stl'))
 os.makedirs(save_dir, exist_ok=True)
 
-for file in files:
+for file_path in files:
+    file = str(file_path)
     dirname, filename = os.path.split(file)
     category_name = dirname.split('/')[-2]
 
@@ -101,6 +101,8 @@ for file in files:
         mesh.merge_vertices()
 
     except Exception:
+        import traceback
+        traceback.print_exc()
         continue
 
     if mesh.vertices.shape[0] > 1 and mesh.faces.shape[0] > 1:
