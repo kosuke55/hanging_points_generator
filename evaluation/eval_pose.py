@@ -23,17 +23,20 @@ parser.add_argument(
     '-i',
     type=str,
     help='input directory',
-    default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf_eval/')
+    # default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf_eval/')
+    default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16/textured_urdf')
 parser.add_argument(
     '--ground-truth',
     '-gt',
     type=str,
     help='',
-    default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf2/annotation_obj')
+    # default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf2/annotation_obj')
+    default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16/textured_urdf/annotation_obj')
 args = parser.parse_args()
 
 input_dir = args.input_dir
 gt_dir = args.ground_truth
+filtering_result = load_json(str(Path(input_dir) / 'filtering_result.json'))
 
 input_paths = Path(input_dir).glob('*/filtered_contact_points.json')
 for input_path in input_paths:
@@ -108,4 +111,42 @@ for input_path in input_paths:
         print('angle_mean %f' % diff_dict[key]['angle_mean'])
         print('angle_min %f' % diff_dict[key]['angle_min'])
 
-    save_json(str(input_path.parent / 'eval.json'), diff_dict)
+    eval_json_path = input_path.parent / 'eval.json'
+    save_json(str(eval_json_path), diff_dict)
+
+print('\n*** For tex ***')
+paths = list(sorted(Path(input_dir).glob('*/eval.json')))
+for path in paths:
+    diff_dict = load_json(path)
+    noise_num = 0
+    for key in diff_dict:
+        if key == '-1':
+            continue
+        category = path.parent.name[4:].replace('_', ' ')
+        noise_num = len(diff_dict['-1']['pos_diff'])
+
+        filter_current_category = filtering_result[path.parent.name]
+        before_num = filter_current_category['pre_points_num']
+        after_num = filter_current_category['post_points_num']
+
+        if 'pos_diff_max' in diff_dict[key]:
+            pos_diff_max = np.array(diff_dict[key]['pos_diff_max']) * 1000
+            pos_diff_mean = np.array(diff_dict[key]['pos_diff_mean']) * 1000
+            pos_diff_min = np.array(diff_dict[key]['pos_diff_min']) * 1000
+            angle_max = np.array(diff_dict[key]['angle_max']) * 180 / np.pi
+            angle_mean = np.array(diff_dict[key]['angle_mean']) * 180 / np.pi
+            angle_min = np.array(diff_dict[key]['angle_min']) * 180 / np.pi
+
+            print('{} &{} &{} &{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\'.format(
+                category,
+                before_num, after_num, noise_num,
+                abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), angle_max,
+                abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), angle_mean,
+                abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), angle_min
+            ))
+
+        else:
+           print('{} &{} &{} &{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\'.format(
+               category,
+               before_num, after_num, noise_num
+               ))
