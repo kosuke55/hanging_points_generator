@@ -45,6 +45,12 @@ parser.add_argument('--unable-shuffle-files', '-usf', action='store_true',
                     help='unabale shuffle files')
 parser.add_argument('--skip', action='store_true',
                     help='use skip file')
+parser.add_argument(
+    '--repeat-per-rotation',
+    '-rpr',
+    type=int,
+    help='How many times to pour per rotation',
+    default=1)
 
 args = parser.parse_args()
 input_dir = args.input_dir
