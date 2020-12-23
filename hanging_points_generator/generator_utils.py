@@ -452,7 +452,7 @@ def make_contact_points_coords(contact_points):
     return contact_points_coords
 
 
-def dbscan_coords(coords_list, eps=0.03, min_sample=2):
+def dbscan_coords(coords_list, eps=0.03, min_samples=2):
     """Dbscan cluster coords list
 
     Parameters
@@ -460,7 +460,7 @@ def dbscan_coords(coords_list, eps=0.03, min_sample=2):
     coords_list : list[skrobot.coordinates.Coordinates]
     eps : float, optional
         [description], by default 0.03
-    min_sample : int, optional
+    min_samples : int, optional
         cluster min sample, by default 2
 
     Returns
@@ -468,12 +468,12 @@ def dbscan_coords(coords_list, eps=0.03, min_sample=2):
     dbscan :
 
     """
-    dbscan = DBSCAN(eps=eps, min_samples=min_sample).fit(
+    dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(
         [coords.worldpos() for coords in coords_list])
     return dbscan
 
 
-def cluster_contact_points(points, eps=0.01, min_samples=-1):
+def cluster_contact_points(points, eps=0.01, min_points=-1, min_samples=2):
     """Clustering points
 
     Parameters
@@ -482,16 +482,22 @@ def cluster_contact_points(points, eps=0.01, min_samples=-1):
 
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.01
+    min_points : int, optional
+        if -1, set 1/5 of the nuber all the points. by default -1
     min_samples : int, optional
-        clustering min samples, if -1 set 1/5 of the whole, by default -1
+        dbscan clustering min saples parameter.
+        The number of samples (or total weight) in a
+        neighborhood for a point to be considered as
+        a core point. This includes the point itself.
+        by default 2/
 
     Returns
     -------
     clustered points
         clustered hanging points
     """
-    if min_samples == -1:
-        min_samples = len(points) // 5
+    if min_points == -1:
+        min_points = len(points) // 5
 
     pos = [c[0] for c in points]
     dbscan = DBSCAN(
@@ -500,7 +506,7 @@ def cluster_contact_points(points, eps=0.01, min_samples=-1):
     clustered_points = []
 
     for label in range(np.max(dbscan.labels_) + 1):
-        if np.count_nonzero(dbscan.labels_ == label) <= 1:
+        if np.count_nonzero(dbscan.labels_ == label) <= min_points:
             continue
         for idx, p in enumerate(points):
             if dbscan.labels_[idx] == label:
@@ -824,7 +830,8 @@ def set_contact_points_urdf_path(contact_points_path):
 
 
 def filter_contact_points(
-        contact_points_dict, cluster_min_points=-1, eps=0.03, num_samples=30,
+        contact_points_dict, cluster_min_points=-1,
+        min_samples=2, eps=0.03, num_samples=30,
         use_filter_penetration=False, inf_penetration_check=False,
         half_inf_penetration_check=False, translate=[0, 0.005, 0]):
     """Filter contact points by clustering, aligning, averageing
@@ -838,6 +845,12 @@ def filter_contact_points(
              'urdf_file' : str}
     cluster_min_points : int, optional
         if -1, set 1/5 of the nuber all the points. by default -1
+    min_samples : int, optional
+        dbscan clustering min saples parameter.
+        The number of samples (or total weight) in a
+        neighborhood for a point to be considered as
+        a core point. This includes the point itself.
+        by default 2.
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.03
     num_samples : int, optional
@@ -893,7 +906,8 @@ def filter_contact_points(
             return False
     if cluster_min_points or cluster_min_points == -1:
         contact_points = cluster_contact_points(
-            contact_points, min_samples=cluster_min_points, eps=eps)
+            contact_points, min_points=cluster_min_points,
+            min_samples=min_samples, eps=eps)
         print('clusterring contact_points :%d' % len(contact_points))
         if len(contact_points) == 0:
             print('No points after clustering')
@@ -923,7 +937,7 @@ def filter_contact_points(
 
 
 def filter_contact_points_dir(
-        input_dir, cluster_min_points=-1, eps=0.03,
+        input_dir, cluster_min_points=-1, min_samples=2, eps=0.03,
         rate_thresh=0.1, num_samples=30,
         use_filter_penetration=False, inf_penetration_check=False,
         half_inf_penetration_check=False,
@@ -935,7 +949,14 @@ def filter_contact_points_dir(
     input_dir : str
         hanging_object of hanging_object/category/contact_points/<fancy_dir>/contact_points.json # noqa
     cluster_min_points : int, optional
+        minimum number of points required for the cluster
         if -1, set 1/5 of the nuber all the points. by default -1
+    min_samples : int, optional
+        dbscan clustering min saples parameter.
+        The number of samples (or total weight) in a
+        neighborhood for a point to be considered as
+        a core point. This includes the point itself.
+        by default 1.
     eps : float, optional
         eps paramerter of sklearn dbscan, by default 0.03
     rate_thresh : float
@@ -982,6 +1003,8 @@ def filter_contact_points_dir(
             = filter_contact_points(
                 contact_points,
                 cluster_min_points=cluster_min_points,
+                min_samples=min_samples,
+                eps=eps,
                 num_samples=num_samples,
                 use_filter_penetration=use_filter_penetration,
                 inf_penetration_check=inf_penetration_check,

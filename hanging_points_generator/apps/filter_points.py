@@ -11,9 +11,15 @@ def main():
                         help='input directory',
                         default='')
     parser.add_argument('--clustering', '-c', type=int,
-                        help='dbscan clustering min points. '
+                        help='minimum number of points required for the cluster '
                         'if -1, set 1/5 of the nuber all the points.',
                         default=0)
+    parser.add_argument('--min-samples', '-m', type=int,
+                        help='dbscan clustering min saples parameter. '
+                        'The number of samples (or total weight) in a '
+                        'neighborhood for a point to be considered as '
+                        'a core point. This includes the point itself.',
+                        default=2)
     parser.add_argument('--eps', '-e', type=float,
                         help='dbscan clustering eps', default=0.03)
     parser.add_argument('--rate-thresh', '-r', type=float,
@@ -43,8 +49,9 @@ def main():
                         default='')
     args = parser.parse_args()
 
+    print('args.eps ', args.eps)
     filter_contact_points_dir(
-        args.input, args.clustering, args.eps,
+        args.input, args.clustering, args.min_samples, args.eps,
         args.rate_thresh, args.num_samples,
         use_filter_penetration=args.filter_penetration,
         inf_penetration_check=args.inf_penetration_check,
