@@ -14,7 +14,7 @@ def main():
                         help='dbscan clustering min points. '
                         'if -1, set 1/5 of the nuber all the points.',
                         default=0)
-    parser.add_argument('--eps', '-e', type=int,
+    parser.add_argument('--eps', '-e', type=float,
                         help='dbscan clustering eps', default=0.03)
     parser.add_argument('--rate-thresh', '-r', type=float,
                         help='remaining rate threshold',
