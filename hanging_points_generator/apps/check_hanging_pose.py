@@ -103,8 +103,9 @@ def main():
         try:
             idx = -1
             for path in pose_path:
-                if keyword not in str(path):
-                    continue
+                if keyword is not None:
+                    if keyword not in str(path):
+                        continue
                 idx += 1
                 print('-----------------------')
                 print('%s : %d' % (str(path), idx))
