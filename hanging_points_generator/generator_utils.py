@@ -1055,3 +1055,36 @@ def load_list(path):
                 list_ = [s.strip() for s in f.readlines()]
 
     return list_
+
+
+def save_contact_points_as_annotation_format(
+        contact_points_dict, out_file):
+    """Save contact points as annotation tool format.
+
+    annotation tool is
+    https://github.com/kosuke55/pose_annotation_tool
+
+    the format is a set of lines like the one below
+        label x y z qw qx qy qz
+
+    TODO
+    label = 0 now. should use clustering to get labels.
+
+    Parameters
+    ----------
+    contact_points_dict : dict
+        input contact points dict
+    out_file : str
+        output file path
+    """
+
+    with open(out_file, 'w') as f:
+        for cp in contact_points_dict['contact_points']:
+            label = 0  # dummy
+            pos = cp[0]
+            quaternion = coordinates.math.matrix2quaternion(cp[1:])
+            annotation_data = np.append(label, np.append(pos, quaternion))
+
+            f.writelines(
+                ''.join(str(v) + ' ' for v in annotation_data
+                        )[:-1] + '\n')
