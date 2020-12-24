@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import glob
 import os
 import random
 import shutil
@@ -53,7 +52,8 @@ parser.add_argument(
 parser.add_argument(
     '--task-type', '-t', type=str,
     default=None,
-    help='if None, set it automaticaly from outfile')
+    help='if None, set it automaticaly from outfile. '
+    'task_type is used for selection categories.')
 
 args = parser.parse_args()
 
