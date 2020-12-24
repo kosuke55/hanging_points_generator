@@ -5,7 +5,7 @@
 
 2. Install https://github.com/kosuke55/shapenet_utils.
 
-3. Convert `model_normalized.onj` to urdf.  
+3. Convert `model_normalized.obj` to urdf.  
    ```
    python obj2urdf_mini.py -i <ShapeNetCore dirrectory> -s <saved directory> -n <number of sampling> -t <task type. hanging or pouring>
    ```
