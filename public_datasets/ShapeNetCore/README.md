@@ -14,3 +14,12 @@
 4. After this process, genete function points using  
     [generate_hanging_points.py](../../hanging_points_generator/generate_hanging_points.py) or [generate_pouring_points.py](../../hanging_points_generator/generate_pouring_points.py)  
 
+5. filtering generated points.
+    ```
+    filter-points -i .  -ppn p -n -1  -hipc -c -1
+    ```
+
+6. Make a graph and a table of filtered generated points.
+   ```
+   python analyze_function_points.py -f <filtering_eresult.json> -o <output image path> -t <task type. hanging or pouring>
+   ```
