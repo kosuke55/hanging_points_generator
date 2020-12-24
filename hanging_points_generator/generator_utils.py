@@ -979,6 +979,9 @@ def filter_contact_points_dir(
     if points_path_name == 'p' or points_path_name == 'pouring':
         points_path_name = 'pouring_points'
         json_name = 'pouring_points.json'
+    else:
+        points_path_name = 'contact_points'
+        json_name = 'contact_points.json'
 
     contact_points_path_list = list(
         Path(input_dir).glob('*/{}'.format(points_path_name)))
