@@ -16,7 +16,7 @@
 
 5. filtering generated points.
     ```
-    filter-points -i .  -ppn p -n -1  -hipc -c -1
+    filter-points -i . -ppn p -n -1 -hipc -c -1
     ```
 
 6. Make a graph and a table of filtered generated points.
