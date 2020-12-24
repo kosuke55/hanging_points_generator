@@ -1,7 +1,7 @@
 # ShapeNetCore
 
 1. Download ShapeNetCore v2 from https://www.shapenet.org/download/shapenetcore.  
-   However, for trainin GAN, use symbolic licks to make it the same as the v1 directory structure or use v1 instead of v2.  
+   However, for trainin GAN, use symbolic link to make it the same as the v1 directory structure or use v1 instead of v2.  
 
 2. Install https://github.com/kosuke55/shapenet_utils.
 
