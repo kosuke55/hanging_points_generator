@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# flake8: noqa
 
 import argparse
 from pathlib import Path
@@ -36,6 +37,8 @@ args = parser.parse_args()
 
 input_dir = args.input_dir
 gt_dir = args.ground_truth
+thresh_distance = 0.03
+
 filtering_result = load_json(str(Path(input_dir) / 'filtering_result.json'))
 
 input_paths = Path(input_dir).glob('*/filtered_contact_points.json')
@@ -48,8 +51,6 @@ for input_path in input_paths:
     gt_pos = [p[0] for p in gt_data['contact_points']]
     gt_vec = [np.array(p)[1:, 0] for p in gt_data['contact_points']]
     gt_labels = [label for label in gt_data['labels']]
-
-    thresh_distance = 0.03
 
     data = load_json(str(input_path))
     labels = data['labels']
@@ -115,6 +116,10 @@ for input_path in input_paths:
     save_json(str(eval_json_path), diff_dict)
 
 print('\n*** For tex ***')
+table_contents = ''
+number_table_contents = ''
+error_table_contents = ''
+
 paths = list(sorted(Path(input_dir).glob('*/eval.json')))
 for path in paths:
     diff_dict = load_json(path)
@@ -137,16 +142,44 @@ for path in paths:
             angle_mean = np.array(diff_dict[key]['angle_mean']) * 180 / np.pi
             angle_min = np.array(diff_dict[key]['angle_min']) * 180 / np.pi
 
-            print('{} &{} &{} &{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\'.format(
+            table_contents += '{} &{} &{} &{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
                 category,
                 before_num, after_num, noise_num,
                 abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), angle_max,
                 abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), angle_mean,
                 abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), angle_min
-            ))
+            )
+
+            number_table_contents += '{} &{} &{} &{} \\\\\n'.format(
+                category,
+                before_num, after_num, noise_num
+            )
+
+            error_table_contents += '{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
+                category,
+                abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), angle_max,
+                abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), angle_mean,
+                abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), angle_min
+            )
 
         else:
-           print('{} &{} &{} &{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\'.format(
-               category,
-               before_num, after_num, noise_num
-               ))
+            table_contents += '{} &{} &{} &{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\\n'.format(
+                category,
+                before_num, after_num, noise_num
+            )
+
+            number_table_contents += '{} &{} &{} &{} \\\\\n'.format(
+                category,
+                before_num, after_num, noise_num
+            )
+
+            error_table_contents += '{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\\n'.format(category)
+
+print('merged table\n')
+print(table_contents)
+
+print('number only\n')
+print(number_table_contents)
+
+print('error only\n')
+print(error_table_contents)
