@@ -24,7 +24,7 @@ def main():
                         help='dbscan clustering eps', default=0.03)
     parser.add_argument('--rate-thresh', '-r', type=float,
                         help='remaining rate threshold',
-                        default=0.1)
+                        default=0.)
     parser.add_argument('--num-samples', '-n', type=int,
                         help='nuber of sampling ponts after processing,'
                         + 'If -1 remain all points',
