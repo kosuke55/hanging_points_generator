@@ -989,6 +989,12 @@ def filter_contact_points_dir(
         input_dir, 'filter_skip_list{}.txt'.format(suffix))
     remain_list_file = osp.join(
         input_dir, 'filter_remain_list{}.txt'.format(suffix))
+
+    if osp.isfile(skip_list_file):
+        os.remove(skip_list_file)
+    if osp.isfile(remain_list_file):
+        os.remove(remain_list_file)
+
     result_dict = {}
     for contact_points_path in contact_points_path_list:
         print('-----')
