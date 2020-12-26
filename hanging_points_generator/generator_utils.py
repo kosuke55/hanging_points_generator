@@ -1085,6 +1085,8 @@ def load_list(path):
         if osp.isfile(path):
             with open(path) as f:
                 list_ = [s.strip() for s in f.readlines()]
+        else:
+            raise ValueError('No such file: ' + path)
 
     return list_
 
