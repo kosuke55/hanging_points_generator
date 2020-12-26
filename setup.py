@@ -92,7 +92,9 @@ setup(
         'console_scripts':
         ['check-hanging-pose=hanging_points_generator.apps.check_hanging_pose:main',
          'visualize-objects=hanging_points_generator.apps.visualize_objects:main',
-         'filter-points=hanging_points_generator.apps.filter_points:main']},
+         'filter-points=hanging_points_generator.apps.filter_points:main',
+         'sample-files=hanging_points_generator.apps.sample_files:main',
+         ]},
     zip_safe=False,
     setup_requires=setup_requires,
     install_requires=install_requires,
