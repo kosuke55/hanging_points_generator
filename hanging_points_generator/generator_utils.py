@@ -587,14 +587,15 @@ def split_label_coords(coords_list, labels):
 
     Returns
     -------
-    coords_clusters :list[list[skrobot.coordinates.Coordinates]]
+    coords_clusters :list[tuple(skrobot.coordinates.Coordinates)]
     """
     coords_clusters = []
     labels = np.array(labels)
     for label in range(np.max(labels) + 1):
         idx = tuple(np.where(labels == label)[0])
         coords_cluster = itemgetter(*idx)(coords_list)
-
+        if len(idx) == 1:
+            coords_cluster = (coords_cluster,)
         coords_clusters.append(coords_cluster)
     return coords_clusters
 
