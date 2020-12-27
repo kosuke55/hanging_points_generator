@@ -16,7 +16,6 @@ from hanging_points_generator import create_mesh
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--input-dir', '-i', type=str,
-    # default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object_16,
     default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16',
     help='input ycb mesh directory')
 parser.add_argument(
@@ -65,14 +64,16 @@ if task_type == 'hanging':
 
 elif task_type == 'pouring':
     object_list = [
+        "019_pitcher_base",
         "024_bowl",
         "025_mug",
-        "031_spoon",
+        "027_skillet",
         "029_plate",
     ]
 
 if init_texture:
     save_dir = Path(input_dir) / 'textured_urdf'.format(task_type)  # noqa
+    save_dir = '/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf_eval_textured'
 else:
     save_dir = Path(input_dir) / 'urdf'.format(task_type)  # noqa
 
@@ -124,3 +125,5 @@ for file_path in files:
             'mesh').attrib['filename'] = 'textured.obj'
         tree.write(os.path.join(save_dir, category_name, 'textured.urdf'),
                    encoding='utf-8', xml_declaration=True)
+        
+        
