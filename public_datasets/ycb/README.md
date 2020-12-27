@@ -25,9 +25,13 @@ objects_to_download = [
     "019_pitcher_base",
     "024_bowl",
     "025_mug",
-    "031_spoon",
+    "027_skillet",
     "029_plate",
 ]
 ```
+
+The skillet has a lid and is not a continuous mesh.  
+Therefore, it is necessary to separate them using meshlab etc.  
+[Here](https://drive.google.com/file/d/1kzWz5RrqptLo9tnOjkAi8z-faYVlpmdX/view?usp=sharing) is the mesh with the lid removed.
 
 And run 'python [stl2urdf.py](./stl2urdf.py) -i <path_to_ycb_dir>' for creating urdf.
