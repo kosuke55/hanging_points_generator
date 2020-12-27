@@ -65,7 +65,6 @@ if task_type == 'hanging':
 
 elif task_type == 'pouring':
     object_list = [
-        "019_pitcher_base",
         "024_bowl",
         "025_mug",
         "027_skillet",
