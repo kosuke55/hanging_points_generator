@@ -22,7 +22,6 @@ objects_to_download = [
 
 # pouring
 objects_to_download = [
-    "019_pitcher_base",
     "024_bowl",
     "025_mug",
     "027_skillet",
