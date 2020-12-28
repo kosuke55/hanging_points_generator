@@ -1,4 +1,4 @@
-# Mesh Reconstruction and Hanging Points Generator
+# Hanging Points Generator
 [![Build Status](https://travis-ci.com/kosuke55/hanging_points_generator.svg?token=NmxadtM3pq1A9AssR1vm&branch=master)](https://travis-ci.com/kosuke55/hanging_points_generator)
 
 ## Setup
@@ -63,15 +63,19 @@ In [skrobot_node.py](https://github.com/kosuke55/pr2demo/blob/master/scripts/skr
 And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/mesh_hooking.launch) to detect hook.
 
 
-### Mesh reconstruction and Generating hanging points Result
+## Generate hanging points
 **1.** Collect rgbd images.  
 <img src="https://user-images.githubusercontent.com/39142679/80790397-ae77de00-8bc9-11ea-95cf-46130f707e6d.gif" width="300">  
 **2.** Create mesh. (Left: ICP->TSDF Right: ICP->Voxelization-> Marching cubes)  
 <img src="https://user-images.githubusercontent.com/39142679/80790404-b2a3fb80-8bc9-11ea-9b52-246e1c4273fe.gif"  alt="hoge" width="300" height="300" >  <img src="https://user-images.githubusercontent.com/39142679/80790323-7c667c00-8bc9-11ea-915c-bb51b1be854e.gif" width="300" height="300">  
-**3.** Find hanging points in pybullet.  
+**3.** Generate hanging points in pybullet.  
 <img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">  
 
-### How to check contact points
+## Generate pouring points
+<img src="https://user-images.githubusercontent.com/39142679/103217015-e6067800-495a-11eb-82a4-575c83896f7a.gif" width="300">
+<img src="https://user-images.githubusercontent.com/39142679/103215208-0e3fa800-4956-11eb-9d29-bbf4b90fe586.gif" width="300">
+
+## How to check contact points
 ```
 usage: check-hanging-pose [-h] [--input INPUT]
                           [--input-file-name INPUT_FILE_NAME] [--idx IDX]
@@ -117,7 +121,7 @@ optional arguments:
                         None)
 ```
 
-#### example
+### example
 ```
 # If contact_points is dir, load multiple contact_points.
 cd urdf/037_scissors
@@ -127,7 +131,15 @@ check-hanging-pose -i textured.urdf -p contact_points -c -1 --ipc --align --aver
 <img src="https://user-images.githubusercontent.com/39142679/102206051-5fd84380-3f0f-11eb-87c3-796142f8b742.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/102206130-7b434e80-3f0f-11eb-96b6-db7c4c319c9b.gif" width="300" height="300">  
 Left:Before filtering &ensp; Right:After filtering
 
-### Externals
+## Gererate random shape objects with GAN
+Read [random_mesh/README.md](random_mesh/README.md) and train GAN.  
+Genrate random shape mesh with
+```
+python random_mesh_generator.py -p <pretrained_model> -s <save_dir>
+```
+<img src="https://user-images.githubusercontent.com/39142679/103216617-d63a6400-4959-11eb-9ade-2693841f7ff7.png" width="600" height="300">
+
+## Externals
 [andyzeng/tsdf-fusion-python](https://github.com/andyzeng/tsdf-fusion-python)  
 ```
 @inproceedings{zeng20163dmatch,
