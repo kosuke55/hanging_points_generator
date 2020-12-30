@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import numpy.matlib as npm
+import open3d as o3d
 import pybullet
 import skrobot
 import trimesh
@@ -22,7 +23,7 @@ from sklearn.cluster import DBSCAN
 
 
 def check_contact_points(
-        contact_points_path, urdf_file='', json_name='contact_points.json',
+        contact_points_path, object_file='', json_name='contact_points.json',
         cluster_min_points=0, eps=0.03, use_filter_penetration=False,
         inf_penetration_check=False, half_inf_penetration_check=False,
         align=False, average=False, average_pos=False, _test=False,
@@ -34,7 +35,8 @@ def check_contact_points(
     contact_points_path : str
         file or dir path
         if dir load multiple contact_points
-    urdf_file : str
+    object_file : str
+        urdf or pcd file
     json_name : str, optional
         'contact_points.json' or 'pouring_points.json',
         by default 'contact_points.json'
@@ -81,26 +83,40 @@ def check_contact_points(
     print('Load %d points' % len(contact_points))
     if just_check_num_points:
         return True
-    urdf_file = str(urdf_file or contact_points_dict['urdf_file'])
+    object_file = str(object_file or contact_points_dict['urdf_file'])
 
-    if use_filter_penetration \
-        or inf_penetration_check \
-            or half_inf_penetration_check:
+    if osp.splitext(object_file)[1] == '.urdf':
+        obj_model = skrobot.models.urdf.RobotModelFromURDF(
+            urdf_file=osp.abspath(object_file))
+    elif osp.splitext(object_file)[1] == '.pcd':
+        is_point_cloud = True
+        open3d_point_cloud = o3d.io.read_point_cloud(object_file)
+        trimesh_point_cloud = trimesh.PointCloud(
+            np.asarray(
+                open3d_point_cloud.points), np.asarray(
+                open3d_point_cloud.colors))
+        obj_model = skrobot.model.PointCloudLink(trimesh_point_cloud)
+    else:
+        raise NotImplementedError('oject_file should be .urdf or .pcd')
+
+    if (use_filter_penetration
+        or inf_penetration_check
+            or half_inf_penetration_check) and not is_point_cloud:
         # for hanging
         if inf_penetration_check:
             contact_points, _ = filter_penetration(
-                urdf_file, contact_points,
+                object_file, contact_points,
                 box_size=[100, 0.0001, 0.0001],
                 translate=[0, 0.005, 0])
         # for pouring
         elif half_inf_penetration_check:
             contact_points, _ = filter_penetration(
-                urdf_file, contact_points,
+                object_file, contact_points,
                 box_size=[100, 0.0001, 0.0001],
                 translate=[-50.005, 0, 0])
         else:
             contact_points, _ = filter_penetration(
-                urdf_file, contact_points,
+                object_file, contact_points,
                 box_size=[0.1, 0.0001, 0.0001])
         print('%d points are left after penetration check' % len(
             contact_points))
@@ -109,9 +125,6 @@ def check_contact_points(
         contact_points = cluster_contact_points(
             contact_points, min_samples=cluster_min_points, eps=eps)
         print('%d points are left after clustering' % len(contact_points))
-
-    obj_model = skrobot.models.urdf.RobotModelFromURDF(
-        urdf_file=osp.abspath(urdf_file))
 
     if len(contact_points) == 0:
         print('No points')
@@ -126,13 +139,13 @@ def check_contact_points(
         contact_points_coords \
             = align_coords(contact_points_coords, labels)
         contact_points = coords_to_dict(contact_points_coords,
-                                        urdf_file)['contact_points']
+                                        object_file)['contact_points']
     if average and labels:
         contact_points_coords = make_average_coords_list(
             contact_points_coords, labels, average_pos=average_pos)
         contact_points \
             = coords_to_dict(contact_points_coords,
-                             urdf_file)['contact_points']
+                             object_file)['contact_points']
 
     if not _test:
         contact_point_marker_list = []
