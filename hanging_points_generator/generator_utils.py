@@ -85,6 +85,7 @@ def check_contact_points(
         return True
     object_file = str(object_file or contact_points_dict['urdf_file'])
 
+    is_point_cloud = False
     if osp.splitext(object_file)[1] == '.urdf':
         obj_model = skrobot.models.urdf.RobotModelFromURDF(
             urdf_file=osp.abspath(object_file))
