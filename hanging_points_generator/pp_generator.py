@@ -245,6 +245,7 @@ def get_key_rotatins(num_rotations=26):
         raise ValueError('num_roatations shouled be 6, 18 or 26.')
 
     if num_rotations == 6 or num_rotations == 18 or num_rotations == 26:
+        # pybullet euler order is [roll pitch yaw]
         key_rotations = [
             pybullet.getQuaternionFromEuler([0, 0, 0]),
             pybullet.getQuaternionFromEuler([np.pi / 2, 0, 0]),
@@ -426,7 +427,6 @@ def generate(urdf_file, required_points_num,
     key_rotations = get_key_rotatins()
     num_points_list = []
     pouring_points_list_all = []
-
     try:
         for key_rotation in key_rotations:
             for repeat_idx in range(repeat_per_rotation):
