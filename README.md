@@ -72,7 +72,7 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 <img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">  
 
 ## Generate pouring points
-<img src="https://user-images.githubusercontent.com/39142679/103217482-08e55c00-495c-11eb-8464-1d5129e86060.gif" width="300"> <img src="https://user-images.githubusercontent.com/39142679/103215208-0e3fa800-4956-11eb-9d29-bbf4b90fe586.gif" width="300">
+<img src="https://user-images.githubusercontent.com/39142679/103476447-10dc4a80-4df9-11eb-819f-ef31ec1dfe11.gif" width="300"> <img src="https://user-images.githubusercontent.com/39142679/103215208-0e3fa800-4956-11eb-9d29-bbf4b90fe586.gif" width="300">
 
 ## How to check contact points
 ```
