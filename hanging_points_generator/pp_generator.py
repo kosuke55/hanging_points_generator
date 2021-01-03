@@ -10,7 +10,6 @@ from pathlib import Path
 import numpy as np
 import pybullet
 import skrobot
-import six
 from eos import make_fancy_output_dir
 
 from hanging_points_generator.generator_utils import add_list
@@ -196,28 +195,66 @@ def remove_out_sphere(sphere_ids, pos_list=None):
         return remained_sphere_ids, pos_in_list, pos_out_list
 
 
-def get_key_rotatins(use_diagonal=True):
-    """Get key 6 or 14 rotations.
+def get_key_rotatins(num_rotations=26):
+    """Get key rotations
 
     Parameters
     ----------
-    use_diagonal : bool, optional
-        If True retun 14 key rotations, by default True
+    num_rotations : int
+        number of key rotations.
+        this value should be 6, 18 or 26.
+        if 6, the gravity directions are equal to
+        [0, 0, -1],
+        [0, -1, 0],
+        [0, 0, 1],
+        [0, 1, 0],
+        [1, 0, 0],
+        [-1, 0, 0]
+
+        if 18, the following are added to the directions of gravity
+        [0, -1, -1],
+        [0, -1, 1],
+        [0, 1, 1],
+        [0, 1, -1],
+        [1, 0, -1],
+        [1, 0, 1],
+        [-1, 0, 1],
+        [-1, 0, -1],
+        [1, -1, 0],
+        [-1, 1, 0],
+        [-1, -1, 0],
+        [1, 1, 0]
+
+        if 26, the following are added to the directions of gravity
+        [-1, -1, -1],
+        [-1, -1, 1],
+        [1, 1, 1],
+        [1, 1, -1],
+        [1, -1, -1],
+        [1, -1, 1],
+        [-1, 1, 1],
+        [-1, 1, -1]
 
     Returns
     -------
     key_rotations : list[list[float]]
-        list of key rotation
+        list of key rotation quaternion.
+        [x, y, z, w] order.
     """
-    if use_diagonal:
+    if not(num_rotations == 6 or num_rotations == 18 or num_rotations == 26):
+        raise ValueError('num_roatations shouled be 6, 18 or 26.')
+
+    if num_rotations == 6 or num_rotations == 18 or num_rotations == 26:
         key_rotations = [
             pybullet.getQuaternionFromEuler([0, 0, 0]),
             pybullet.getQuaternionFromEuler([np.pi / 2, 0, 0]),
             pybullet.getQuaternionFromEuler([np.pi, 0, 0]),
             pybullet.getQuaternionFromEuler([-np.pi / 2, 0, 0]),
             pybullet.getQuaternionFromEuler([0, np.pi / 2, 0]),
-            pybullet.getQuaternionFromEuler([0, -np.pi / 2, 0]),
+            pybullet.getQuaternionFromEuler([0, -np.pi / 2, 0])]
 
+    if num_rotations == 18 or num_rotations == 26:
+        key_rotations += [
             pybullet.getQuaternionFromEuler([np.pi / 4, 0, 0]),
             pybullet.getQuaternionFromEuler([np.pi / 4 * 3, 0, 0]),
             pybullet.getQuaternionFromEuler([-np.pi / 4 * 3, 0, 0]),
@@ -228,19 +265,34 @@ def get_key_rotatins(use_diagonal=True):
             pybullet.getQuaternionFromEuler([0, -np.pi / 4 * 3, 0]),
             pybullet.getQuaternionFromEuler([0, -np.pi / 4, 0]),
 
-            pybullet.getQuaternionFromEuler([0, 0, np.pi / 4]),
-            pybullet.getQuaternionFromEuler([0, 0, np.pi / 4 * 3]),
-            pybullet.getQuaternionFromEuler([0, 0, -np.pi / 4 * 3]),
-            pybullet.getQuaternionFromEuler([0, 0, -np.pi / 4]),
-        ]
-    else:
-        key_rotations = [
-            pybullet.getQuaternionFromEuler([0, 0, 0]),
-            pybullet.getQuaternionFromEuler([np.pi / 2, 0, 0]),
-            pybullet.getQuaternionFromEuler([np.pi, 0, 0]),
-            pybullet.getQuaternionFromEuler([-np.pi / 2, 0, 0]),
-            pybullet.getQuaternionFromEuler([0, np.pi / 2, 0]),
-            pybullet.getQuaternionFromEuler([0, -np.pi / 2, 0])
+            pybullet.getQuaternionFromEuler(
+                [np.pi / 2, np.pi / 4, np.pi / 4]),
+            pybullet.getQuaternionFromEuler(
+                [-np.pi / 2, -np.pi / 4, np.pi / 4]),
+            pybullet.getQuaternionFromEuler(
+                [np.pi / 2, -np.pi / 4, -np.pi / 4]),
+            pybullet.getQuaternionFromEuler(
+                [-np.pi / 2, np.pi / 4, -np.pi / 4])]
+
+    if num_rotations == 26:
+        # These rotations can be calculated by Rodrigues
+        key_rotations += [
+            pybullet.getQuaternionFromEuler(
+                [0.785398163397, -0.61547970867, -0.261799387799]),
+            pybullet.getQuaternionFromEuler(
+                [2.35619449019, -0.61547970867, -1.308996939]),
+            pybullet.getQuaternionFromEuler(
+                [-2.35619449019, 0.61547970867, -1.308996939]),
+            pybullet.getQuaternionFromEuler(
+                [-0.785398163397, 0.61547970867, -0.261799387799]),
+            pybullet.getQuaternionFromEuler(
+                [0.785398163397, 0.61547970867, 0.261799387799]),
+            pybullet.getQuaternionFromEuler(
+                [2.35619449019, 0.61547970867, 1.308996939]),
+            pybullet.getQuaternionFromEuler(
+                [-2.35619449019, -0.61547970867, 1.308996939]),
+            pybullet.getQuaternionFromEuler(
+                [-0.785398163397, -0.61547970867, 0.261799387799])
         ]
 
     return key_rotations
