@@ -387,7 +387,7 @@ def generate(urdf_file, required_points_num,
     pattern_spheres : bool, optional
         by default True
     repeat_per_rotation : int, optional
-        How many times to pour per rotation, by default 3
+        How many times to pour per rotation, by default 1
     apply_force : bool, optional
         Whether to apply an external force to check the stability.
         by default False
