@@ -427,6 +427,7 @@ def generate(urdf_file, required_points_num,
     key_rotations = get_key_rotatins()
     num_points_list = []
     pouring_points_list_all = []
+
     try:
         for key_rotation in key_rotations:
             for repeat_idx in range(repeat_per_rotation):
