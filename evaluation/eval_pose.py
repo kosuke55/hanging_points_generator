@@ -33,10 +33,20 @@ parser.add_argument(
     help='',
     # default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf2/annotation_obj')
     default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16/textured_urdf/annotation_obj')
+parser.add_argument(
+    '--print-mode', '-p',
+    type=int,
+    help='0: dx dy dz angle '
+    '1: dx dy dz dl angle '
+    '2: dl angle ',
+    default=0)
+
 args = parser.parse_args()
 
 input_dir = args.input_dir
 gt_dir = args.ground_truth
+print_mode = args.print_mode
+
 thresh_distance = 0.03
 
 filtering_result = load_json(str(Path(input_dir) / 'filtering_result.json'))
@@ -98,16 +108,22 @@ for input_path in input_paths:
         diff_dict[key]['pos_diff_mean'] = np.mean(pos_diff, axis=0).tolist()
         diff_dict[key]['pos_diff_max'] = np.max(pos_diff, axis=0).tolist()
         diff_dict[key]['pos_diff_min'] = np.min(pos_diff, axis=0).tolist()
-
         print('pos_diff_max %f %f %f' % tuple(diff_dict[key]['pos_diff_max']))
         print('pos_diff_mean %f %f %f' % tuple(diff_dict[key]['pos_diff_mean']))
         print('pos_diff_min %f %f %f' % tuple(diff_dict[key]['pos_diff_min']))
+
+        distance = np.array(diff_dict[key]['distance'])
+        diff_dict[key]['distance_mean'] = np.mean(distance).tolist()
+        diff_dict[key]['distance_max'] = np.max(distance).tolist()
+        diff_dict[key]['distance_min'] = np.min(distance).tolist()
+        print('distance_max %f' % diff_dict[key]['distance_max'])
+        print('distance_mean %f' % diff_dict[key]['distance_mean'])
+        print('distance_min %f' % diff_dict[key]['distance_min'])
 
         angle = np.array(diff_dict[key]['angle'])
         diff_dict[key]['angle_mean'] = np.mean(angle).tolist()
         diff_dict[key]['angle_max'] = np.max(angle).tolist()
         diff_dict[key]['angle_min'] = np.min(angle).tolist()
-
         print('angle_max %f' % diff_dict[key]['angle_max'])
         print('angle_mean %f' % diff_dict[key]['angle_mean'])
         print('angle_min %f' % diff_dict[key]['angle_min'])
@@ -134,46 +150,94 @@ for path in paths:
         before_num = filter_current_category['pre_points_num']
         after_num = filter_current_category['post_points_num']
 
+        number_table_contents += '{} &{} &{} &{} \\\\\n'.format(
+            category,
+            before_num, after_num, noise_num
+        )
+
         if 'pos_diff_max' in diff_dict[key]:
             pos_diff_max = np.array(diff_dict[key]['pos_diff_max']) * 1000
             pos_diff_mean = np.array(diff_dict[key]['pos_diff_mean']) * 1000
             pos_diff_min = np.array(diff_dict[key]['pos_diff_min']) * 1000
+
+            distance_max = np.array(diff_dict[key]['distance_max']) * 1000
+            distance_mean = np.array(diff_dict[key]['distance_mean']) * 1000
+            distance_min = np.array(diff_dict[key]['distance_min']) * 1000
+
             angle_max = np.array(diff_dict[key]['angle_max']) * 180 / np.pi
             angle_mean = np.array(diff_dict[key]['angle_mean']) * 180 / np.pi
             angle_min = np.array(diff_dict[key]['angle_min']) * 180 / np.pi
 
-            table_contents += '{} &{} &{} &{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
-                category,
-                before_num, after_num, noise_num,
-                abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), angle_max,
-                abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), angle_mean,
-                abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), angle_min
-            )
+            if print_mode == 0:
+                table_contents += '{} &{} &{} &{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
+                    category,
+                    before_num, after_num, noise_num,
+                    abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), angle_max,
+                    abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), angle_mean,
+                    abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), angle_min
+                )
 
-            number_table_contents += '{} &{} &{} &{} \\\\\n'.format(
-                category,
-                before_num, after_num, noise_num
-            )
+                error_table_contents += '{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
+                    category,
+                    abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), angle_max,
+                    abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), angle_mean,
+                    abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), angle_min
+                )
+            elif print_mode == 1:
+                table_contents += '{} &{} &{} &{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f}&{:.2f} &{:.2f} \\\\\n'.format(
+                    category,
+                    before_num, after_num, noise_num,
+                    abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), distance_max, angle_max,
+                    abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), distance_mean, angle_mean,
+                    abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), distance_min, angle_min
+                )
 
-            error_table_contents += '{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
-                category,
-                abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), angle_max,
-                abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), angle_mean,
-                abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), angle_min
-            )
+                error_table_contents += '{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
+                    category,
+                    abs(pos_diff_max[0]), abs(pos_diff_max[1]), abs(pos_diff_max[2]), distance_max, angle_max,
+                    abs(pos_diff_mean[0]), abs(pos_diff_mean[1]), abs(pos_diff_mean[2]), distance_mean, angle_mean,
+                    abs(pos_diff_min[0]), abs(pos_diff_min[1]), abs(pos_diff_min[2]), distance_min, angle_min
+                )
+            elif print_mode == 2:
+                table_contents += '{} &{} &{} &{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
+                    category,
+                    before_num, after_num, noise_num,
+                    distance_max, angle_max,
+                    distance_mean, angle_mean,
+                    distance_min, angle_min
+                )
+
+                error_table_contents += '{} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} &{:.2f} \\\\\n'.format(
+                    category,
+                    distance_max, angle_max,
+                    distance_mean, angle_mean,
+                    distance_min, angle_min
+                )
+
 
         else:
-            table_contents += '{} &{} &{} &{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\\n'.format(
-                category,
-                before_num, after_num, noise_num
-            )
+            if print_mode == 0:
+                table_contents += '{} &{} &{} &{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\\n'.format(
+                    category,
+                    before_num, after_num, noise_num
+                )
 
-            number_table_contents += '{} &{} &{} &{} \\\\\n'.format(
-                category,
-                before_num, after_num, noise_num
-            )
+                error_table_contents += '{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\\n'.format(category)
+            elif print_mode == 1:
+                table_contents += '{} &{} &{} &{} &- &- &- &- &- &- &- &- &- &- &- &- &- &- &- \\\\\n'.format(
+                    category,
+                    before_num, after_num, noise_num
+                )
 
-            error_table_contents += '{} &- &- &- &- &- &- &- &- &- &- &- &-\\\\\n'.format(category)
+                error_table_contents += '{} &- &- &- &- &- &- &- &- &- &- &- &- &- &- &- \\\\\n'.format(category)
+
+            elif print_mode == 2:
+                table_contents += '{} &{} &{} &{} &- &- &- &- &- &- \\\\\n'.format(
+                    category,
+                    before_num, after_num, noise_num
+                )
+
+                error_table_contents += '{} &- &- &- &- &- &- \\\\\n'.format(category)
 
 print('merged table\n')
 print(table_contents)
