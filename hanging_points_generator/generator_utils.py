@@ -27,7 +27,8 @@ def check_contact_points(
         cluster_min_points=0, eps=0.03, use_filter_penetration=False,
         inf_penetration_check=False, half_inf_penetration_check=False,
         align=False, average=False, average_pos=False, _test=False,
-        image_name=None, large_axis=False, just_check_num_points=False):
+        image_name=None, large_axis=False, just_check_num_points=False,
+        use_annotation_labels=False):
     """Chaeck contact points with urdf
 
     Parameters
@@ -68,6 +69,10 @@ def check_contact_points(
         visualize points with large axis, by default False
     just_check_num_points : bool, optional
         by default False
+    use_annotation_labels : bool, optional
+        if ture, color markers.
+        disable filtering and clustering to use this option
+        by default False
 
     """
     if osp.isdir(contact_points_path):
@@ -80,6 +85,13 @@ def check_contact_points(
         return False
 
     contact_points = contact_points_dict['contact_points']
+
+    if 'labels' in contact_points_dict.keys():
+        annotation_labels = contact_points_dict['labels']
+        color_map = label_colormap()
+    else:
+        use_annotation_labels = False
+
     print('Load %d points' % len(contact_points))
     if just_check_num_points:
         return True
@@ -154,8 +166,12 @@ def check_contact_points(
             if large_axis:
                 contact_point_marker = skrobot.model.Axis(0.003, 0.05)
             else:
-                contact_point_marker = skrobot.model.Sphere(
-                    0.001, color=[255, 0, 0])
+                color = [255, 0, 0]
+                if use_annotation_labels:
+                    color = color_map[annotation_labels[i] + 10]
+
+                contact_point_marker = skrobot.model.Sphere(0.003, color=color)
+
             contact_point_marker.newcoords(
                 skrobot.coordinates.Coordinates(pos=cp[0], rot=cp[1:]))
             contact_point_marker_list.append(contact_point_marker)
@@ -1137,3 +1153,40 @@ def save_contact_points_as_annotation_format(
             f.writelines(
                 ''.join(str(v) + ' ' for v in annotation_data
                         )[:-1] + '\n')
+
+
+def label_colormap(n_label=256):
+    """Label colormap.
+
+    original code is
+    https://github.com/wkentaro/imgviz/blob/master/imgviz/label.py
+
+    Parameters
+    ----------
+    n_labels: int
+        Number of labels (default: 256).
+
+    Returns
+    -------
+    cmap: numpy.ndarray, (N, 3), numpy.uint8
+        Label id to colormap.
+
+    """
+
+    def bitget(byteval, idx):
+        return (byteval & (1 << idx)) != 0
+
+    cmap = np.zeros((n_label, 3), dtype=np.uint8)
+    for i in range(0, n_label):
+        id = i
+        r, g, b = 0, 0, 0
+        for j in range(0, 8):
+            r = np.bitwise_or(r, (bitget(id, 0) << 7 - j))
+            g = np.bitwise_or(g, (bitget(id, 1) << 7 - j))
+            b = np.bitwise_or(b, (bitget(id, 2) << 7 - j))
+            id = id >> 3
+        cmap[i, 0] = r
+        cmap[i, 1] = g
+        cmap[i, 2] = b
+
+    return cmap
