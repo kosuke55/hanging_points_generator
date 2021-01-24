@@ -5,10 +5,13 @@
 `pip install -e .`  
 `pip3 install -r py3_requirement.txt`  
 
+**not recommended**  
+The code is for open3d 0.11 and above, so you need to modify it for 0.9  
 To use voxelization on ubuntu 16.04,  
 `git clone -b hotfix/voxels https://github.com/kosuke55/Open3D.git`  
 then refer to [this page](http://www.open3d.org/docs/release/compilation.html#ubuntu) and compile Open3d from source.([related PR](https://github.com/intel-isl/Open3D/pull/1688))  
 
+**recommended**  
 If you use ubuntu 18.04 and python3, just
 `pip install open3d`
 
