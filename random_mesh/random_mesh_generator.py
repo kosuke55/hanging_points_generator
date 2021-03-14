@@ -15,13 +15,15 @@ from hanging_points_generator.generator_utils import save_json
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--savedir', type=str,
-    default='/media/kosuke/SANDISK/meshdata/random_shape_shapenet_hanging_1016',
+    default='random_shape',
+    # default='/media/kosuke/SANDISK/meshdata/random_shape_shapenet_hanging_1016',
     # default='/media/kosuke/SANDISK/meshdata/random_shape_shapenet_pouring',
     help='Directory to save mesh to.')
 parser.add_argument(
     '--pretrained_model', '-p',
     type=str, help='Pretrained models',
-    default='/media/kosuke55/SANDISK/random_mesh_gan/log_hanging/3D_IWGAN/gen_3000.pth')
+    default='../gan_trained_model/hanging_gen_3000.pth')
+    # default='/media/kosuke55/SANDISK/random_mesh_gan/log_hanging/3D_IWGAN/gen_3000.pth')
     # default='/media/kosuke55/SANDISK/random_mesh_gan/log_pouring/3D_IWGAN/gen_3000.pth')
 parser.add_argument(
     '--prefix', type=str,
