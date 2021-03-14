@@ -22,10 +22,13 @@ parser.add_argument(
     '-i',
     type=str,
     help='input directory',
-    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10')
-parser.add_argument('--required-points-num', '-n', type=int,
-                    help='required points number. do not use this option now',
-                    default=1)
+    default='../ycb_eval_data_tmp/pouring_eval')
+    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_pouring_50')
+    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10_copy_')
+parser.add_argument(
+    '--required-points-num', '-n', type=int,
+    help='required points number. do not use this option now',
+    default=5)
 parser.add_argument(
     '--existed-points-num',
     '-en',
@@ -34,17 +37,22 @@ parser.add_argument(
     'Skip more than this number.'
     'If this number is -1, do not skip any file',
     default=-1)
-parser.add_argument('--gui', '-g', action='store_true',
-                    help='gui')
-parser.add_argument('--viz_obj', '-v', action='store_true',
-                    help='viz obj with contactpoints')
-parser.add_argument('--skip-list', '-s', type=str,
-                    help='skip file list',
-                    default='')
-parser.add_argument('--unable-shuffle-files', '-usf', action='store_true',
-                    help='unabale shuffle files')
-parser.add_argument('--skip', action='store_true',
-                    help='use skip file')
+parser.add_argument(
+    '--gui', '-g', action='store_true',
+    help='gui')
+parser.add_argument(
+    '--viz_obj', '-v', action='store_true',
+    help='viz obj with contactpoints')
+parser.add_argument(
+    '--skip-list', '-s', type=str,
+    help='skip file list',
+    default='')
+parser.add_argument(
+    '--unable-shuffle-files', '-usf', action='store_true',
+    help='unabale shuffle files')
+parser.add_argument(
+    '--skip', action='store_true',
+    help='use skip file')
 parser.add_argument(
     '--repeat-per-rotation',
     '-rpr',
@@ -54,7 +62,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 input_dir = args.input_dir
-files = glob.glob(osp.join(input_dir, '*/base.urdf'))
+files = sorted(glob.glob(osp.join(input_dir, '*/base.urdf')))
 if not args.unable_shuffle_files:
     random.shuffle(files)
 
@@ -64,11 +72,8 @@ skip_file = osp.join(
     input_dir, 'finish_list.txt') if args.skip_list == '' else args.skip_list
 
 for file in tqdm(files):
-    # if 'bowl' not in file:
-    #     continue
     if osp.isfile(skip_file):
         skip_list = load_list(skip_file)
-        # print('skip list: ', skip_list)
         print('skip list length : ', len(skip_list))
 
     dirname, filename = osp.split(file)
@@ -100,4 +105,5 @@ for file in tqdm(files):
                  enable_gui=args.gui,
                  viz_obj=args.viz_obj,
                  save_dir=dirname,
-                 pattern_spheres=True)
+                 pattern_spheres=True,
+                 repeat_per_rotation=1)

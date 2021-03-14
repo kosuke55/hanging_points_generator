@@ -20,32 +20,39 @@ parser.add_argument(
     '-i',
     type=str,
     help='input directory',
-    default='/media/kosuke55/SANDISK/meshdata/hanging_object')
-parser.add_argument('--required-points-num', '-n', type=int,
-                    help='required points number',
-                    default=1)
-parser.add_argument('--try-num', '-tn', type=int,
-                    help='number of try', default=1000)
-parser.add_argument('--existed-points-num', '-en', type=int,
-                    help='threshold for the number of points already generated. '
-                    'Skip more than this number.'
-                    'If this number is -1, do not skip any file',
-                    default=-1)
-parser.add_argument('--gui', '-g', action='store_true',
-                    help='gui')
-parser.add_argument('--viz_obj', '-v', type=int,
-                    help='viz obj with contactpoints',
-                    default=0)
-parser.add_argument('--hook-type', '-ht', type=str,
-                    help='hook type "just_bar" or hook urdf',
-                    default='just_bar')
-parser.add_argument('--skip-list', '-s', type=str,
-                    help='skip file list',
-                    default='')
+    default='../ycb_eval_data_tmp/hanging_eval')
+    # default='/media/kosuke55/SANDISK/meshdata/hanging_object')
+parser.add_argument(
+    '--required-points-num', '-n', type=int,
+    help='required points number',
+    default=5)
+parser.add_argument(
+    '--try-num', '-tn', type=int,
+    help='number of try', default=1000)
+parser.add_argument(
+    '--existed-points-num', '-en', type=int,
+    help='threshold for the number of points already generated. '
+    'Skip more than this number.'
+    'If this number is -1, do not skip any file',
+    default=-1)
+parser.add_argument(
+    '--gui', '-g', action='store_true',
+    help='gui')
+parser.add_argument(
+    '--viz_obj', '-v', action='store_true',
+    help='viz obj with contactpoints',
+parser.add_argument(
+    '--hook-type', '-ht', type=str,
+    help='hook type "just_bar" or hook urdf',
+    default='just_bar')
+parser.add_argument(
+    '--skip-list', '-s', type=str,
+    help='skip file list',
+    default='')
 
 args = parser.parse_args()
 input_dir = args.input_dir
-files = glob.glob(osp.join(input_dir, '*/base.urdf'))
+files = sorted(glob.glob(osp.join(input_dir, '*/base.urdf')))
 existed_points_num = args.existed_points_num
 skip_file = args.skip_list
 

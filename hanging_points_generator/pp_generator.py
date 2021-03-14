@@ -427,6 +427,7 @@ def generate(urdf_file, required_points_num,
     key_rotations = get_key_rotatins()
     num_points_list = []
     pouring_points_list_all = []
+    input('press enter')
 
     try:
         for key_rotation in key_rotations:
@@ -516,7 +517,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--urdf', '-u', type=str,
         help='input urdf',
-        default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf/025_mug/base.urdf')
+        # default='/media/kosuke/SANDISK/meshdata/ycb_hanging_object/urdf/025_mug/base.urdf')
+        default='/media/kosuke55/SANDISK/meshdata/hanging_object/03797390_128ecbc10df5b05d96eaf1340564a4de_mug/base.urdf')
     parser.add_argument(
         '--required_points_num', '-n', type=int,
         help='required points number',
