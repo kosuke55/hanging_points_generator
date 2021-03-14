@@ -17,16 +17,20 @@ if __name__ == '__main__':
                         help='Download ycb evaluation data.')
     parser.add_argument('--rosbag', action='store_true',
                         help='Download sample bag file.')
+    parser.add_argument('--gan-trained-model', action='store_true',
+                        help='Download sample gan trained model.')
     args = parser.parse_args()
     output_dir = args.output_dir
     rgbd = args.rgbd
     urdf = args.urdf
     ycb_eval_data = args.ycb_eval_data
     rosbag = args.rosbag
+    gan_trained_model = args.gan_trained_model
 
     download_sample_data(
         output_dir=output_dir,
         rgbd=rgbd,
         urdf=urdf,
         ycb_eval_data=ycb_eval_data,
-        rosbag=rosbag)
+        rosbag=rosbag,
+        gan_trained_model=gan_trained_model)

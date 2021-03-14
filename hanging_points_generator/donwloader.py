@@ -4,8 +4,9 @@ import gdown
 
 
 def download_sample_data(
-    output_dir=None, rgbd=True, urdf=True,
-    ycb_eval_data=True, rosbag=True):
+        output_dir=None, rgbd=True, urdf=True,
+        ycb_eval_data=True, rosbag=True,
+        gan_trained_model=True):
     # color, depth, camera_pose
     if rgbd:
         if output_dir is None:
@@ -65,4 +66,17 @@ def download_sample_data(
             'https://drive.google.com/uc?export=download&id=169jfyrdTAUmN35VEC61pUA0rJNOHVlnH',
             rosbag_handeye_path,
             md5='16dac750d95feb65365528dae2b217d5',
+            postprocess=gdown.extractall)
+
+    # gan_trained_model
+    if gan_trained_model:
+        if output_dir is None:
+            gan_model_path = 'gan_trained_model.tgz'
+        else:
+            gan_model_path = osp.join(
+                output_dir, 'gan_trained_model.tgz')
+        gdown.cached_download(
+            'https://drive.google.com/uc?export=download&id=1rz7j2Zw4ePsIXdh5wZxeTqhRf0ilVSa7',
+            gan_model_path,
+            md5='634d9ba6e8013f8eac5684134299a22a',
             postprocess=gdown.extractall)
