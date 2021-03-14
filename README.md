@@ -146,7 +146,7 @@ python random_mesh_generator.py -p <pretrained_model> -s <save_dir>
 
 ## Citation
 ```
-@inproceedings{icra_takeuchi,
+@inproceedings{takeuchi_icra_2021,
  author = {Takeuchi, Kosuke and Yanokura, Iori and Kakiuchi, Yohei and Okada, Kei and Inaba, Masayuki},
  booktitle = {ICRA},
  month = {May},
