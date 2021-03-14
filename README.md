@@ -143,11 +143,14 @@ python random_mesh_generator.py -p <pretrained_model> -s <save_dir>
 
 ## Externals
 [andyzeng/tsdf-fusion-python](https://github.com/andyzeng/tsdf-fusion-python)  
+
+## Citation
 ```
-@inproceedings{zeng20163dmatch,
-    title={3DMatch: Learning Local Geometric Descriptors from RGB-D Reconstructions},
-    author={Zeng, Andy and Song, Shuran and Nie{\ss}ner, Matthias and Fisher, Matthew and Xiao, Jianxiong and Funkhouser, Thomas},
-    booktitle={CVPR},
-    year={2017}
+@inproceedings{icra_takeuchi,
+ author = {Takeuchi, Kosuke and Yanokura, Iori and Kakiuchi, Yohei and Okada, Kei and Inaba, Masayuki},
+ booktitle = {ICRA},
+ month = {May},
+ title = {Annotation-Free Hanging Point Learning from Random Shape Generation and Physical Function Validation},
+ year = {2021},
 }
 ```
