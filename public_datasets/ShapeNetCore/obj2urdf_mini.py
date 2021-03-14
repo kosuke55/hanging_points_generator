@@ -32,9 +32,8 @@ parser.add_argument(
     '-s',
     type=str,
     help='save directory',
-    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10')
-    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_hanging_50'
-    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_pouring_50')
+    default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_hanging_50'
+    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_pouring_50')
 parser.add_argument(
     '--num-samples',
     '-n',

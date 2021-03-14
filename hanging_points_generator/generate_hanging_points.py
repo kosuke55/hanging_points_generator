@@ -20,7 +20,7 @@ parser.add_argument(
     '-i',
     type=str,
     help='input directory',
-    default='../ycb_eval_data_tmp/hanging_eval')
+    default='../ycb_eval_data/hanging_eval')
     # default='/media/kosuke55/SANDISK/meshdata/hanging_object')
 parser.add_argument(
     '--required-points-num', '-n', type=int,
@@ -40,7 +40,7 @@ parser.add_argument(
     help='gui')
 parser.add_argument(
     '--viz_obj', '-v', action='store_true',
-    help='viz obj with contactpoints',
+    help='viz obj with contactpoints')
 parser.add_argument(
     '--hook-type', '-ht', type=str,
     help='hook type "just_bar" or hook urdf',

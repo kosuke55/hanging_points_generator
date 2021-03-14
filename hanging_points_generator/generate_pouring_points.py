@@ -22,9 +22,8 @@ parser.add_argument(
     '-i',
     type=str,
     help='input directory',
-    default='../ycb_eval_data_tmp/pouring_eval')
+    default='../ycb_eval_data/pouring_eval')
     # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_pouring_50')
-    # default='/media/kosuke55/SANDISK/meshdata/shapenet_mini_10_copy_')
 parser.add_argument(
     '--required-points-num', '-n', type=int,
     help='required points number. do not use this option now',
