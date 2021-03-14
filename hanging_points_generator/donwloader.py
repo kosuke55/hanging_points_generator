@@ -3,7 +3,9 @@ import os.path as osp
 import gdown
 
 
-def download_sample_data(output_dir=None, rgbd=True, urdf=True, rosbag=True):
+def download_sample_data(
+    output_dir=None, rgbd=True, urdf=True,
+    ycb_eval_data=True, rosbag=True):
     # color, depth, camera_pose
     if rgbd:
         if output_dir is None:
@@ -26,6 +28,19 @@ def download_sample_data(output_dir=None, rgbd=True, urdf=True, rosbag=True):
             'https://drive.google.com/uc?export=download&id=1alkc-v-GQnAbpoIxxCBQ3fLOEpmRoN2Y',
             urdf_path,
             md5='b8d53e7315df1fad833676ef07b874d5',
+            postprocess=gdown.extractall)
+
+    # ycb evaluation urdf and annotation for automatic generation
+    if ycb_eval_data:
+        if output_dir is None:
+            ycb_eval_data_path = 'ycb_eval_data.tgz'
+        else:
+            ycb_eval_data_path = osp.join(
+                output_dir, 'ycb_eval_data.tgz')
+        gdown.cached_download(
+            'https://drive.google.com/uc?export=download&id=1GwRAIVNUxFZ9vre5BEyQOWICQkdjVtAQ',
+            ycb_eval_data_path,
+            md5='d62d73937a4a0f435da0c1cd4f1a15d2',
             postprocess=gdown.extractall)
 
     # rosbag

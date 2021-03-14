@@ -24,15 +24,17 @@ parser.add_argument(
     '-i',
     type=str,
     help='input directory',
+    default='/home/kosuke55/catkin_ws/src/hanging_points_generator/ycb_eval_data/hanging_eval')
     # default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf_eval/')
-    default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16/textured_urdf')
+    # default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16/textured_urdf')
 parser.add_argument(
     '--ground-truth',
     '-gt',
     type=str,
     help='',
+    default='/home/kosuke55/catkin_ws/src/hanging_points_generator/ycb_eval_data/hanging_eval/annotation_obj')
     # default='/media/kosuke55/SANDISK/meshdata/ycb_hanging_object/urdf2/annotation_obj')
-    default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16/textured_urdf/annotation_obj')
+    # default='/media/kosuke55/SANDISK/meshdata/ycb_pouring_object_16/textured_urdf/annotation_obj')
 parser.add_argument(
     '--print-mode', '-p',
     type=int,
