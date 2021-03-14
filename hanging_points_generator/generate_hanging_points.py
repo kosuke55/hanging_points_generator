@@ -27,10 +27,12 @@ parser.add_argument('--required-points-num', '-n', type=int,
 parser.add_argument('--try-num', '-tn', type=int,
                     help='number of try', default=1000)
 parser.add_argument('--existed-points-num', '-en', type=int,
-                    help='threshold for the number of points already generated. Skip more than this number.',
-                    default=100)
-parser.add_argument('--gui', '-g', type=int,
-                    help='gui', default=0)
+                    help='threshold for the number of points already generated. '
+                    'Skip more than this number.'
+                    'If this number is -1, do not skip any file',
+                    default=-1)
+parser.add_argument('--gui', '-g', action='store_true',
+                    help='gui')
 parser.add_argument('--viz_obj', '-v', type=int,
                     help='viz obj with contactpoints',
                     default=0)
@@ -67,7 +69,7 @@ for file in tqdm(files):
         if contact_points:
             num_cp = len(contact_points['contact_points'])
     print('Existed points of %s :%d' % (file, num_cp))
-    if existed_points_num <= num_cp:
+    if 0 <= existed_points_num <= num_cp:
         print('Skipped %s ' % file)
         continue
 
