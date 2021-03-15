@@ -91,11 +91,20 @@ cd hanging_points_generator
 ```
 python generate_hanging_points.py
 ```
+Can be executed in parallel using [eos run-many](https://github.com/iory/eos/blob/master/eos/run_many.py).
+```
+run-many 'generate_hanging_points.py' -n 10 -j 10
+```
+
 <img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">  
 
 ### pouring
 ```
 python generate_hanging_points.py
+```
+Can be executed in parallel using [eos run-many](https://github.com/iory/eos/blob/master/eos/run_many.py).
+```
+run-many 'generate_pouring_points.py' -n 10 -j 10
 ```
 <img src="https://user-images.githubusercontent.com/39142679/103476447-10dc4a80-4df9-11eb-819f-ef31ec1dfe11.gif" width="300"> <img src="https://user-images.githubusercontent.com/39142679/103215208-0e3fa800-4956-11eb-9d29-bbf4b90fe586.gif" width="300">
 
