@@ -165,11 +165,18 @@ check-hanging-pose -i textured.urdf -p contact_points -c -1 --ipc --align --aver
 Left:Before filtering &ensp; Right:After filtering
 
 ## Gererate random shape objects with GAN
-Read [random_mesh/README.md](random_mesh/README.md) and train GAN.  
+Read [random_mesh/README.md](random_mesh) and train GAN.  
+Here you can download models trained with the hanging and pouring categories of ShapeNet.
+
+```
+python donwload_sample_data.py ----gan-trained-model
+```
+
 Genrate random shape mesh with
 ```
 python random_mesh_generator.py -p <pretrained_model> -s <save_dir>
 ```
+
 <img src="https://user-images.githubusercontent.com/39142679/103216617-d63a6400-4959-11eb-9ade-2693841f7ff7.png" width="600" height="300">
 
 ## Externals
