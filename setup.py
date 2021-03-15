@@ -59,7 +59,9 @@ install_requires = [
     'scikit-robot',
     'scikit-image',
     'sklearn',
-    'torch',
+    'torch==1.7.1',
+    'torchfile==0.1.0',
+    'torchvision==0.8.2',
     'trimesh>=3.8.10'
 ]
 
