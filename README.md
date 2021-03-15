@@ -20,7 +20,7 @@ If you use ubuntu 18.04 and python3, just
 python donwload_sample_data.py --rgbd --urdf
 cd examples/
 python icp_camera_pose_estimation.py
-python create_mesh_from_data.py
+python create_mesh_tsdf.py
 python create_mesh_voxelize_marching_cubes.py
 ```
 
