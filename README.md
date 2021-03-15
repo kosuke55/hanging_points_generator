@@ -45,7 +45,14 @@ roslaunch hanging_points_generator sample_create_mesh_handeye.launch
 Use [this](https://github.com/iory/texture-mapping) for texture mapping  
 <img src="https://github.com/iory/texture-mapping/blob/master/docs/image/textured.gif?raw=true" width="300">  
 
+### Reconstruct mesh exmple
+**1.** Collect rgbd images.  
+<img src="https://user-images.githubusercontent.com/39142679/80790397-ae77de00-8bc9-11ea-95cf-46130f707e6d.gif" width="300">  
+**2.** Create mesh. (Left: ICP->TSDF Right: ICP->Voxelization-> Marching cubes)  
+<img src="https://user-images.githubusercontent.com/39142679/80790404-b2a3fb80-8bc9-11ea-9b52-246e1c4273fe.gif"  alt="hoge" width="300" height="300" >  <img src="https://user-images.githubusercontent.com/39142679/80790323-7c667c00-8bc9-11ea-915c-bb51b1be854e.gif" width="300" height="300">  
 
+
+<!-- 
 ## When using with ros (just an example in my environment)
 `roslaunch hanging_points_generator hanging_points_generator.lanuch`  
 
@@ -54,27 +61,41 @@ Use [this](https://github.com/iory/texture-mapping) for texture mapping
 - `/create_mesh` : Extract mesh.  
 - `/meshfix` : Generate the completed mesh(urdf) from the missing mesh(ply).  
 - `/generate_hanging_points` : Generate contact points using fixed mesh in pubullet and publish them as PoseArray.
-- `/reset_volume` (just util): Reset voulume and integrate count.
+- `/reset_volume` (just util): Reset voulume and integrate count. -->
 
 
-Republish PointCloud and extract it around gripper. ex) [republish_kinectv2_hd_qhdhalf.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/republish_kinectv2_hd_qhdhalf.launch), [attention_clipper_gripper.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/attention_clipper_giripper.launch)  
+<!-- Republish PointCloud and extract it around gripper. ex) [republish_kinectv2_hd_qhdhalf.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/republish_kinectv2_hd_qhdhalf.launch), [attention_clipper_gripper.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/attention_clipper_giripper.launch)  
 
 In [skrobot_node.py](https://github.com/kosuke55/pr2demo/blob/master/scripts/skrobot_node.py)  
 `create_mesh()`  
 `generate_hanging_points()`  
 
-And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/mesh_hooking.launch) to detect hook.
+And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuke55/pr2demo/blob/master/launch/mesh_hooking/mesh_hooking.launch) to detect hook. -->
 
 
-## Generate hanging points
-**1.** Collect rgbd images.  
+<!-- ## Reconstruct mesh Generate hanging points -->
+<!-- **1.** Collect rgbd images.  
 <img src="https://user-images.githubusercontent.com/39142679/80790397-ae77de00-8bc9-11ea-95cf-46130f707e6d.gif" width="300">  
 **2.** Create mesh. (Left: ICP->TSDF Right: ICP->Voxelization-> Marching cubes)  
 <img src="https://user-images.githubusercontent.com/39142679/80790404-b2a3fb80-8bc9-11ea-9b52-246e1c4273fe.gif"  alt="hoge" width="300" height="300" >  <img src="https://user-images.githubusercontent.com/39142679/80790323-7c667c00-8bc9-11ea-915c-bb51b1be854e.gif" width="300" height="300">  
-**3.** Generate hanging points in pybullet.  
+**3.** Generate hanging points in pybullet.   -->
 <img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">  
 
-## Generate pouring points
+## Generate fucntion points sample
+Download sample data.
+```
+python donwload_sample_data.py --urdf
+```
+### hanging
+```
+python generate_hanging_points.py
+```
+<img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">  
+
+### pouring
+```
+python generate_hanging_points.py
+```
 <img src="https://user-images.githubusercontent.com/39142679/103476447-10dc4a80-4df9-11eb-819f-ef31ec1dfe11.gif" width="300"> <img src="https://user-images.githubusercontent.com/39142679/103215208-0e3fa800-4956-11eb-9d29-bbf4b90fe586.gif" width="300">
 
 ## How to check contact points
