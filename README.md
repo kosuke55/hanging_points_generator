@@ -85,6 +85,7 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 Download sample data.
 ```
 python donwload_sample_data.py --urdf
+cd hanging_points_generator
 ```
 ### hanging
 ```
