@@ -79,7 +79,7 @@ And when hooking operation, lauch [mesh_hooking.launch](https://github.com/kosuk
 **2.** Create mesh. (Left: ICP->TSDF Right: ICP->Voxelization-> Marching cubes)  
 <img src="https://user-images.githubusercontent.com/39142679/80790404-b2a3fb80-8bc9-11ea-9b52-246e1c4273fe.gif"  alt="hoge" width="300" height="300" >  <img src="https://user-images.githubusercontent.com/39142679/80790323-7c667c00-8bc9-11ea-915c-bb51b1be854e.gif" width="300" height="300">  
 **3.** Generate hanging points in pybullet.   -->
-<img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">  
+<!-- <img src="https://user-images.githubusercontent.com/39142679/80790122-f8ac8f80-8bc8-11ea-8cdf-a20482292f1b.gif" width="300" height="300"> <img src="https://user-images.githubusercontent.com/39142679/80790221-3c06fe00-8bc9-11ea-9412-dd4971cc8866.gif" width="300" height="300">   -->
 
 ## Generate fucntion points sample
 Download sample data.
