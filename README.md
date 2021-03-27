@@ -188,7 +188,7 @@ python random_mesh_generator.py -p <pretrained_model> -s <save_dir>
  author = {Takeuchi, Kosuke and Yanokura, Iori and Kakiuchi, Yohei and Okada, Kei and Inaba, Masayuki},
  booktitle = {ICRA},
  month = {May},
- title = {Annotation-Free Hanging Point Learning from Random Shape Generation and Physical Function Validation},
+ title = {Automatic Hanging Point Learning from Random Shape Generation and Physical Function Validation},
  year = {2021},
 }
 ```
