@@ -179,6 +179,9 @@ python random_mesh_generator.py -p <pretrained_model> -s <save_dir>
 
 <img src="https://user-images.githubusercontent.com/39142679/103216617-d63a6400-4959-11eb-9ade-2693841f7ff7.png" width="600" height="300">
 
+## Train CNN to infer function points
+Use [hanging_poins_cnn](https://github.com/kosuke55/hanging_points_cnn) to train CNNs to infer function points.
+
 ## Externals
 [andyzeng/tsdf-fusion-python](https://github.com/andyzeng/tsdf-fusion-python)  
 
