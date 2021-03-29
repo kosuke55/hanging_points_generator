@@ -24,6 +24,10 @@ python create_mesh_tsdf.py
 python create_mesh_voxelize_marching_cubes.py
 ```
 
+### texture mapping
+Use [this](https://github.com/iory/texture-mapping) for texture mapping  
+<img src="https://github.com/iory/texture-mapping/blob/master/docs/image/textured.gif?raw=true" width="300">  
+
 ## Mesh Reconstruction demo(ROS)
 ```
 python donwload_sample_data.py --rosbag
@@ -33,17 +37,13 @@ python donwload_sample_data.py --rosbag
 ```
 roslaunch hanging_points_generator sample_create_mesh.launch
 ```
-<img src="https://user-images.githubusercontent.com/39142679/92908721-775fe600-f461-11ea-907a-f56375f6be99.gif" height="300"> <img src="https://user-images.githubusercontent.com/39142679/92987591-dd4e7b00-f4fe-11ea-9730-efeac0674b7f.gif" height="300">  
+<!-- <img src="https://user-images.githubusercontent.com/39142679/92908721-775fe600-f461-11ea-907a-f56375f6be99.gif" height="300"> <img src="https://user-images.githubusercontent.com/39142679/92987591-dd4e7b00-f4fe-11ea-9730-efeac0674b7f.gif" height="300">   -->
 
 ### handeye
 ```
 roslaunch hanging_points_generator sample_create_mesh_handeye.launch
 ```
-<img src="https://user-images.githubusercontent.com/39142679/92906978-e0465e80-f45f-11ea-976d-a3dd0f3c1f3f.gif" height="300"> <img src="https://user-images.githubusercontent.com/39142679/92907012-edfbe400-f45f-11ea-8b3f-cc93dce589f9.gif" height="300">  
-
-### texture mapping
-Use [this](https://github.com/iory/texture-mapping) for texture mapping  
-<img src="https://github.com/iory/texture-mapping/blob/master/docs/image/textured.gif?raw=true" width="300">  
+<!-- <img src="https://user-images.githubusercontent.com/39142679/92906978-e0465e80-f45f-11ea-976d-a3dd0f3c1f3f.gif" height="300"> <img src="https://user-images.githubusercontent.com/39142679/92907012-edfbe400-f45f-11ea-8b3f-cc93dce589f9.gif" height="300">   -->
 
 ### Reconstruct mesh exmple
 **1.** Collect rgbd images.  
