@@ -194,4 +194,12 @@ Use [hanging_poins_cnn](https://github.com/kosuke55/hanging_points_cnn) to train
  title = {Automatic Hanging Point Learning from Random Shape Generation and Physical Function Validation},
  year = {2021},
 }
+
+@inproceedings{takeuchi_iros_2021,
+ author = {Takeuchi, Kosuke and Yanokura, Iori and Kakiuchi, Yohei and Okada, Kei and Inaba, Masayuki},
+ booktitle = {IROS},
+ month = {September},
+ title = {Automatic Learning System for Object Function Points from Random Shape Generation and Physical Validation},
+ year = {2021},
+}
 ```
